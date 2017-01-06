@@ -1,0 +1,9 @@
+[requires] gtest / 1.8.0 @lasote / stable omr / 0.0.1 @rwy0717 /
+    testing
+
+        [generators] cmake
+
+            [options]
+
+            [imports] bin,
+    *.dll->./ bin lib, *.dylib *->./ bin
