@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.7 FATAL_ERROR)
 set(AB_NAME ab)
 set(AB_VERSION_MAJOR 0)
 set(AB_VERSION_MINOR 0)
-set(AB_VERSION_PATCH 0)
+set(AB_VERSION_PATCH 1)
 set(AB_VERSION ${AB_VERSION_MAJOR}.${AB_VERSION_MINOR}.${AB_VERSION_PATCH})
 
 project(ab
@@ -53,6 +53,7 @@ target_link_libraries(abc
 
 add_executable(abt
   test/abt.cpp
+  test/jitbuildertest.cpp
 )
 
 target_link_libraries(abt

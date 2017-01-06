@@ -1,31 +1,24 @@
 #include "ab.hpp"
 #include <iostream>
 
-namespace ab {
+using namespace ab;
 
-Condition repl(std::istream &in) {
-  while (true) {
-    return Condition::success;
-  }
+Condition repl(std::istream& in) {
+	while (true) {
+		return Condition::success;
+	}
 };
 
-} // namespace ab
-
-extern "C" int main() {
-  ab::Process::init();
-  std::cout << ab::programName << " " << ab::programVersion << std::endl;
-  std::cout << ab::abigail << std::endl;
-
-  auto condition = ab::repl(std::cin);
-  ab::ab_test();
-  condition = ab::Process::kill();
-  return ab::toExitCode(condition);
+std::ostream& printStartupBanner(std::ostream& out) {
+	return out << ab::programName << " " << ab::programVersion << std::endl
+	           << std::endl
+	           << ab::abigail << std::endl;
 }
 
-/*
-
-input syntax
-
-: SYMBOL body ;
-
- */
+extern "C" int main() {
+	printStartupBanner(std::cout);
+	ab::Process::init();
+	auto condition = repl(std::cin);
+	condition = ab::Process::kill();
+	return ab::toExitCode(condition);
+}
