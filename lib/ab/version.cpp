@@ -4,10 +4,8 @@ namespace ab {
 
 const char programName[] = "ab";
 const char programVersion[] = "0.0.1";
-const char abigail[] = "  /|_/|"
-                       "\n"
-                       ">|' ' |<"
-                       "\n"
+const char abigail[] = "  /|_/|\n"
+                       ">|' ' |<\n"
                        " `----'";
 
 } // namespace ab
