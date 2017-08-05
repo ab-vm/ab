@@ -1,0 +1,19 @@
+#ifndef OM_CONFIG_HPP_
+#define OM_CONFIG_HPP_
+
+#define OM_VERSION_MAJOR @OM_VERSION_MAJOR@
+#define OM_VERSION_MINOR @OM_VERSION_MINOR@
+#define OM_VERSION_PATCH @OM_VERSION_PATCH@
+#define OM_VERSION "@OM_VERSION@"
+#define OM_COMMIT "@OM_COMMIT@"
+
+/// Enable debug code.
+#cmakedefine OM_DEBUG
+
+/// Enable very slow debug code.
+#cmakedefine OM_DEBUG_SLOW
+
+/// Never define this. Used to guard permanently-disabled code.
+#undef OM_DISABLE
+
+#endif  // OM_CONFIG_HPP_

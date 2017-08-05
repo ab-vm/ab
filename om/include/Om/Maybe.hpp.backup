@@ -1,0 +1,406 @@
+#ifndef OM_MAYBE_HPP_
+#define OM_MAYBE_HPP_
+
+#include <Om/Impl/MaybeBase.hpp>
+#include <Om/Debug.hpp>
+#include <Om/InPlace.hpp>
+#include <Om/Nothing.hpp>
+#include <cassert>
+#include <type_traits>
+
+namespace Om {
+
+class MaybeIterator;
+
+/// A container holding either a single value, or `nothing`.
+/// Useful for when operations could fail to produce a valid value.
+///
+/// Example:
+///   ```
+///   Maybe<int> m1 = just(1); // value constructor
+///   maybe<int> m2 = nothing; // nothing constructor
+///   if (m1) std::cout << *m1 << std::endl; // 1
+///   auto f = [](int i) { std::cout << i std::endl; };
+///   m1(f); /// 1
+///   m2(f); // no output
+///   ```
+template <typename Type>
+class Maybe : private Internal::MaybeBase<Type> {
+public:
+	static_assert(!std::is_same<Type, InPlace>::value, "Maybe cannot hold the InPlace tag");
+	static_assert(!std::is_same<Type, Nothing>::value, "Maybe cannot hold the Nothing tag");
+	static_assert(!std::is_same<Type, std::nullptr_t>::value, "Do not use nullptr_t");
+	static_assert(!std::is_reference<Type>::value, "Do not use reference types");
+	// static_assert(!std::is_destructible<Type>::value, "Type must be destructible");
+
+	using ValueType = typename std::remove_reference<Type>::type;
+
+	/// @name Empty constructors
+	/// @{
+
+	/// Construct a new `Maybe<Type>` containing `nothing`.
+	constexpr inline Maybe() : Impl::MaybeBase<Type>(nothing){};
+
+	/// Construct a new `Maybe<Type>` containing `nothing`.
+	constexpr inline Maybe(const Nothing&) : Impl::MaybeBase<Type>(nothing) {
+	}
+
+	/// @}
+
+	/// @name Value constructors
+	/// @{
+
+	/// Value constructor. Convertible, not explicit. Enabled iff `ValueType` is implicitly convertible from
+	/// `OtherType`.
+	template <
+		typename OtherType = Type,
+		typename std::enable_if<
+			std::is_convertible<Type, OtherType&&>::value &&
+				std::is_constructible<Type, OtherType&&>::value,
+			int>::type = 0>
+	inline Maybe(OtherType&& value) : Impl::MaybeBase<Type>(inPlace, std::forward<OtherType>(value)) {
+	}
+
+	/// Value constructor. Converting, explicit. Enabled iff `ValueType` is constructible from `OtherType`.
+	template <typename OtherType = Type>
+	inline explicit Maybe(OtherType&& value) : Impl::MaybeBase<Type>(inPlace, std::forward<OtherType>(value)) {
+	}
+
+	/// Construct a Maybe<Type> containing new `Type` constructed in-place.
+	/// `args` are forwarded to the `Type`
+	/// constructor for direct initialization.
+	template <typename... Args>
+	explicit Maybe(InPlace inPlace, Args&&... args) : Impl::MaybeBase<Type>(inPlace, std::forward<Args>(args)...) {
+	}
+
+#if 0  // In-place initializer list constructor
+	/// In-place constructor with initializer list.
+	template <typename OtherType, typename ... Args>
+	constexpr Maybe(InPlace, std::initializer_list<OtherType> & initializerList, Args&&... args) : 
+		Impl::MaybeBase<Type>(inPlace, initializerList, std::forward<Args>(args)...) {
+	}
+#endif  // 0
+
+	///@}
+
+	/// @name Copy and move constructors
+	/// @{
+
+	/// Converting copy constructor. Not explict. Enabled iff `ValueType` is convertible from `OtherType`.
+	template <
+		typename OtherType = Type,
+		typename std::enable_if<
+			std::is_convertible<Type, OtherType&&>::value &&
+				std::is_constructible<Type, OtherType&&>::value,
+			int>::type = 0>
+	inline Maybe(const Maybe<OtherType>& other) : Impl::MaybeBase<Type>(nothing) {
+		if (other) {
+			emplace(*other);
+		}
+	}
+
+	/// Converting copy constructor. Explicit. Enabled iff `ValueType` is explicitly constructible from `OtherType`.
+	template <
+		typename OtherType = Type,
+		typename std::enable_if<
+			!std::is_convertible<Type, OtherType&&>::value &&
+				std::is_constructible<Type, OtherType&&>::value,
+			int>::type = 0>
+	inline explicit Maybe(const Maybe<OtherType>& other) : Impl::MaybeBase<Type>(nothing) {
+		if (other) {
+			emplace(*other);
+		}
+	}
+
+	/// @}
+
+	/// @name Move constructors
+	/// The moved-from Maybe may contain a value, but that value has been move from. Don't use the moved-from
+	/// `Maybe` or `value`
+	/// @{
+
+	/// Converting move constructor. Not explict. Enabled iff `ValueType` is convertible from `OtherType`.
+	template <
+		typename OtherType = Type,
+		typename std::enable_if<
+			std::is_convertible<Type, OtherType&&>::value &&
+				std::is_constructible<Type, OtherType&&>::value,
+			int>::type = 0>
+	inline Maybe(const Maybe<OtherType>&& other) : Impl::MaybeBase<Type>(nothing) {
+		if (other) {
+			emplace(*other);
+		}
+	}
+
+	/// Converting move constructor. Explicit. Enabled iff `ValueType` is explicitly constructible from `OtherType`.
+	template <
+		typename OtherType = Type,
+		typename std::enable_if<
+			!std::is_convertible<Type, OtherType&&>::value &&
+				std::is_constructible<Type, OtherType&&>::value,
+			int>::type = 0>
+	inline explicit Maybe(const Maybe<OtherType>&& other) : Impl::MaybeBase<Type>(nothing) {
+		if (other) {
+			emplace(*other);
+		}
+	}
+
+	/// @}
+
+	/// @name Conditional constructor
+	/// Construct with `value` if `cond` is true. Otherwise construct as `nothing`.
+	/// @{
+
+	template <typename OtherType = Type>
+	inline Maybe(bool cond, const OtherType& value) : Impl::MaybeBase<Type>(nothing) {
+		if (cond) {
+			emplace(std::forward<OtherType>(value));
+		}
+	}
+
+	template <typename OtherType = Type>
+	inline Maybe(bool cond, OtherType&& value) : Impl::MaybeBase<Type>(nothing) {
+		if (cond) {
+			emplace(std::forward<OtherType>(value));
+		}
+	}
+
+	/// @}
+
+	/// @name Value checking
+	/// @{
+
+	/// Returns true if this is just a value
+	inline constexpr operator bool() const {
+		return this->Impl::MaybeBase<Type>::isJust();
+	}
+
+	/// Returns true if this is just a value.
+	inline constexpr bool isJust() const {
+		return this->Impl::MaybeBase<Type>::isJust();
+	}
+
+	/// Returns true if this is nothing.
+	inline constexpr bool isNothing() const {
+		return !this->Impl::MaybeBase<Type>::isJust();
+	}
+
+	/// @}
+
+	/// Comparison.
+	///	Comparable with `Nothing`. Not deeply comparable.
+	// @{
+
+	constexpr inline bool operator==(Nothing) const {
+		return isNothing();
+	}
+
+	constexpr inline bool operator!=(Nothing) const {
+		return isJust();
+	}
+
+	/// @}
+
+	/// @name Value Accessors.
+	/// Access the value store in this Maybe. If there is no valid value, die.
+	/// The value stored in a Maybe can be accessed by dereferencing the maybe, or the arrow operator.
+	/// Ensure the Maybe contains a value before using these operators.
+	///
+	/// Example:
+	/// ```
+	/// struct Struct { int x; };
+	/// Maybe<Struct> m(2);
+	/// m.value() // normal accessor
+	/// *m.x // access by dereference
+	/// m2->x; // access by arrow
+	/// ```
+	/// @{
+
+	inline Type& value() {
+		// OM_DBG_ASSERT(isJust());
+		return Impl::MaybeBase<Type>::value();
+	}
+
+	inline Type& operator*() & {
+		return value();
+	}
+
+	constexpr inline const Type& operator*() const & {
+		return value();
+	}
+
+	inline Type&& operator*() && {
+		return std::move(value());
+	}
+
+	inline Type* operator->() {
+		return &value();
+	}
+
+	constexpr inline const Type* operator->() const {
+		return &value();
+	}
+
+	/// @}
+
+	/// @name valueOr
+	/// @returns this value if available. Otherwise, returns the argument.
+	/// @{
+
+	Type& valueOr(Type& orValue) {
+		if (this->isJust()) {
+			return this->value();
+		} else {
+			return orValue;
+		}
+	}
+
+	const Type& valueOr(const Type& orValue) const {
+		if (this->isJust()) {
+			return this->value();
+		} else {
+			return orValue;
+		}
+	}
+
+	/// @}
+
+	/// @name Function application
+	/// Apply function to value, iff there is a value.
+	/// @returns a `Maybe` containing the result of application, or `nothing`.
+	/// @example ```
+	/// auto&& increment = [](int x) -> int { return x + 1; };
+	/// Maybe<int>{3}(increment); // Result: Maybe<int>(4)
+	/// ```
+	///	@{
+
+	/// Application when function returns a value.
+	template <
+		typename Function, typename ReturnType = decltype(std::declval<Function>()(std::declval<ValueType>())),
+		typename std::enable_if<!std::is_void<ReturnType>::value, int>::type = 0>
+	Maybe<ReturnType> operator()(Function&& function) & {
+		if (isJust()) {
+			return Maybe<ReturnType>{function(value())};
+		} else {
+			return nothing;
+		}
+	}
+
+	/// Application when function returns void.
+	template <
+		typename Function, typename ReturnType = decltype(std::declval<Function>()(std::declval<ValueType>())),
+		typename std::enable_if<std::is_void<ReturnType>::value, int>::type = 0>
+	void operator()(Function&& function) & {
+		if (isJust()) {
+			function(value());
+		}
+	}
+
+	/// Application when function returns value. Maybe is const.
+	template <
+		typename Function, typename ReturnType = decltype(std::declval<Function>()(std::declval<ValueType>())),
+		typename std::enable_if<!std::is_void<ReturnType>::value, int>::type = 0>
+	Maybe<ReturnType> operator()(Function&& function) const & {
+		if (isJust()) {
+			return Maybe<ReturnType>{function(value())};
+		} else {
+			return nothing;
+		}
+	}
+
+	/// Application on const value with void return type.
+	template <
+		typename Function,
+		typename ReturnType = decltype(std::declval<Function>()(std::declval<const ValueType>())),
+		typename std::enable_if<std::is_void<ReturnType>::value, int>::type = 0>
+	void operator()(Function&& function) const & {
+		if (isJust()) {
+			function(value());
+		}
+	}
+
+	/// Application on value when this maybe is expiring.
+	template <
+		typename Function,
+		typename ReturnType = decltype(std::declval<Function>()(std::declval<ValueType&&>())),
+		typename std::enable_if<!std::is_void<ReturnType>::value, int>::type = 0>
+	Maybe<ReturnType> operator()(Function&& function) && {
+		if (isJust()) {
+			return Maybe<ReturnType>{function(std::move(value()))};
+		} else {
+			return nothing;
+		}
+	}
+
+	/// This maybe is expiring, so call `function` with an rvalue-reference.
+	template <
+		typename Function,
+		typename ReturnType = decltype(std::declval<Function>()(std::declval<ValueType&&>())),
+		typename std::enable_if<std::is_void<ReturnType>::value, int>::type = 0>
+	void operator()(Function&& function) && {
+		if (isJust()) {
+			function(std::move(value()));
+		}
+	}
+
+/// @}
+
+#if 0
+	constexpr inline Om::MaybeIterator<Type> begin() {
+		return Om::MaybeIterator<Type>{*this};
+	}
+
+	constexpr inline Om::MaybeIterator<Type> end() {
+		return Om::MaybeIterator<Type>{Om::Maybe<Type>{Om::nothing}};
+	}
+#endif  // 0
+};
+
+#if 0
+
+/// @name Iteration
+/// Maybe supports range-based for loop iteration. Iterate a Maybe as a container holding either one value or nothing.
+/// ```
+/// for (auto&& x : Maybe<int>{nothing}) { /* not called. */ }
+/// for (auto&& x : Maybe<int>{3}) { /* called with x == 3 */ }
+/// ```
+/// @{
+
+/// A one-shot iterator for Maybe objects.
+template <typename Type>
+struct MaybeIterator {
+	Maybe<Type>& maybe_;
+	bool done_;
+
+	inline explicit MaybeIterator(Maybe<Type>& maybe) : maybe_{maybe}, done_{false} {
+		done_ = maybe.isNothing();
+	}
+
+	/// Dereference operator
+	inline Type& operator*() {
+		OM_DBG_ASSERT(!done_);
+		return *maybe_;
+	}
+
+	/// Postfix increment operator
+	inline MaybeIterator<Type>& operator++(int) {
+		done_ = true;
+		return *this;
+	};
+
+	inline bool operator==(const MaybeIterator& other) {
+		return done_ == other.done_;
+	}
+};
+
+#endif  // 0
+
+/// Make a new Maybe just(x) from a value.
+template <typename Type>
+static inline constexpr Maybe<Type> just(Type&& value) {
+	return Maybe<Type>(std::forward<Type>(value));
+}
+
+}  // namespace Om
+
+#endif  // OM_MAYBE_HPP_

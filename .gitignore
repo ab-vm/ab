@@ -1,6 +1,4 @@
-build/*
+build/
+scratch/
 .DS_Store
 *.o
-
-.#*
-\#*#

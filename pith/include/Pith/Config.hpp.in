@@ -1,0 +1,19 @@
+#ifndef PITH_CONFIG_HPP_
+#define PITH_CONFIG_HPP_
+
+#define PITH_VERSION_MAJOR @PITH_VERSION_MAJOR@
+#define PITH_VERSION_MINOR @PITH_VERSION_MINOR@
+#define PITH_VERSION_PATCH @PITH_VERSION_PATCH@
+#define PITH_VERSION "@PITH_VERSION@"
+#define PITH_COMMIT "@PITH_COMMIT@"
+
+/// Enable debug code.
+#cmakedefine PITH_DEBUG
+
+/// Enable very slow debug code.
+#cmakedefine PITH_DEBUG_SLOW
+
+/// Never define this. Used to guard permanently-disabled code.
+#undef PITH_DISABLE
+
+#endif  // PITH_CONFIG_HPP_

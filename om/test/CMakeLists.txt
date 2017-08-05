@@ -1,0 +1,4 @@
+add_ab_test(TestAllocator om)
+add_ab_test(TestRef om)
+add_ab_test(TestSystem om)
+add_ab_test(TestValue om)
