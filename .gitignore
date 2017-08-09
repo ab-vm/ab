@@ -1,3 +1,5 @@
+.vscode/
+.idea/
 build/
 scratch/
 .DS_Store
