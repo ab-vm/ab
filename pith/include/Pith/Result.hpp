@@ -3,8 +3,9 @@
 
 #include <Pith/Config.hpp>
 #include <Pith/Assert.hpp>
-#include <Pith/SafeDestructor.hpp>
 #include <Pith/Box.hpp>
+#include <Pith/SafeDestructor.hpp>
+#include <type_traits>
 #include <utility>
 
 namespace Pith {
@@ -17,122 +18,139 @@ public:
 };
 
 /// Ok constructor.
-template <typename T>
-inline constexpr auto ok(T&& t) -> Ok<T> {
-	return Ok<T>(t);
+template <typename T, typename U = typename std::decay<T>::type>
+inline constexpr auto ok(T&& x) -> Ok<U> {
+	return Ok<U>(std::forward<T>(x));
 }
 
 /// A value indicating error.
-template <typename E>
-class Error : public Box<E> {
+template <typename T>
+class Err : public Box<T> {
 public:
-	using Box<E>::Box;
+	using Box<T>::Box;
 };
 
 /// Error constructor
-template <typename E>
-inline constexpr auto error(E&& e) -> Error<E> {
-	return Error<E>(e);
+template <typename T, typename U = typename std::decay<T>::type>
+inline constexpr auto err(T&& x) -> Err<U> {
+	return Err<U>(std::forward<T>(x));
 }
-
-enum class ResultKind { OK, ERROR };
 
 /// An operation result.
 /// Constructed from Ok or Error objects.
 template <typename T, typename E>
 class Result {
 public:
+	enum class Kind { OK, ERR };
 
 	template <typename Tx>
-	inline constexpr Result(const Ok<Tx> & x) : value_{x()}, kind_{ResultKind::OK} {
+	inline constexpr Result(const Ok<Tx>& x) : value_{x()}, kind_{Kind::OK} {
 	}
 
 	template <typename Tx>
-	inline constexpr Result(Ok<Tx>&& x) : value_{std::move(x())}, kind_{ResultKind::OK} {
+	inline constexpr Result(Ok<Tx>&& x) : value_{std::move(x())}, kind_{Kind::OK} {
 	}
 
 	template <typename Ex>
-	inline constexpr Result(Error<Ex>& x) : error_{x()}, kind_{ResultKind::ERROR} {
+	inline constexpr Result(Err<Ex>& x) : err_{x()}, kind_{Kind::ERR} {
 	}
 
 	template <typename Ex>
-	inline constexpr Result(Error<Ex>&& x) : error_{std::move(x())}, kind_{ResultKind::ERROR} {
+	inline constexpr Result(Err<Ex>&& x) : err_{std::move(x())}, kind_{Kind::ERR} {
+	}
+
+	template <typename Tx, typename Ex>
+	inline Result(Result<Tx, Ex>& x) {
+		if (x) {
+			value_.T(x.value());
+			kind_ = Kind::OK;
+		} else {
+			err_.E(x.err());
+			kind_ = Kind::ERR;
+		}
+	}
+
+	template <typename Tx, typename Ex>
+	inline Result(Result<Tx, Ex>&& x) {
+		if (x) {
+			value_.T(std::move(x.ok()));
+			kind_ = Kind::OK;
+		} else {
+			err_.E(std::move(x.err()));
+			kind_ = Kind::ERR;
+		}
 	}
 
 	inline ~Result() {
-		switch(kind_) {
-			case ResultKind::OK:
+		switch (kind_) {
+			case Kind::OK:
 				SafeDestructor<T>{}(value_);
 				break;
-			case ResultKind::ERROR:
-				SafeDestructor<E>{}(error_);
+			case Kind::ERR:
+				SafeDestructor<E>{}(err_);
 				break;
 		}
 	}
 
-	inline constexpr auto kind() const -> ResultKind {
+	inline constexpr operator bool() const {
+		return kind() == Kind::OK;
+	}
+
+	inline constexpr auto kind() const -> Kind {
 		return kind_;
 	}
 
-	inline constexpr auto isOk() const -> bool {
-		return kind() == ResultKind::OK;
-	}
-
-	inline constexpr auto isError() const -> bool {
-		return kind() == ResultKind::ERROR;
-	}
-
-	inline auto value() -> T & {
-		PITH_ASSERT(kind() == ResultKind::OK);
+	inline auto value() -> T& {
+		PITH_ASSERT(kind() == Kind::OK);
 		return value_;
 	}
 
-	inline auto value() const -> const T & {
-		PITH_ASSERT(kind() == ResultKind::OK);
+	inline auto value() const -> const T& {
+		PITH_ASSERT(kind() == Kind::OK);
 		return value_;
 	}
 
-	inline auto error() -> E & {
-		PITH_ASSERT(kind() == ResultKind::ERROR);
-		return error_;
+	inline auto error() -> E& {
+		PITH_ASSERT(kind() == Kind::ERR);
+		return err_;
 	}
 
 	inline auto error() const -> const E {
-		PITH_ASSERT(kind() == ResultKind::ERROR);
-		return error_;
+		PITH_ASSERT(kind() == Kind::ERR);
+		return err_;
 	}
 
 	template <typename Tx>
 	inline auto operator=(const Ok<Tx>& x) -> Result<T, E>& {
-		if (kind_ == ResultKind::ERROR) {
-			SafeDestructor<E>{}(error_);
+		if (kind_ == Kind::ERROR) {
+			SafeDestructor<E>{}(err_);
 		}
 		value_ = x();
-		kind_ = ResultKind::OK;
+		kind_ = Kind::OK;
 		return *this;
 	}
 
 	template <typename Tx>
 	inline auto operator=(Ok<Tx>&& x) -> Result<T, E>& {
-		if (kind_ == ResultKind::ERROR) {
-			SafeDestructor<E>{}(error_);
+		if (kind_ == Kind::ERR) {
+			SafeDestructor<E>{}(err_);
 		}
 		value_ = std::move(x());
-		kind_ = ResultKind::OK;
+		kind_ = Kind::OK;
 		return *this;
 	}
 
 	template <typename Ex>
-	inline auto operator=(const Error<Ex>& x) -> Result<T, E>& {
-		error_ = x();
-		kind_ = ResultKind::ERROR;
+	inline auto operator=(const Err<Ex>& x) -> Result<T, E>& {
+		err_ = x();
+		kind_ = Kind::ERR;
 		return *this;
 	}
 
 	template <typename Ex>
-	inline auto operator=(Error<Ex>&& x) -> Result<T, E>& {
-		error_ = std::move(x());
-		kind_ = ResultKind::ERROR;
+	inline auto operator=(Err<Ex>&& x) -> Result<T, E>& {
+		err_ = std::move(x());
+		kind_ = Kind::ERR;
 		return *this;
 	}
 
@@ -140,10 +158,10 @@ public:
 	inline auto operator=(const Result<Tx, Ex>& x) -> Result<T, E>& {
 		if (x.isValue()) {
 			value_ = x.value();
-			kind_ = ResultKind::OK;
+			kind_ = Kind::OK;
 		} else {
-			error_ = x.error();
-			kind_ = ResultKind::ERROR;
+			err_ = x.err();
+			kind_ = Kind::ERR;
 		}
 		return *this;
 	}
@@ -152,20 +170,20 @@ public:
 	inline auto operator=(Result<Tx, Ex>&& x) -> Result<T, E>& {
 		if (x.isValue()) {
 			value_ = std::move(x.value());
-			kind_ = ResultKind::OK;
+			kind_ = Kind::OK;
 		} else {
-			error_ = std::move(x.error());
-			kind_ = ResultKind::ERROR;
+			err_ = std::move(x.error());
+			kind_ = Kind::ERR;
 		}
 		return *this;
 	}
 
 	union {
 		T value_;
-		E error_;
+		E err_;
 	};
 
-	ResultKind kind_;
+	Kind kind_;
 };
 
 }  // namespace Pith

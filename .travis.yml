@@ -1,0 +1,15 @@
+# Build matrix / environment variable are explained on:
+# http://about.travis-ci.org/docs/user/build-configuration/
+# This file can be validated on:
+# http://lint.travis-ci.org/
+
+sudo: false
+os:
+  - linux
+  - osx
+language: cpp
+cache: ccache
+compiler:
+  - gcc
+  - clan
+script: ./scripts/travis.sh

@@ -1,110 +1,70 @@
 #ifndef PITH_PAGE_HPP_
 #define PITH_PAGE_HPP_
 
-#include <Pith/Config,hpp>
-
+#include <Pith/Config.hpp>
 #include <Pith/Address.hpp>
 #include <Pith/ArrayBox.hpp>
 #include <Pith/Bytes.hpp>
+#include <Pith/Result.hpp>
 #include <Pith/Span.hpp>
-
 #include <sys/mman.h>
-
-using namespace ByteLiterals;
 
 namespace Pith {
 
 namespace {
-const constexpr std::size_t PAGE_SIZE = 4_KiB;
+const constexpr std::size_t PAGE_SIZE = kibibytes(4);
 const constexpr std::size_t PAGE_ALIGNMENT = PAGE_SIZE;
 }  // namespace
 
-class PagePermissions : protected Box<int> {
+class PagePermissions : public Box<int> {
 public:
-	friend class Page;
+	static const constexpr int EXECUTE = PROT_EXEC;
+	static const constexpr int WRITE = PROT_WRITE;
+	static const constexpr int READ = PROT_READ;
+	static const constexpr int NONE = PROT_NONE;
 
-	inline PagePermission inline PagePermissions& execute(bool b) {
-	}
-
-	inline constexpr auto executable(bool b) -> PagePermissions& {
-		if (b) {
-			value_ | PROT_EXEC;
-		}
-		return *this;
-	}
-
-	inline constexpr auto executable() const -> bool {
-		return value_ | PROT_EXEC;
-	};
-
-	inline constexpr auto writable() const -> bool {
-		return value_ | PROT_WRITE;
-	}
-
-	inline constexpr auto readable() const -> bool {
-		return value_ | PROT_READ;
-	}
+	using Box::Box;
 };
 
 enum PagePermission { EXECUTE = 1, READ = 2, WRITE = 4 };
 
 enum class PageMapError { SUCCESS, FAILURE };
 
-class alignas(PAGE_ALIGNMENT) Page : public ByteArray<PAGE_SIZE> {
+class alignas(PAGE_ALIGNMENT) Page : public ByteArrayBox<PAGE_SIZE> {
 public:
-	static auto map(const Span<Page>& span) -> PageError {
+	static inline auto map(const Span<Page>& span) -> Result<Page*, PageMapError> {
+		void* p = mmap(span(), span.size(), PROT_NONE, MAP_ANON | MAP_PRIVATE, 0, 0);
+		if (p != nullptr) {
+			return ok(p);
+		} else {
+			/// TODO: Return errno
+			return error(PageMapError::FAILURE);
+		}
 	}
 
-	static auto PageError unmap(const Span<Page>& span);
-
-	static auto PageError setPermission(const Span<Page>& span, PagePermissions p);
-
-	static PageError map() {
-		void* address = this;
-		void* mapResult = mmap(address, PAGE_SIZE, PROT_NONE, MAP_FIX, MAP_PRIVATE);
-		if (mapResult = MAP_FAIL) {
-			return PageError::FAILURE;
+	static inline auto unmap(const Span<Page>& span) -> PageMapError {
+		int r = munmap(span.value(), span.size());
+		if (r != 0) {
+			return PageMapError::FAILURE;
+		} else {
+			// TODO: Return errno
+			return PageMapError::SUCCESS;
 		}
-		return PageError::SUCCESS;
 	}
 
-	PageError unmap() {
-		if (0 == munmap(this, PAGE_SIZE)) {
-			return PageError::FAILURE;
-		}
-		return PageError::SUCCESS;
+	static inline auto setPermissions(const Span<Page>& span, PagePermissions permissions) -> int {
+		return mprotect(span(), span.size(), permissions());
 	}
 
-	inline auto getPermission() const -> Result<PagePermissions, PageError> {
-	}
-
-	PageError setPermission(PagePermission permissions) {
-		int flags = getSystemFlags(permisions);
-		mprotect(this, PAGE_SIZE, ) mprotect(baseAddress_, pageCount_ * pageSize_, flags);
-	}
-
-private:
-	int getSystemFlags(PagePermission permissions) {
-		int flags = 0;
-
-		if (permissions & PagePermission::EXECUTE != 0) {
-			flags |= PROT_EXEC;
-		}
-		if (permissions & PagePermission::READ != 0) {
-			flags |= PROT_READ;
-		}
-		if (permissions & PagePermission::WRITE != 0) {
-			flags |= PROT_WRITE;
-		}
-		if (flags == 0) {
-			flags = PROT_NONE;
-		}
-		return flags;
+	static inline auto getPermissions(const Page* page) -> PagePermissions {
+		PITH_ASSERT_UNREACHABLE();
+		return PagePermissions{0};
 	}
 };
 
-}  // namespace Pith
+static_assert(sizeof(Page) == PAGE_SIZE, "Page size must be correct.");
+static_assert(alignof(Page) == PAGE_ALIGNMNENT, "Page allignment must be correct.");
 
-void* mapResult = mmap(nullptr, pageSize_* pageCount_, PROT_NONE, MAP_ANON | MAP_PRIVATE);
+}  // namespace Pith
 
 #endif  // PITH_PAGE_HPP

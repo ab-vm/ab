@@ -9,4 +9,10 @@ TEST(TestBox, defaultConstructor) {
 	EXPECT_EQ(i(), 1);
 }
 
-TEST(TestBox, Constructor) {}
+struct Int {
+	int x;
+};
+
+TEST(TestBox, Constructor) {
+	Box<Int> b{Int{1}};
+}

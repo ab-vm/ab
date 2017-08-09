@@ -17,6 +17,16 @@ TEST(Maybe, value) {
 	EXPECT_TRUE(just(1));
 }
 
+struct MyDefaultConstructibleType {
+	MyDefaultConstructibleType() : x_{1} {
+	}
+	int x_;
+};
+
+TEST(MAybe, defaultConstructor) {
+	Maybe<MyDefaultConstructibleType> m(inPlace);
+}
+
 struct HasCons {
 	int x_;
 	HasCons(int x) : x_(x + 1) {

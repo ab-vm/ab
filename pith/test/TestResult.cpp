@@ -7,8 +7,10 @@ enum class MyValue { one, two };
 enum class MyError { one, two };
 
 TEST(TestResult, base) {
-	Result<MyValue, MyError> r = error(MyError::one);
+	Result<MyValue, MyError> r = err<MyError>(MyError::one);
 	EXPECT_EQ(r.error(), MyError::one);
-	r = ok(MyValue::one);
+	EXPECT_FALSE(r);
+	r = ok<MyValue, MyValue>(MyValue::one);
 	EXPECT_EQ(r.value(), MyValue::one);
+	EXPECT_TRUE(r);
 }

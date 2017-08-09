@@ -3,6 +3,7 @@
 
 #include <Pith/Config.hpp>
 #include <Pith/Address.hpp>
+#include <cstddef>
 
 namespace Pith {
 
@@ -15,11 +16,11 @@ public:
 
 	static const constexpr std::size_t LENGTH = n;
 
-	inline auto operator() -> Element* {
+	inline auto operator()() -> Element* {
 		return value_;
 	}
 
-	inline constexpr auto operator() const -> const Element* {
+	inline constexpr auto operator()() const -> const Element* {
 		return value_;
 	}
 

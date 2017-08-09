@@ -4,3 +4,5 @@
 [submodule "external/omr"]
 	path = external/omr
 	url = https://github.com/eclipse/omr
+	branch = master
+

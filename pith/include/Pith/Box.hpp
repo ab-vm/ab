@@ -19,7 +19,10 @@ template <typename T>
 class Box {
 public:
 	using Type = T;
-	using Type::Type;
+
+	template <typename U>
+	inline constexpr Box(U&& x) : value_(x) {
+	}
 
 	inline auto operator()() && -> Type&& {
 		return value_;
