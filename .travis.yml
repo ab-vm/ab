@@ -3,8 +3,9 @@ addons:
     sources:
       - ubuntu-toolchain-r-test
     packages:
-      - libnuma-dev
+      - cmake
       - libclang-3.4-dev
+      - libnuma-dev
       - ninja-build
 os:
   - linux
@@ -16,6 +17,6 @@ compiler:
 script:
   - mkdir build
   - cd build
-  - cmake ..
+  - cmake .. -G Ninja
   - cmake --build .
   - ctest -V
