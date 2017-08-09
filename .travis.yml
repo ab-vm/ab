@@ -1,10 +1,17 @@
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - libnuma-dev
+      - libclang-3.4-dev
+      - ninja-build
 os:
   - linux
   - osx
 language: cpp
 cache: ccache
 compiler:
-  - gcc
   - clang
 script:
   - mkdir build
