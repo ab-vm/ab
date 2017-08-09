@@ -1,5 +1,3 @@
-cmake_minimum_required(VERSION 3.7 FATAL_ERROR)
-
 set(AB_VERSION_MAJOR 0)
 set(AB_VERSION_MINOR 0)
 set(AB_VERSION_PATCH 1)

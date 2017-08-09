@@ -1,5 +1,3 @@
-cmake_minimum_required(VERSION 3.7)
-
 set(OM_VERSION_MAJOR 0)
 set(OM_VERSION_MINOR 0)
 set(OM_VERSION_PATCH 1)

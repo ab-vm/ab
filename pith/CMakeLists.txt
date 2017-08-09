@@ -1,5 +1,3 @@
-cmake_minimum_required(VERSION 3.7 FATAL_ERROR)
-
 set(PITH_VERSION_MAJOR 0)
 set(PITH_VERSION_MINOR 1)
 set(PITH_VERSION_PATCH 0)
