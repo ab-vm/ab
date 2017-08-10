@@ -15,8 +15,4 @@ cache: ccache
 compiler:
   - clang
 script:
-  - mkdir build
-  - cd build
-  - cmake .. -G Ninja
-  - cmake --build .
-  - ctest -V
+  - ./ci/travis/build.sh
