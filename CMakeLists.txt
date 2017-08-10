@@ -1,5 +1,10 @@
 cmake_minimum_required(VERSION 3.2 FATAL_ERROR)
 
+list(APPEND CMAKE_MODULE_PATH
+	${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules
+	${CMAKE_CURRENT_SOURCE_DIR}/external/omr/cmake/modules
+)
+
 project(ab-vm)
 
 enable_testing()
