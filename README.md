@@ -1,7 +1,8 @@
-[![Build Status](https://travis-ci.org/ab-vm/ab.svg?branch=master)](https://travis-ci.org/ab-vm/ab)
-[![Build Status](https://ci.appveyor.com/api/projects/status/github/ab-vm/ab?svg=true&branch=master)](https://ci.appveyor.com/project/ab-vm/ab)
+# Ab
 
-# Ab: A WebAssembly Virtual Machine
+[![Build Status](https://travis-ci.org/ab-vm/ab.svg?branch=master)](https://travis-ci.org/ab-vm/ab)
+
+[![Build Status](https://ci.appveyor.com/api/projects/status/github/ab-vm/ab?svg=true&branch=master)](https://ci.appveyor.com/project/ab-vm/ab)
 
 ## Major Components
 
