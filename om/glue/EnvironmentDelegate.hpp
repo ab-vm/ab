@@ -19,6 +19,8 @@
 #ifndef ENVIRONMENTDELEGATE_HPP_
 #define ENVIRONMENTDELEGATE_HPP_
 
+#include "objectdescription.h"
+
 class MM_EnvironmentBase;
 
 /**
@@ -90,6 +92,25 @@ protected:
 
 public:
 	/**
+	 * Bind current thread to OMR VM.
+	 *
+	 * @param omrVM Points to OMR VM structure
+	 * @param threadName Name to assign to bound thread
+	 * @param reason Language-defined value to pass to environment delegate
+	 * @return Pointer to OMR_VMThread structure binding calling thread to OMR VM
+	 */
+	static OMR_VMThread *attachVMThread(OMR_VM *omrVM, const char *threadName, uintptr_t reason);
+
+	/**
+	 * Unbind current thread from OMR VM
+	 *
+	 * @param omrVM Points to OMR VM structure
+	 * @param omrVMThread Points to OMR_VMThread structure binding calling thread to OMR VM
+	 * @param reason Language-defined value to pass to environment delegate
+	 */
+	static void detachVMThread(OMR_VM *omrVM, OMR_VMThread *omrVMThread, uintptr_t reason);
+
+	/**
 	 * Initialize the delegate's internal structures and values.
 	 * @return true if initialization completed, false otherwise
 	 */
@@ -110,15 +131,34 @@ public:
 	 */
 	GC_Environment *getGCEnvironment() { return &_gcEnv; }
 
-	/**
-	 * Set up GC_Environment for marking
-	 */
-	void markingStarted() { }
 
 	/**
-	 * Finalize GC_Environment after marking
+	 * Flush any local material relating to GC here. This is called before a GC cycle begins,
+	 * and can be used to make local GC_Environment content available to the upcoming GC as
+	 * required.
+	 *
+	 * This is informational. OMR does not require any specific action to be implemented.
+	 *
+	 * @see GC_Environment
+	 *
 	 */
-	void markingFinished() { }
+	void flushNonAllocationCaches() { }
+
+	/**
+	 * Set or clear the transient master GC status on this thread. This thread obtains master status
+	 * when isMasterThread is true and relinquishes it when isMasterThread is false.
+	 *
+	 * This is informational. OMR does not require any specific action to be implemented.
+	 *
+	 * @param isMasterThread true if thread is acquiring master status, false if losing it
+	 */
+	void setGCMasterThread(bool isMasterThread) { }
+
+	/**
+	 * This will be called for every allocated object.  Note this is not necessarily done when the object is allocated, but will
+	 * done before start of the next gc for all objects allocated since the last gc.
+	 */
+	bool objectAllocationNotify(omrobjectptr_t omrObject) { return true; }
 
 	/**
 	 * Acquire shared VM access. Threads must acquire VM access before accessing any OMR internal
@@ -128,17 +168,13 @@ public:
 	 * This implementation is not pre-emptive. Threads that have obtained shared VM access must
 	 * check frequently whether any other thread is requesting exclusive VM access and release
 	 * shared VM access as quickly as possible in that event.
-	 *
-	 * The exclusiveAccessForGCObtainedAfterBeatenByOtherThread parameter may be required if a
-	 * concurrent GC strategy is employed. It must be set (true) when this method is called after
-	 * the stop-the-world GC completes and releases exclusive VM access if the calling thread
-	 * previously called releaseVMAccess(exclusiveAccessForGCBeatenByOtherThread = true).
-	 * Any resources temporarily released in that call can be recovered here before proceeding
-	 * with exclusive VM access.
-	 *
-	 * @param exclusiveAccessForGCObtainedAfterBeatenByOtherThread (optional, default = false)
 	 */
-	void acquireVMAccess(bool exclusiveAccessForGCObtainedAfterBeatenByOtherThread = false);
+	void acquireVMAccess();
+	
+	/**
+	 * Release shared VM acccess.
+	 */
+	void releaseVMAccess();
 
 	/**
 	 * Check whether another thread is requesting exclusive VM access. This method must be
@@ -151,34 +187,11 @@ public:
 	bool isExclusiveAccessRequestWaiting();
 
 	/**
-	 * Release shared VM acccess.
-	 *
-	 * The exclusiveAccessForGCBeatenByOtherThread parameter may be required if a concurrent
-	 * GC strategy is employed. It must be set (true) when this method is called by the concurrent
-	 * GC if it is unable to immediately obtain exclusive VM access (because a stop-the-world GC
-	 * is in progress). If the concurrent GC holds resources that must be temporarily relinquished
-	 * while waiting for exclusive VM access, this is the place to release them. They can be recovered
-	 * by calling acquireVMAccess(exclusiveAccessForGCObtainedAfterBeatenByOtherThread = true)
-	 * when the stop-the-world GC completes and releases exclusive VM access.
-	 *
-	 * @param exclusiveAccessForGCBeatenByOtherThread (optional, default = false)
-	 */
-	void releaseVMAccess(bool exclusiveAccessForGCBeatenByOtherThread = false);
-
-	/**
 	 * Acquire exclusive VM access. This method should only be called by the OMR runtime to
 	 * perform stop-the-world operations such as garbage collection. Calling thread will be
 	 * blocked until all other threads holding shared VM access have release VM access.
 	 */
 	void acquireExclusiveVMAccess();
-
-	/**
-	 * Attempt to acquire exclusive VM access. This method may fail and return false
-	 * if another thread is requesting or has obtained exclusive VM access.
-	 *
-	 * @return true if exclusive VM access has been obtained for the calling thread
-	 */
-	bool tryAcquireExclusiveVMAccess();
 
 	/**
 	 * Release exclusive VM acccess. If no other thread is waiting for exclusive VM access
@@ -197,7 +210,7 @@ public:
 	 * @return the exclusive count of the current thread before relinquishing
 	 * @see assumeExclusiveVMAccess(uintptr_t)
 	 */
-	uintptr_t relinquishExclusiveVMAccess();
+	uintptr_t relinquishExclusiveVMAccess(bool *deferredVMAccessRelease);
 
 	/**
 	 * Assume exclusive access from a collaborating thread (i.e. main-to-master or master-to-main).

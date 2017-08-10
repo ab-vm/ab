@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2016
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -46,7 +46,6 @@
 #include "ParallelGlobalGC.hpp"
 #include "Scavenger.hpp"
 #include "SlotObject.hpp"
-#include "SublistFragment.hpp"
 
 /* This enum extends ConcurrentStatus with values > CONCURRENT_ROOT_TRACING. Values from this
  * and from ConcurrentStatus are treated as uintptr_t values everywhere except when used as
@@ -103,50 +102,7 @@ MM_CollectorLanguageInterfaceImpl::initialize(OMR_VM *omrVM)
 {
 	return true;
 }
-
-void
-MM_CollectorLanguageInterfaceImpl::flushNonAllocationCaches(MM_EnvironmentBase *env)
-{
 #if defined(OMR_GC_MODRON_SCAVENGER)
-	MM_EnvironmentStandard *envStd = MM_EnvironmentStandard::getEnvironment(env);
-	MM_SublistFragment::flush((J9VMGC_SublistFragment*)&envStd->_scavengerRememberedSet);
-#endif /* defined(OMR_GC_MODRON_STANDARD) */
-}
-
-OMR_VMThread *
-MM_CollectorLanguageInterfaceImpl::attachVMThread(OMR_VM *omrVM, const char *threadName, uintptr_t reason)
-{
-	OMR_VMThread *omrVMThread = NULL;
-	omr_error_t rc = OMR_ERROR_NONE;
-
-	rc = OMR_Glue_BindCurrentThread(omrVM, threadName, &omrVMThread);
-	if (OMR_ERROR_NONE != rc) {
-		return NULL;
-	}
-	return omrVMThread;
-}
-
-void
-MM_CollectorLanguageInterfaceImpl::detachVMThread(OMR_VM *omrVM, OMR_VMThread *omrVMThread, uintptr_t reason)
-{
-	if (NULL != omrVMThread) {
-		OMR_Glue_UnbindCurrentThread(omrVMThread);
-	}
-}
-
-void
-MM_CollectorLanguageInterfaceImpl::parallelDispatcher_handleMasterThread(OMR_VMThread *omrVMThread)
-{
-	/* Do nothing for now.  only required for SRT */
-}
-
-#if defined(OMR_GC_MODRON_SCAVENGER)
-void
-MM_CollectorLanguageInterfaceImpl::scavenger_reportObjectEvents(MM_EnvironmentBase *env)
-{
-	/* Do nothing for now */
-}
-
 void
 MM_CollectorLanguageInterfaceImpl::scavenger_masterSetupForGC(MM_EnvironmentBase *env)
 {
@@ -380,9 +336,3 @@ MM_CollectorLanguageInterfaceImpl::concurrentGC_collectRoots(MM_EnvironmentStand
 	return bytesScanned;
 }
 #endif /* OMR_GC_MODRON_CONCURRENT_MARK */
-
-omrobjectptr_t
-MM_CollectorLanguageInterfaceImpl::heapWalker_heapWalkerObjectSlotDo(omrobjectptr_t object)
-{
-	return NULL;
-}

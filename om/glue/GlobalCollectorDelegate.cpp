@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2011, 2016
+ * (c) Copyright IBM Corp. 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -16,11 +16,4 @@
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
  *******************************************************************************/
 
-#ifndef HEAPREGIONDESCRIPTORTYPES_HPP_
-#define HEAPREGIONDESCRIPTORTYPES_HPP_
-
-typedef struct MM_HeapRegionDescriptorStandardExtension {
-} MM_HeapRegionDescriptorStandardExtension;
-
-
-#endif /* HEAPREGIONDESCRIPTORTYPES_HPP_ */
+#include "GlobalCollectorDelegate.hpp"
