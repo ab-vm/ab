@@ -2,14 +2,13 @@ version: 1.0.{build}
 image: Visual Studio 2017
 platform: x64
 configuration: Debug
-shallow_clone: true
-clone_depth: 1
+install:
+  - cmd: git submodule update --init --recursive
 before_build:
-  - ps: git submodule update --init --recursive
-  - ps: cmake -G "Visual Studio 14 2015 Win64" -C ci\appveyor\cache.cmake
+  - cmd: cmake -G "Visual Studio 14 2015 Win64" -C ci\appveyor\cache.cmake .
 build:
   project: ab-vm.sln
   parallel: true
   verbosity: minimal
 test_script:
-  - ps: ctest -V -C Debug
+  - cmd: ctest -V -C Debug .
