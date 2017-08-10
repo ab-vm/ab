@@ -5,6 +5,8 @@ list(APPEND CMAKE_MODULE_PATH
 	${CMAKE_CURRENT_SOURCE_DIR}/external/omr/cmake/modules
 )
 
+# Global configuration
+
 project(ab-vm)
 
 include(Utilities)
@@ -21,6 +23,15 @@ exec_program(
 	ARGS "describe" "--all" "--long" "HEAD"
 	OUTPUT_VARIABLE GIT_COMMIT
 )
+
+# OMR Configuration
+
+set(OMR_GLUE       "${CMAKE_CURRENT_SOURCE_DIR}/glue/" CACHE PATH FORCE)
+set(OMR_FVTEST     OFF CACHE BOOL "Disable OMR Testing in Ab" FORCE)
+set(OMR_GC         ON  CACHE BOOL "Enable OMR GC in Ab, for Om" FORCE)
+set(OMR_JITBUILDER OFF CACHE BOOL "Enable OMR Jitbuilder, for Ab" FORCE)
+
+# Sub directories
 
 add_subdirectory(ab)
 add_subdirectory(external)
