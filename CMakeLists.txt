@@ -7,13 +7,13 @@ list(APPEND CMAKE_MODULE_PATH
 
 project(ab-vm)
 
+include(Utilities)
+
 enable_testing()
 
 set(CMAKE_CXX_STANDARD 11)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS true)
-
-include(cmake/Utilities.cmake)
 
 exec_program(
 	"git"
