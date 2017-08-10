@@ -17,12 +17,7 @@ set(CMAKE_CXX_STANDARD 11)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS true)
 
-exec_program(
-	"git"
-	${CMAKE_CURRENT_SOURCE_DIR}
-	ARGS "describe" "--all" "--long" "HEAD"
-	OUTPUT_VARIABLE GIT_COMMIT
-)
+get_git_commit(GIT_COMMIT)
 
 # OMR Configuration
 
