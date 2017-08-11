@@ -16,8 +16,9 @@
 #    Multiple authors (IBM Corp.) - initial implementation and documentation
 ###############################################################################
 
-add_library(om_glue  INTERFACE)
-target_sources(om_glue INTERFACE
+add_library(om_omr_glue INTERFACE)
+
+target_sources(om_omr_glue INTERFACE
 	${CMAKE_CURRENT_SOURCE_DIR}/CollectorLanguageInterfaceImpl.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/CompactSchemeFixupObject.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/EnvironmentDelegate.cpp
@@ -35,7 +36,7 @@ target_sources(om_glue INTERFACE
 	${CMAKE_CURRENT_SOURCE_DIR}/omrExampleVM.cpp
 )
 
-target_link_libraries(om_glue INTERFACE
+target_link_libraries(om_omr_glue INTERFACE
 	om
 	omrgc
 )
