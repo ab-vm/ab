@@ -40,3 +40,5 @@ target_link_libraries(om
 	PUBLIC
 		pith
 )
+
+add_subdirectory(glue)
