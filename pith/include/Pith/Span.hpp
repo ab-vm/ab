@@ -7,8 +7,7 @@
 namespace Pith {
 
 /// A span of memory. Pointer and length pair.
-template <typename Type>
-class Span {
+template <typename Type> class Span {
 public:
 	// Zeroing constructor.
 	inline constexpr Span() : value_{nullptr}, length_{0} {}
@@ -23,19 +22,29 @@ public:
 	explicit inline constexpr Span(std::size_t length) : value_{nullptr}, length_{length} {}
 
 	/// Assignment from span.
-	inline constexpr Span(const Span<Type>& other) : value_{other.value()}, length_{other.length()} {}
+	inline constexpr Span(const Span<Type>& other)
+		: value_{other.value()}, length_{other.length()} {}
 
-	/// The pointer.
-	inline constexpr auto value() const -> const Type* { return value_; }
+	/// Get the pointer.
+	inline constexpr auto operator()() const -> Type* { return value_; }
 
-	/// Mutable pointer.
-	inline auto value() -> Type*& { return value_; }
+	/// Get the pointer.
+	inline constexpr auto value() const -> Type* { return value_; }
+
+	/// Set the pointer value.
+	inline auto value(Type* value) -> Span<Type>& {
+		value_ = value;
+		return *this;
+	}
 
 	/// Number of elements in the span.
 	inline constexpr auto length() const -> std::size_t { return length_; }
 
-	/// Mutable length.
-	inline auto length() -> std::size_t& { return length_; }
+	/// Set the number of elements in the span.
+	inline auto length(std::size_t length) -> Span<Type>& {
+		length_ = length;
+		return *this;
+	}
 
 	/// The last instance of Type in this Span.
 	inline auto end() -> Type* { return value_ + (length_ - 1); }
@@ -63,13 +72,19 @@ public:
 	}
 
 	/// True if this entire Span is higher in memory than the rhs. False if the spans overlap.
-	inline constexpr auto operator>(const Span<Type>& rhs) const -> bool { return value() > rhs.end(); }
+	inline constexpr auto operator>(const Span<Type>& rhs) const -> bool {
+		return value() > rhs.end();
+	}
 
 	/// True if the end of this Span is lower than or equal to the end of .
-	inline constexpr auto operator<=(const Span<Type>& rhs) const -> bool { return end() <= rhs.end(); }
+	inline constexpr auto operator<=(const Span<Type>& rhs) const -> bool {
+		return end() <= rhs.end();
+	}
 
 	/// True if the end of this Span is higher than or equal to the end of the rhs.
-	inline constexpr auto operator>=(const Span<Type>& rhs) const -> bool { return end() >= rhs.end(); }
+	inline constexpr auto operator>=(const Span<Type>& rhs) const -> bool {
+		return end() >= rhs.end();
+	}
 
 private:
 	Type* value_;
