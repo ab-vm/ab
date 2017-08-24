@@ -29,6 +29,7 @@ set(OMR_JITBUILDER OFF CACHE BOOL "Enable OMR Jitbuilder, for Ab" FORCE)
 # Sub directories
 
 add_subdirectory(ab)
+add_subdirectory(doc)
 add_subdirectory(external)
 add_subdirectory(om)
 add_subdirectory(pith)
