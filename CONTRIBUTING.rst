@@ -6,6 +6,6 @@ Contributing to Ab VM
 3. Open a PR_.
 4. Thanks, you're pretty cool.
 
-.. _license: License.rst
-.. _coding style: CodingStyle.rst
+.. _license: doc/License
+.. _coding style: doc/Coding Style
 .. _PR: https://github.com/ab-vm/ab/pulls

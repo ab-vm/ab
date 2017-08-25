@@ -6,7 +6,6 @@ Ab VM: A Web Assembly Virtual Machine
    :caption: Contents:
 
    License
-   Contributing
    Coding Style
 
 Indices and tables
