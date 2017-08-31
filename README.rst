@@ -1,10 +1,12 @@
 =====
-Ab VM
+Ab VM: A WebAssembly Virtual Machine
 =====
 
 |Travis Build Status| |Appveyor Build Status|
 
-A WebAssembly Virtual Machine. Ab documentation is hosted at `Read the Docs`_.
+Documentation is hosted at `Read the Docs`_.
+
+For building instructions, see `Building Ab VM`_.
 
 Major Components
 ================
@@ -25,5 +27,5 @@ Ab is built on `Eclipse OMR`_
    :target: https://ci.appveyor.com/project/ab-vm/ab
 
 .. _Read the Docs: https://ab-vm.readthedocs.org
-
+.. _Building Ab VM: https://ab-vm.readthedocs.org/en/latest/Building_Ab_VM.html
 .. _Eclipse OMR: https://github.com/eclipse/omr

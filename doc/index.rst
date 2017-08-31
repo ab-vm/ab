@@ -1,12 +1,16 @@
+=====================================
 Ab VM: A Web Assembly Virtual Machine
 =====================================
 
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+Table of Contents
+=================
 
+.. toctree::
+   :maxdepth: 1
+
+   Building Ab VM <Building_Ab_VM>
    License
-   Coding Style
+   Coding Style <Coding_Style>
 
 Indices and tables
 ==================
