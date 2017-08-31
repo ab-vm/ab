@@ -11,8 +11,7 @@ template <typename Type, bool hasDestructor = !std::is_trivially_destructible<Ty
 struct SafeDestructor;
 
 /// Has destructor.
-template <typename Type>
-struct SafeDestructor<Type, true> {
+template <typename Type> struct SafeDestructor<Type, true> {
 	static inline auto destroy(Type& value) -> void {
 		value.Type::~Type();
 	}
@@ -23,8 +22,7 @@ struct SafeDestructor<Type, true> {
 };
 
 /// No destructor.
-template <typename Type>
-struct SafeDestructor<Type, false> {
+template <typename Type> struct SafeDestructor<Type, false> {
 	static inline auto destroy(Type& value) -> void {
 		// Do nothing
 	}

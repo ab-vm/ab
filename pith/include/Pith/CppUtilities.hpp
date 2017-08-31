@@ -5,7 +5,7 @@
 
 #include <Pith/Config.hpp>
 
-#define PITH_TOKEN_PASTE(a, b) a ## b
+#define PITH_TOKEN_PASTE(a, b) a##b
 
 /// Basic stringification using the preprocessor. x will not be expanded.
 /// Whatever is passed in as x will be turned to a literal char array.
@@ -19,9 +19,9 @@
 #define PITH_LINE_STR() PITH_STRINGIFY(__LINE__)
 
 #if defined(__clang__) || defined(__GNUC__)
-#  define PITH_FUNCTION_STR() __PRETTY_FUNCTION__
+#define PITH_FUNCTION_STR() __PRETTY_FUNCTION__
 #else
-#  define PITH_FUNCTION_STR() "<unknown>"
+#define PITH_FUNCTION_STR() "<unknown>"
 #endif
 
-#endif // PITH_CPPUTILITIES_HPP_
+#endif  // PITH_CPPUTILITIES_HPP_

@@ -3,13 +3,9 @@
 
 namespace Pith {
 
-enum class WaitHint {
-	OPTIMIZE_LATENCY,
-	OPTIMIZE_UTILIZATION
-};
+enum class WaitHint { OPTIMIZE_LATENCY, OPTIMIZE_UTILIZATION };
 
-template <typename T>
-class Synchronic {
+template <typename T> class Synchronic {
 public:
 	using Type = T;
 
@@ -17,6 +13,6 @@ public:
 	~Synchronic();
 };
 
-} // namespace Pith
+}  // namespace Pith
 
-#endif // PITH_SYNCHRONIC_HPP_
+#endif  // PITH_SYNCHRONIC_HPP_

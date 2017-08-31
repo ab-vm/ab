@@ -13,19 +13,19 @@
 namespace Pith {
 namespace {
 
-inline auto trace(const char *function) -> void {
-  std::cerr << "*TRACE>" << function << std::endl;
+inline auto trace(const char* function) -> void {
+	std::cerr << "*TRACE>" << function << std::endl;
 }
 
-} // namespace <anonymous>
-} // namespace Pith
+}  // namespace
+}  // namespace Pith
 
 #define PITH_TRACE() ::Pith::trace(PITH_FUNCTION_STR())
 
 #ifdef PITH_DEBUG
 #define PITH_DEBUG_TRACE() PITH_TRACE()
 #else
-#define PITH_DEBUG_TRACE() // nothing
+#define PITH_DEBUG_TRACE()  // nothing
 #endif
 
 /// @macro OM_DBG_ASSERT(assertion)
@@ -34,7 +34,7 @@ inline auto trace(const char *function) -> void {
 #ifdef PITH_DEBUG
 #define PITH_DEBUG_ASSERT(x) PITH_ASSERT(x)
 #else
-#define PITH_DEBUG_ASSERT(x) // nothing
+#define PITH_DEBUG_ASSERT(x)  // nothing
 #endif
 
-#endif // PITH_DEBUG_HPP_
+#endif  // PITH_DEBUG_HPP_

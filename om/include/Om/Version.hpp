@@ -14,6 +14,6 @@ public:
 	static const char COMMIT[];
 };
 
-} // namespace Om
+}  // namespace Om
 
-#endif // OM_VERSION_HPP_
+#endif  // OM_VERSION_HPP_

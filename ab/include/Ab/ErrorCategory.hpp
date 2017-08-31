@@ -8,12 +8,11 @@ namespace Ab {
 
 class ErrorCategory : public std::error_category {
 public:
-
-	virtual auto name() const noexcept -> const char * override;
+	virtual auto name() const noexcept -> const char* override;
 	virtual auto message(int code) const noexcept -> std::string override;
 
 private:
-	static constexpr char const * const name_ = "Ab::Error";
+	static constexpr char const* const name_ = "Ab::Error";
 };
 
 extern const ErrorCategory ERROR_CATEGORY;
@@ -22,6 +21,6 @@ static inline constexpr auto errorCategory() noexcept -> const std::error_catego
 	return ERROR_CATEGORY;
 }
 
-} // namespace Ab
+}  // namespace Ab
 
-#endif // AB_ERRORCATEGORY_HPP_
+#endif  // AB_ERRORCATEGORY_HPP_

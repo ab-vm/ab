@@ -1,8 +1,8 @@
 #include <Ab/Config.hpp>
-#include <Ab/Interpreter.hpp>
-#include <Ab/Instruction.hpp>
-#include <gtest/gtest.h>
 #include "Test.hpp"
+#include <Ab/Instruction.hpp>
+#include <Ab/Interpreter.hpp>
+#include <gtest/gtest.h>
 
 class TestInterpreter : public Ab::Test::BasicTest {};
 

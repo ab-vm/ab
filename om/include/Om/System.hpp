@@ -17,34 +17,26 @@ namespace Om {
 
 class Context;
 
-enum class SystemState {
-	DEAD, ACTIVE
-};
+enum class SystemState { DEAD, ACTIVE };
 
 struct SystemConfig {
 	HeapConfig heap_;
 };
 
-enum class SystemError {
-	SUCCESS, FAIL
-};
+enum class SystemError { SUCCESS, FAIL };
 
-enum class AttachError {
-	SUCCESS, FAIL
-};
+enum class AttachError { SUCCESS, FAIL };
 
 class System {
 public:
+	static const constexpr SystemConfig DEFAULT_CONFIG{Heap::defaultConfig()};
 
-	static const constexpr SystemConfig DEFAULT_CONFIG = {
-		.heap_ = Heap::defaultConfig()
-	};
-
-	static constexpr inline auto defaultConfig() -> const SystemConfig & {
+	static constexpr inline auto defaultConfig() -> const SystemConfig& {
 		return DEFAULT_CONFIG;
 	};
 
-	System();
+	inline System() : state_{SystemState::DEAD} {
+	}
 
 	~System();
 
@@ -52,7 +44,9 @@ public:
 
 	auto kill() -> SystemError;
 
-	inline constexpr auto state() const -> SystemState { return state_; }
+	inline auto state() const -> SystemState {
+		return state_;
+	}
 
 protected:
 	friend class Context;
@@ -68,6 +62,6 @@ private:
 	SystemState state_;
 };
 
-} // namespace Om
+}  // namespace Om
 
-#endif // OM_SYSTEM_HPP_
+#endif  // OM_SYSTEM_HPP_

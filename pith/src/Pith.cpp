@@ -2,8 +2,9 @@
 #include <Pith/Version.hpp>
 #include <iostream>
 
-extern "C" int pith_main(int argc, char ** argv) {
-	std::cout << "Pith version " << Pith::Version::STRING << " " << Pith::Version::COMMIT << std::endl;
+extern "C" int pith_main(int argc, char** argv) {
+	std::cout << "Pith version " << Pith::Version::STRING << " " << Pith::Version::COMMIT
+		  << std::endl;
 	return 0;
 }
 

@@ -8,12 +8,11 @@ namespace Om {
 
 class ErrorCategory : public std::error_category {
 public:
-
-	virtual auto name() const noexcept -> const char * override;
+	virtual auto name() const noexcept -> const char* override;
 	virtual auto message(int code) const noexcept -> std::string override;
 
 private:
-	static constexpr char const * const name_ = "Om::Error";
+	static constexpr char const* const name_ = "Om::Error";
 };
 
 extern const ErrorCategory ERROR_CATEGORY;
@@ -22,6 +21,6 @@ static inline constexpr auto errorCategory() noexcept -> const std::error_catego
 	return ERROR_CATEGORY;
 }
 
-} // namespace Om
+}  // namespace Om
 
-#endif // OM_ERROR_HPP_
+#endif  // OM_ERROR_HPP_

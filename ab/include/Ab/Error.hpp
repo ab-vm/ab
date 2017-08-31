@@ -3,8 +3,8 @@
 
 #include <Ab/ErrorCategory.hpp>
 
-#include <type_traits>
 #include <system_error>
+#include <type_traits>
 
 namespace Ab {
 
@@ -15,17 +15,16 @@ enum class Error {
 	FAIL = 1,
 };
 
-} // namespace Ab
+}  // namespace Ab
 
 namespace std {
 
-template <>
-struct is_error_condition_enum<Ab::Error> : public std::true_type {};
+template <> struct is_error_condition_enum<Ab::Error> : public std::true_type {};
 
 inline static auto make_error_condition(Ab::Error e) -> error_condition {
 	return error_condition(static_cast<int>(e), Ab::errorCategory());
 }
 
-} // namespace std
+}  // namespace std
 
-#endif // AB_ERROR_HPP_
+#endif  // AB_ERROR_HPP_

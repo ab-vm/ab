@@ -3,10 +3,6 @@
 
 namespace Om {
 
-enum class Error {
-	success = 0,
-	generic = 1
-};
-
+enum class Error { success = 0, generic = 1 };
 }
-#endif // OM_ERROR_HPP_
+#endif  // OM_ERROR_HPP_

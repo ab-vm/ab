@@ -48,6 +48,6 @@ private:
 	Context& context_;
 };
 
-} // namespace Om
+}  // namespace Om
 
-#endif // OM_ACTIVECONTEXT_HPP_
+#endif  // OM_ACTIVECONTEXT_HPP_

@@ -9,25 +9,20 @@
 namespace Om {
 
 /// A pointer to managed memory. It is GC-Unsafe.
-template <typename Type>
-class Ref final {
+template <typename Type> class Ref final {
 public:
+	inline constexpr Ref() : value_{nullptr} {
+	}
 
-	inline constexpr Ref()
-		: value_{nullptr}
-	{}
-
-	inline constexpr Ref(Type* value)
-		: value_{value}
-	{}
+	inline constexpr Ref(Type* value) : value_{value} {
+	}
 
 	/// Converting copy constructor.
 	template <typename U>
-	inline constexpr Ref(const Ref<U>& other)
-		: value_{other.template to<Type>().raw()}
-	{}
+	inline constexpr Ref(const Ref<U>& other) : value_{other.template to<Type>().raw()} {
+	}
 
-	inline constexpr auto operator->() const -> Type* {
+	inline constexpr auto operator-> () const -> Type* {
 		return this->value_;
 	}
 
@@ -45,8 +40,7 @@ public:
 	}
 
 	/// Cast Ref<A> to Ref<B>
-	template <typename To>
-	inline constexpr auto to() const -> Ref<To> {
+	template <typename To> inline constexpr auto to() const -> Ref<To> {
 		return Ref<To>{reinterpret_cast<To*>(this->raw())};
 	}
 
@@ -79,7 +73,7 @@ template <typename T> inline constexpr auto makeRef(T* p) -> Ref<T> {
 	return Ref<T>(p);
 }
 
-} // namespace <anonymous>
+}  // namespace
 
 }  // namespace Om
 

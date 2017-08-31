@@ -6,9 +6,7 @@
 
 namespace Pith {
 
-enum class SharedLockError {
-	success = 0, fail
-};
+enum class SharedLockError { SUCCESS = 0, FAIL };
 
 /// A classic read-write lock.
 /// SharedLockGuard sharedHeapAccess(heap.lock()); // obtain shared access to the heap
@@ -41,40 +39,34 @@ private:
 /// Implementation
 ///
 
-template <>
-inline auto SharedLock::lock<Access::SHARED>() noexcept -> void {
+template <> inline auto SharedLock::lock<Access::SHARED>() noexcept -> void {
 	// TODO: Implement
 	sharedCount_ += 1;
 };
 
-template <>
-inline auto SharedLock::lock<Access::EXCLUSIVE>() noexcept -> void {
+template <> inline auto SharedLock::lock<Access::EXCLUSIVE>() noexcept -> void {
 	// TODO: Implement
 	exclusiveCount_ += 1;
 }
 
-template <>
-inline auto SharedLock::unlock<Access::SHARED>() noexcept -> void {
+template <> inline auto SharedLock::unlock<Access::SHARED>() noexcept -> void {
 	// TODO: Implement
 	sharedCount_ -= 1;
 }
 
-template <>
-inline auto SharedLock::unlock<Access::EXCLUSIVE>() noexcept -> void {
+template <> inline auto SharedLock::unlock<Access::EXCLUSIVE>() noexcept -> void {
 	// TODO: Implement
 	exclusiveCount_ -= 1;
 }
 
-template <>
-inline constexpr auto SharedLock::isLocked<Access::SHARED>() const noexcept -> bool {
+template <> inline constexpr auto SharedLock::isLocked<Access::SHARED>() const noexcept -> bool {
 	// TODO: Implement
 	return false;
 }
 
-template <>
-inline constexpr auto SharedLock::isLocked<Access::EXCLUSIVE>() const noexcept -> bool {
-// TODO: Implement
-return false;
+template <> inline constexpr auto SharedLock::isLocked<Access::EXCLUSIVE>() const noexcept -> bool {
+	// TODO: Implement
+	return false;
 }
 
 }  // namespace Pith

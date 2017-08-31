@@ -5,8 +5,8 @@ namespace Pith {
 namespace Meta {
 
 /// User can add functionality to a class by specializing a `Mixin` template.
-/// In Om, some wrapper template classes publicly inherit from a mixin class template. Users can extend the Om wrapper
-/// type by specializing the mixin template type.
+/// In Om, some wrapper template classes publicly inherit from a mixin class template. Users can
+/// extend the Om wrapper type by specializing the mixin template type.
 ///
 /// Example:
 /// ```
@@ -30,6 +30,6 @@ namespace Meta {
 class Mixin {};
 
 }  // namespace Meta
-} // namespace Pith
+}  // namespace Pith
 
 #endif  // PITH_META_MIXIN_HPP_

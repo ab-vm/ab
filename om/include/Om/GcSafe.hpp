@@ -9,6 +9,6 @@ namespace Om {
 /// GC unsafe allocations are more likely to fail due to OOM.
 enum class GcSafe { yes = 1, no = 0 };
 
-} // namespace Om
+}  // namespace Om
 
-#endif // OM_GCSAFE_HPP_
+#endif  // OM_GCSAFE_HPP_

@@ -10,7 +10,7 @@ namespace Meta {
 /// Base classes will friend some JIT and VM types which may need direct access to struct values.
 class Base {};
 
-} // namespace Meta
-} // Namespace Core
+}  // namespace Meta
+}  // Namespace Core
 
 #endif  // CORE_META_BASE_HPP_

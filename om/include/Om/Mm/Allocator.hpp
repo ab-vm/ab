@@ -31,7 +31,6 @@ class MemoryContext {
 
 class ObjectAllocator {
 public:
-
 	template <GcSafe gcSafe = GcSafe::yes>
 	inline auto allocate(Context& cx, const AllocationRequest& site) -> Maybe<Ref<Object>> {
 		auto alloc = Maybe<Ref<Object>>{rawAllocator_.allocate<gcSafe>(cx, mib(32))};
@@ -45,7 +44,7 @@ private:
 	RawAllocator rawAllocator_;
 };
 
-} // namespace Mm
-} // namespace Om
+}  // namespace Mm
+}  // namespace Om
 
 #endif  // OM_ALLOCATOR_HPP_

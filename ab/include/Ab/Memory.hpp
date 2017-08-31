@@ -13,8 +13,7 @@ namespace ab {
 typedef unsigned long Value;
 
 /// init an object
-template <typename Type, typename... Args>
-bool init(Type t, Args... args);
+template <typename Type, typename... Args> bool init(Type t, Args... args);
 
 #if 0  // heapCache
 class Heap;
@@ -57,7 +56,12 @@ class MemoryConfig {
 public:
 	std::size_t initialPageCount_;
 	std::size_t maxPageCount_;
-	std::size_t pageSize_;
+
+	void verify() {
+		PITH_ASSERT(maxPageCount_ <= initialPageCount_);
+		PITH_ASSERT(maxPageCount > 1);
+		PITH_ASSERT(initialPageCount > 1);
+	}
 };
 
 enum class MemoryState { ACTIVE, DEAD };
@@ -67,23 +71,20 @@ enum class MemoryError {
 	ERROR
 }
 
-///
 class Memory {
 public:
-	Memory() : memoryState_(MemoryState::DEAD){};
+	Memory() : memoryState_{MemoryState::DEAD} {};
 
-	MemoryError init(MemoryConfig& memoryConfig) {
-		PITH_ASSERT(memoryState_ == MemoryState::DEAD);
+	inline auto init(MemoryConfig& memoryConfig) -> MemoryError {
+		PITH_ASSERT(state_ == MemoryState::DEAD);
+		memoryConfig.verify();
 
-		memoryState = MemoryState.ALIVE;
-
-		pageSize_ = memoryCOnfig.pageSize_;
+		pageSize_ = memoryConfig.pageSize_;
 		pageCount_ = memoryConfig.initialPageCount_;
-		maxPageCount = memoryConfig.maxPageCount;
+		maxPageCount = memoryConfig.maxPageCount_;
 
-		PITH_ASSERT(pageCount <= maxPageCount);
-
-		void* mapResult = mmap(nullptr, pageSize_ * pageCount_, PROT_NONE, MAP_ANON | MAP_PRIVATE);
+		void* mapResult =
+			mmap(nullptr, pageSize_ * pageCount_, PROT_NONE, MAP_ANON | MAP_PRIVATE);
 
 		if (mapResult == MAP_FAILED) {
 			// TODO implement error handling
@@ -93,57 +94,57 @@ public:
 
 		mprotect(baseAddress_, pageCount_ * pageSize_, PROT_READ | PROT_WRITE);
 
+		state_ = MemoryState.ALIVE;
 		return MemoryError::SUCCESS;
 	}
 
-	MemoryError kill() {
+	inline auto kill() -> MemoryError {
 		PITH_ASSERT(memoryState_ == MemoryState::ALIVE);
-
 		memoryState = MemoryState.DEAD;
-
 		return MemoryError::SUCCESS;
 	}
 
-	Pith::Address getBaseAddress() {
+	Pith::Address baseAddress() {
 		return baseAddress_;
 	};
 
-	std::size_t getSize() {
-		return pageCount_ * page_Size_;
+	std::size_t size() {
+		return pageCount_ * pageSize_;
 	}
 
-	std::size_t getPageCount() {
+	std::size_t pageCount() {
 		return pageCount_;
 	}
 
-	std::size_t getMaxSize() {
-		return maximumSize_;
+	std::size_t maxSize() {
+		return maxSize_;
 	}
 
 	std::size_t getMaxPageCount() {
 		return maximumSize_ * pageCount_;
 	}
 
-	MemoryError grow() {
-		return grow(1);
-	}
-
-	MemoryError grow(size_t pageCount) {
-		std::size_t growSize = pageCount * pageSize_;
-
+	inline auto grow(std::size_t n) -> MemoryError {
 		if (pageCount + pageCount_ > maxPageCount) {
 			return MemoryError ::ERROR;
 		}
+
+		Span<Page> newPageSpan{pages_.end() + 1, n};
+		std::size_t growSize = pageCount * pageSize_;
+
+		Span<Page> newPages{pages_.end() + 1, n};
+		int perm = Page::Permission::READ | Page::Permission::WRITE;
+		Result<Page*, PageMapErrror> result = Page::map(newPages, perm);
+		PITH_ASSERT(result);
 
 		return MemoryError::SUCCESS;
 	}
 
 private:
+	Span<Page> pages_;
 	void* baseAddress_;
-	std::size_t pageSize_;
-	std::size_t pageCount_;
-	std::size_t maxPageCount;
-	MemoryState memoryState_;
+	std::size_t maxPageCount_;
+	MemoryState state_;
 };
 
 class Memory {
@@ -174,13 +175,11 @@ public:
 private:
 	Memory& memory;
 
-	template <typename Type>
-	Type* allocateBytes() {
+	template <typename Type> Type* allocateBytes() {
 		static_cast<Type>(allocateBytes(sizeof(Type)));
 	}
 
-	template <typename Type = void*>
-	allocateBytes(std::size_t bytes) {
+	template <typename Type = void*> allocateBytes(std::size_t bytes) {
 		// TODO: something better than malloc
 		return static_cast<Type>(std::malloc(bytes));
 	}

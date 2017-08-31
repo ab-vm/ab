@@ -9,4 +9,4 @@ const unsigned int Version::PATCH = PITH_VERSION_PATCH;
 const char Version::STRING[] = PITH_VERSION;
 const char Version::COMMIT[] = PITH_COMMIT;
 
-} // namespace Pith
+}  // namespace Pith

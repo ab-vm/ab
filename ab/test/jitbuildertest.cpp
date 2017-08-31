@@ -45,4 +45,4 @@ TEST(JitBuilderTest, Example) {
 	shutdownJit();
 }
 
-} // namespace ab
+}  // namespace ab

@@ -10,11 +10,13 @@ auto ErrorCategory::name() const noexcept -> const char* {
 auto ErrorCategory::message(int code) const noexcept -> std::string {
 	auto e = static_cast<Error>(code);
 	switch (e) {
-		case Error::success: return "success";
-		case Error::generic: return "generic";
+		case Error::success:
+			return "success";
+		case Error::generic:
+			return "generic";
 	}
 }
 
 const ErrorCategory ERROR_CATEGORY;
 
-} // namespace Ab
+}  // namespace Ab

@@ -12,7 +12,7 @@ namespace Meta {
 /// inside template definitions to work with user-defined types.
 class Policy {};
 
-} // namespace Meta
-} // namespace Core
+}  // namespace Meta
+}  // namespace Core
 
 #endif  // CORE_META_POLICY_HPP_

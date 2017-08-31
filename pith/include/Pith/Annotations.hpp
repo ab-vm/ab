@@ -17,4 +17,4 @@
 #define PITH_UNREACHABLE()
 #endif
 
-#endif // PITH_ANNOTATIONS_HPP_
+#endif  // PITH_ANNOTATIONS_HPP_

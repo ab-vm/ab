@@ -5,6 +5,7 @@
 #include <Ab/Context.hpp>
 #include <Ab/Module.hpp>
 #include <Om/Ref.hpp>
+#include <Pith/Result.hpp>
 
 namespace Ab {
 namespace Wasm {
@@ -13,7 +14,9 @@ class LoaderError {};
 
 class Loader {
 public:
-	auto operator()(ActiveContext& cx, std::istream& in) -> Pith::Maybe<Om::Ref<Module>>;
+	/// Load a module from a binary stream
+	auto operator()(ActiveContext& cx, std::istream& in)
+		-> Pith::Result<Om::Ref<Module>, LoaderError>;
 
 private:
 };

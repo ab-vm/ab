@@ -21,7 +21,7 @@ public:
 	}
 };
 
-} // namespace Test
-} // namespace Ab
+}  // namespace Test
+}  // namespace Ab
 
-#endif // AB_TEST_BASICTEST_HPP_
+#endif  // AB_TEST_BASICTEST_HPP_

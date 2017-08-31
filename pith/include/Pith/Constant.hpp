@@ -11,8 +11,7 @@ namespace Pith {
 ///   ```
 ///   Constant<int, 0>::VALUE;
 ///   ```
-template <typename T, T value>
-struct Constant {
+template <typename T, T value> struct Constant {
 	using Type = T;
 
 	static constexpr const Type VALUE = value;
@@ -23,21 +22,21 @@ struct Constant {
 	///   TrueConstant f;
 	///   f(); // => true
 	///   ```
-	constexpr inline auto operator()() const noexcept -> Type { return VALUE; }
+	constexpr inline auto operator()() const noexcept -> Type {
+		return VALUE;
+	}
 };
 
-template <bool value>
-using BoolConstant = Constant<bool, value>;
+template <bool value> using BoolConstant = Constant<bool, value>;
 
 using TrueConstant = BoolConstant<true>;
 
 using FalseConstant = BoolConstant<false>;
 
-template <int value>
-using IntConstant = Constant<int, value>;
+template <int value> using IntConstant = Constant<int, value>;
 
 using ZeroConstant = IntConstant<0>;
 
-} // namespace Pith
+}  // namespace Pith
 
-#endif // PITH_CONSTANT_HPP_
+#endif  // PITH_CONSTANT_HPP_

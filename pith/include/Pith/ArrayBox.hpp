@@ -8,8 +8,7 @@
 namespace Pith {
 
 /// A simple struct wrapper around a fixed-size array.
-template <typename T, std::size_t n>
-class ArrayBox {
+template <typename T, std::size_t n> class ArrayBox {
 public:
 	using Element = T;
 	using Size = std::size_t;
@@ -32,8 +31,7 @@ protected:
 	Element value_[LENGTH];
 };
 
-template <std::size_t n>
-using ByteArrayBox = ArrayBox<Byte, n>;
+template <std::size_t n> using ByteArrayBox = ArrayBox<Byte, n>;
 
 }  // namespace Pith
 

@@ -26,8 +26,7 @@ namespace Pith {
 ///   m1(f); /// 1
 ///   m2(f); // no output
 ///   ```
-template <typename Type>
-class Maybe {
+template <typename Type> class Maybe {
 public:
 	static_assert(!std::is_same<Type, InPlace>::value, "Maybe cannot hold the InPlace tag");
 	static_assert(!std::is_same<Type, Nothing>::value, "Maybe cannot hold the Nothing tag");
@@ -48,7 +47,8 @@ public:
 
 	/// Construct a new `Maybe<Type>` containing `nothing`.
 	template <typename... Args>
-	inline constexpr Maybe(InPlace, Args&&... args) : storage_{inPlace, std::forward<Args>(args)...} {
+	inline constexpr Maybe(InPlace, Args&&... args)
+		: storage_{inPlace, std::forward<Args>(args)...} {
 	}
 
 	/// Value constructor.
@@ -105,8 +105,8 @@ public:
 
 	/// @name Value Accessors.
 	/// Access the value store in this Maybe. If there is no valid value, die.
-	/// The value stored in a Maybe can be accessed by dereferencing the maybe, or the arrow operator.
-	/// Ensure the Maybe contains a value before using these operators.
+	/// The value stored in a Maybe can be accessed by dereferencing the maybe, or the arrow
+	/// operator. Ensure the Maybe contains a value before using these operators.
 	///
 	/// Example:
 	/// ```
@@ -166,9 +166,9 @@ public:
 
 	/// Application when function returns value. Maybe is const.
 	template <typename Function, typename... Args>
-	auto map(
-		Function&& function,
-		Args&&... args) & -> Maybe<decltype(function(just(), std::forward<Args>(args)...))> {
+	auto
+	map(Function&& function,
+	    Args&&... args) & -> Maybe<decltype(function(just(), std::forward<Args>(args)...))> {
 		if (isJust()) {
 			return Maybe{function(just(), std::forward<Args>(args)...)};
 		} else {
@@ -187,9 +187,8 @@ public:
 	}
 
 	template <typename Function, typename... Args>
-	auto map(
-		Function&& function,
-		Args&&... args) && -> Maybe<decltype(function(std::move(just()), std::forward<Args>(args)...))> {
+	auto map(Function&& function, Args&&... args) && -> Maybe<
+		decltype(function(std::move(just()), std::forward<Args>(args)...))> {
 		if (isJust()) {
 			return function(std::move(just()), std::forward<Args>(args)...);
 		} else {
@@ -224,18 +223,15 @@ private:
 };
 
 /// A value constructor for maybe objects.
-template <typename Type>
-auto just(Type&& value) -> Maybe<Type> {
+template <typename Type> auto just(Type&& value) -> Maybe<Type> {
 	return Maybe<Type>{std::forward<Type>(value)};
 }
 
 namespace TypeTrait {
 
-template <typename Type>
-struct Nullable<Maybe<Type>> : public std::true_type {};
+template <typename Type> struct Nullable<Maybe<Type>> : public std::true_type {};
 
-template <typename Type>
-struct Null<Maybe<Type>> {
+template <typename Type> struct Null<Maybe<Type>> {
 	using value_type = Nothing&;
 	static constexpr const Nothing& value{nothing};
 };

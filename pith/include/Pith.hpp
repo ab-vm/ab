@@ -6,4 +6,4 @@
 /// The Pith library. Core utilities.
 namespace Pith {}
 
-#endif // PITH_HPP_
+#endif  // PITH_HPP_

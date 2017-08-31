@@ -21,15 +21,14 @@
 #include "omrExampleVM.hpp"
 
 #include "AtomicOperations.hpp"
-#include "EnvironmentStandard.hpp"
 #include "EnvironmentDelegate.hpp"
+#include "EnvironmentStandard.hpp"
 #include "GCExtensionsBase.hpp"
 #include "SublistFragment.hpp"
 
-OMR_VMThread *
-MM_EnvironmentDelegate::attachVMThread(OMR_VM *omrVM, const char *threadName, uintptr_t reason)
-{
-	OMR_VMThread *omrVMThread = NULL;
+OMR_VMThread* MM_EnvironmentDelegate::attachVMThread(
+	OMR_VM* omrVM, const char* threadName, uintptr_t reason) {
+	OMR_VMThread* omrVMThread = NULL;
 	omr_error_t rc = OMR_ERROR_NONE;
 
 	rc = OMR_Glue_BindCurrentThread(omrVM, threadName, &omrVMThread);
@@ -39,28 +38,23 @@ MM_EnvironmentDelegate::attachVMThread(OMR_VM *omrVM, const char *threadName, ui
 	return omrVMThread;
 }
 
-void
-MM_EnvironmentDelegate::detachVMThread(OMR_VM *omrVM, OMR_VMThread *omrVMThread, uintptr_t reason)
-{
+void MM_EnvironmentDelegate::detachVMThread(
+	OMR_VM* omrVM, OMR_VMThread* omrVMThread, uintptr_t reason) {
 	if (NULL != omrVMThread) {
 		OMR_Glue_UnbindCurrentThread(omrVMThread);
 	}
 }
 
-void
-MM_EnvironmentDelegate::acquireVMAccess()
-{
-	OMR_VM_Example *exampleVM = (OMR_VM_Example *)_env->getOmrVM()->_language_vm;
+void MM_EnvironmentDelegate::acquireVMAccess() {
+	OMR_VM_Example* exampleVM = (OMR_VM_Example*)_env->getOmrVM()->_language_vm;
 	omrthread_rwmutex_enter_read(exampleVM->_vmAccessMutex);
 }
 
 /**
  * Release shared VM acccess.
  */
-void
-MM_EnvironmentDelegate::releaseVMAccess()
-{
-	OMR_VM_Example *exampleVM = (OMR_VM_Example *)_env->getOmrVM()->_language_vm;
+void MM_EnvironmentDelegate::releaseVMAccess() {
+	OMR_VM_Example* exampleVM = (OMR_VM_Example*)_env->getOmrVM()->_language_vm;
 	omrthread_rwmutex_exit_read(exampleVM->_vmAccessMutex);
 }
 
@@ -72,11 +66,10 @@ MM_EnvironmentDelegate::releaseVMAccess()
 
  * @return true if another thread is waiting to acquire exclusive VM access
  */
-bool
-MM_EnvironmentDelegate::isExclusiveAccessRequestWaiting()
-{
-	OMR_VM_Example *exampleVM = (OMR_VM_Example *)_env->getOmrVM()->_language_vm;
-	if ((0 < exampleVM->_vmExclusiveAccessCount) || omrthread_rwmutex_is_writelocked(exampleVM->_vmAccessMutex)) {
+bool MM_EnvironmentDelegate::isExclusiveAccessRequestWaiting() {
+	OMR_VM_Example* exampleVM = (OMR_VM_Example*)_env->getOmrVM()->_language_vm;
+	if ((0 < exampleVM->_vmExclusiveAccessCount) ||
+	    omrthread_rwmutex_is_writelocked(exampleVM->_vmAccessMutex)) {
 		return true;
 	}
 	if (NULL != _env->getExtensions()->gcExclusiveAccessThreadId) {
@@ -90,17 +83,16 @@ MM_EnvironmentDelegate::isExclusiveAccessRequestWaiting()
  * perform stop-the-world operations such as garbage collection. Calling thread will be
  * blocked until all other threads holding shared VM access have release VM access.
  */
-void
-MM_EnvironmentDelegate::acquireExclusiveVMAccess()
-{
+void MM_EnvironmentDelegate::acquireExclusiveVMAccess() {
 	if (0 == _env->getOmrVMThread()->exclusiveCount) {
-		OMR_VM *omrVM = _env->getOmrVM();
-		OMR_VM_Example *exampleVM = (OMR_VM_Example *)omrVM->_language_vm;
+		OMR_VM* omrVM = _env->getOmrVM();
+		OMR_VM_Example* exampleVM = (OMR_VM_Example*)omrVM->_language_vm;
 
 		/* tell the rest of the world that a thread is going for exclusive VM< access */
 		MM_AtomicOperations::add(&exampleVM->_vmExclusiveAccessCount, 1);
 
-		/* unconditionally acquire exclusive VM access by locking the VM thread list mutex */
+		/* unconditionally acquire exclusive VM access by locking the VM thread list mutex
+		 */
 		omrthread_rwmutex_enter_write(exampleVM->_vmAccessMutex);
 		omrthread_monitor_enter(omrVM->_vmThreadListMutex);
 	}
@@ -112,11 +104,9 @@ MM_EnvironmentDelegate::acquireExclusiveVMAccess()
  * this method will notify all threads waiting for shared VM access to continue and
  * acquire shared VM access.
  */
-void
-MM_EnvironmentDelegate::releaseExclusiveVMAccess()
-{
+void MM_EnvironmentDelegate::releaseExclusiveVMAccess() {
 	if (1 == _env->getOmrVMThread()->exclusiveCount) {
-		OMR_VM_Example *exampleVM = (OMR_VM_Example *)_env->getOmrVM()->_language_vm;
+		OMR_VM_Example* exampleVM = (OMR_VM_Example*)_env->getOmrVM()->_language_vm;
 		omrthread_monitor_exit(_env->getOmrVM()->_vmThreadListMutex);
 		omrthread_rwmutex_exit_write(exampleVM->_vmAccessMutex);
 		Assert_MM_true(0 < exampleVM->_vmExclusiveAccessCount);
@@ -137,9 +127,7 @@ MM_EnvironmentDelegate::releaseExclusiveVMAccess()
  * @return the exclusive count of the current thread before relinquishing
  * @see assumeExclusiveVMAccess(uintptr_t)
  */
-uintptr_t
-MM_EnvironmentDelegate::relinquishExclusiveVMAccess(bool *deferredVMAccessRelease)
-{
+uintptr_t MM_EnvironmentDelegate::relinquishExclusiveVMAccess(bool* deferredVMAccessRelease) {
 	uintptr_t relinquishedExclusiveCount = _env->getOmrVMThread()->exclusiveCount;
 	_env->getOmrVMThread()->exclusiveCount = 0;
 	return relinquishedExclusiveCount;
@@ -152,8 +140,6 @@ MM_EnvironmentDelegate::relinquishExclusiveVMAccess(bool *deferredVMAccessReleas
  * @param exclusiveCount the exclusive count to be restored
  * @see relinquishExclusiveVMAccess()
  */
-void
-MM_EnvironmentDelegate::assumeExclusiveVMAccess(uintptr_t exclusiveCount)
-{
+void MM_EnvironmentDelegate::assumeExclusiveVMAccess(uintptr_t exclusiveCount) {
 	_env->getOmrVMThread()->exclusiveCount = exclusiveCount;
 }

@@ -4,7 +4,6 @@
 #include "Om/Size.hpp"
 #include <Om/Mm.hpp>
 
-namespace Om {
-}  // namespace Om
+namespace Om {}  // namespace Om
 
 #endif  // OM_HPP_

@@ -11,6 +11,6 @@ class Context : public Om::Context {};
 
 class ActiveContext : public Om::ActiveContext {};
 
-} // namespace Ab
+}  // namespace Ab
 
-#endif // AB_CONTEXT_HPP_
+#endif  // AB_CONTEXT_HPP_

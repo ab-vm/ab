@@ -11,8 +11,8 @@ enum class InPlace { VALUE };
 
 namespace {
 static constexpr const InPlace IN_PLACE = InPlace::VALUE;
-static constexpr const InPlace inPlace  = InPlace::VALUE;
-}
+static constexpr const InPlace inPlace = InPlace::VALUE;
+}  // namespace
 
 }  // namespace Pith
 

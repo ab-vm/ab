@@ -49,7 +49,7 @@ private:
 	Id id_;
 };
 
-} // namespace Mm
+}  // namespace Mm
 }  // namespace Om
 
 #endif  // OM_CELL_HPP_

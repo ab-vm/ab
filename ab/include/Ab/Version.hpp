@@ -15,6 +15,6 @@ public:
 	static const char ABIGAIL[];
 };
 
-} // namespace Ab
+}  // namespace Ab
 
-#endif // AB_VERSION_HPP_
+#endif  // AB_VERSION_HPP_

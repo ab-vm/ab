@@ -9,7 +9,6 @@ namespace Ab {
 /// Process-wide! Thread unsafe!
 class Process {
 public:
-
 	/// Process-wide initialization. Must be the ab first call.
 	static auto init() -> Error;
 
@@ -24,6 +23,6 @@ private:
 	static bool initialized_;
 };
 
-} // namespace ab
+}  // namespace Ab
 
-#endif // AB_PROCESS_HPP_
+#endif  // AB_PROCESS_HPP_

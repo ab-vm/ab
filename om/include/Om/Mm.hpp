@@ -9,6 +9,6 @@ namespace Om {
 /// Memory Management
 namespace Mm {}
 
-} // namespace Om
+}  // namespace Om
 
-#endif // OM_MM_HPP_
+#endif  // OM_MM_HPP_

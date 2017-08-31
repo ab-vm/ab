@@ -37,7 +37,7 @@ thread_entry() {
 
 #endif
 
-extern "C" auto main(int argc, char ** argv) -> int {
+extern "C" auto main(int argc, char** argv) -> int {
 	// Process wide init
 	PITH_ASSERT_SUCCESS(Ab::Process::init());
 

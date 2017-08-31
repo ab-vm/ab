@@ -4,14 +4,12 @@ namespace omr {
 
 enum class MemoryOrder { weak, strong; };
 
-template <typename T>
-class Atomic {
+template <typename T> class Atomic {
 public:
 	Atomic();
 	~Atomic();
 
-	template <MemoryOrder memoryOrder = MemoryOrder::strong>
-	bool compareAndSwap(const T& x);
+	template <MemoryOrder memoryOrder = MemoryOrder::strong> bool compareAndSwap(const T& x);
 };
 
 template <typename T>
@@ -22,11 +20,9 @@ bool Atomic<T>::compareAndSwap<MemoryOrder::weak>(){
 template <typename T>
 
 namespace Atomic {
-	template <typename T>
-	struct StaticAssertAtomics {};
+	template <typename T> struct StaticAssertAtomics {};
 
-	template <typename T>
-	{
+	template <typename T> {
 		using Assertions = StaticAssertAtomics<T>;
 	};
 }

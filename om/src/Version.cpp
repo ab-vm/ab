@@ -9,4 +9,4 @@ const unsigned int Version::PATCH = OM_VERSION_PATCH;
 const char Version::STRING[] = OM_VERSION;
 const char Version::COMMIT[] = OM_COMMIT;
 
-} // namespace Om
+}  // namespace Om

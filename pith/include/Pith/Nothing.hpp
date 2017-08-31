@@ -11,7 +11,7 @@ enum class Nothing { VALUE };
 namespace {
 static constexpr const Nothing NOTHING = Nothing::VALUE;
 static constexpr const Nothing nothing = NOTHING;
-}
+}  // namespace
 
 }  // namespace Pith
 

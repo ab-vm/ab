@@ -12,4 +12,3 @@ mkdir build && cd build
 cmake -G Ninja -C ../ci/travis/cache.cmake ..
 cmake --build .
 ctest -V .
-

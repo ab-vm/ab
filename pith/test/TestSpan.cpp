@@ -42,4 +42,5 @@ TEST(TestSpan, assignAndCompare) {
 	EXPECT_EQ(a, b);
 }
 
-TEST(TestSpan, compare) {}
+TEST(TestSpan, compare) {
+}

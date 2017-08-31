@@ -17,4 +17,4 @@ TEST(TestVarInt, one) {
 	EXPECT_EQ(i.value_[0], 2);
 }
 
-#endif // PITH_DISABLE
+#endif  // PITH_DISABLE

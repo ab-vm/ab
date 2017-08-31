@@ -1,5 +1,5 @@
-#include <gtest/gtest.h>
 #include <Om/System.hpp>
+#include <gtest/gtest.h>
 
 TEST() {
 	SystemConfig config;

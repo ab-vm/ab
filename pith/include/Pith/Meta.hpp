@@ -4,8 +4,7 @@
 namespace Pith {
 
 /// Meta types and structures, primarily used for documentation. Normally empty of implementation.
-namespace Meta {
-} // namespace Meta
+namespace Meta {}  // namespace Meta
 
 }  // namespace Pith
 

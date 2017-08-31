@@ -25,19 +25,16 @@ public:
 
 class Stack {
 public:
-	
 };
 
 class Interpreter {
-
-	auto next(InterpreterState & state) -> Instruction {
+	auto next(InterpreterState& state) -> Instruction {
 		return state.program_[state.pc_];
-		
 	}
 
 	auto inline operator()(InterpreterState& state) -> void {
 		auto instruction = next(state);
-		switch(instruction) {
+		switch (instruction) {
 			case Instruction::UNREACHABLE:
 				PITH_ASSERT_UNREACHABLE();
 				break;
@@ -50,6 +47,6 @@ class Interpreter {
 	}
 };
 
-} // namespace Ab
+}  // namespace Ab
 
-#endif // AB_INTERPRETER_HPP_
+#endif  // AB_INTERPRETER_HPP_

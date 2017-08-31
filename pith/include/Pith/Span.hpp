@@ -10,26 +10,35 @@ namespace Pith {
 template <typename Type> class Span {
 public:
 	// Zeroing constructor.
-	inline constexpr Span() : value_{nullptr}, length_{0} {}
+	inline constexpr Span() : value_{nullptr}, length_{0} {
+	}
 
 	/// Full initialization.
-	inline constexpr Span(Type* value, std::size_t length) : value_{value}, length_{length} {}
+	inline constexpr Span(Type* value, std::size_t length) : value_{value}, length_{length} {
+	}
 
 	/// Init from pointer. Span has zero length.
-	explicit inline constexpr Span(Type* value) : value_{value}, length_{0} {}
+	explicit inline constexpr Span(Type* value) : value_{value}, length_{0} {
+	}
 
 	/// Init from length. Value is nullptr.
-	explicit inline constexpr Span(std::size_t length) : value_{nullptr}, length_{length} {}
+	explicit inline constexpr Span(std::size_t length) : value_{nullptr}, length_{length} {
+	}
 
 	/// Assignment from span.
 	inline constexpr Span(const Span<Type>& other)
-		: value_{other.value()}, length_{other.length()} {}
+		: value_{other.value()}, length_{other.length()} {
+	}
 
 	/// Get the pointer.
-	inline constexpr auto operator()() const -> Type* { return value_; }
+	inline constexpr auto operator()() const -> Type* {
+		return value_;
+	}
 
 	/// Get the pointer.
-	inline constexpr auto value() const -> Type* { return value_; }
+	inline constexpr auto value() const -> Type* {
+		return value_;
+	}
 
 	/// Set the pointer value.
 	inline auto value(Type* value) -> Span<Type>& {
@@ -38,7 +47,9 @@ public:
 	}
 
 	/// Number of elements in the span.
-	inline constexpr auto length() const -> std::size_t { return length_; }
+	inline constexpr auto length() const -> std::size_t {
+		return length_;
+	}
 
 	/// Set the number of elements in the span.
 	inline auto length(std::size_t length) -> Span<Type>& {
@@ -47,10 +58,14 @@ public:
 	}
 
 	/// The last instance of Type in this Span.
-	inline auto end() -> Type* { return value_ + (length_ - 1); }
+	inline auto end() -> Type* {
+		return value_ + (length_ - 1);
+	}
 
 	/// Size of the referred span. Equal to sizeof(T)*length.
-	inline constexpr auto size() const -> std::size_t { return length() * sizeof(Type); }
+	inline constexpr auto size() const -> std::size_t {
+		return length() * sizeof(Type);
+	}
 
 	inline auto operator=(Span<Type>& rhs) -> Span<Type>& {
 		value_ = rhs.value();
@@ -86,7 +101,7 @@ public:
 		return end() >= rhs.end();
 	}
 
-private:
+protected:
 	Type* value_;
 	std::size_t length_;
 };

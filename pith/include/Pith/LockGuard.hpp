@@ -8,8 +8,7 @@
 
 namespace Pith {
 
-template <typename LockType = SharedLock, Access access = Access::EXCLUSIVE>
-class LockGuard;
+template <typename LockType = SharedLock, Access access = Access::EXCLUSIVE> class LockGuard;
 
 /// Readable alias to LockGuard<Lock, Access::exclusive>
 template <typename LockType = SharedLock>
@@ -20,8 +19,7 @@ template <typename LockType = SharedLock>
 using ExclusiveLockGuard = LockGuard<LockType, Access::EXCLUSIVE>;
 
 /// RAII: Holds shared access to lock for lifetime.
-template <typename T>
-class LockGuard<T, Access::SHARED> {
+template <typename T> class LockGuard<T, Access::SHARED> {
 public:
 	using LockType = T;
 
@@ -51,8 +49,7 @@ private:
 };
 
 /// RAII: Holds a lock exclusively for lifetime.
-template <typename T>
-class LockGuard<T, Access::EXCLUSIVE> {
+template <typename T> class LockGuard<T, Access::EXCLUSIVE> {
 public:
 	using LockType = T;
 
@@ -82,21 +79,18 @@ private:
 };
 
 /// TODO: implement
-template <typename LockType>
-inline SharedLockGuard<LockType> sharedLock(LockType& lock) {
+template <typename LockType> inline SharedLockGuard<LockType> sharedLock(LockType& lock) {
 	return SharedLockGuard<LockType>(lock);
 }
 
 /// TODO: implement
-template <typename LockType>
-inline ExclusiveLockGuard<LockType> exclusiveLock(LockType& lock) {
+template <typename LockType> inline ExclusiveLockGuard<LockType> exclusiveLock(LockType& lock) {
 	return ExclusiveLockGuard<LockType>(lock);
 }
 
 /// Try to obtain shared access without blocking. Returns `nothing` on failure.
 /// TODO: implement
-template <typename LockType>
-inline Maybe<SharedLockGuard<LockType>> trySharedLock(LockType& lock) {
+template <typename LockType> inline Maybe<SharedLockGuard<LockType>> trySharedLock(LockType& lock) {
 	return SharedLockGuard<LockType>(lock);
 }
 
@@ -112,8 +106,7 @@ LockGuard<LockType, Access::SHARED>::LockGuard(LockType& lock) : lock_{lock} {
 	// lock_.lock<Access::shared>();
 }
 
-template <typename LockType>
-LockGuard<LockType, Access::SHARED>::~LockGuard() {
+template <typename LockType> LockGuard<LockType, Access::SHARED>::~LockGuard() {
 	// lock_.unlock<Access::shared>();
 }
 
@@ -122,8 +115,7 @@ LockGuard<LockType, Access::EXCLUSIVE>::LockGuard(LockType& lock) : lock_{lock} 
 	// lock_.lock<Access::EXCLUSIVE>();
 }
 
-template <typename LockType>
-LockGuard<LockType, Access::EXCLUSIVE>::~LockGuard() {
+template <typename LockType> LockGuard<LockType, Access::EXCLUSIVE>::~LockGuard() {
 	// lock_.unlock<Access::EXCLUSIVE>();
 }
 

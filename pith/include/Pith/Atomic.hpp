@@ -3,10 +3,8 @@
 
 namespace Pith {
 
-class Atomic {
-
-};
+class Atomic {};
 
 }  // namespace Pith
 
-#endif // PITH_ATOMIC_HPP_
+#endif  // PITH_ATOMIC_HPP_

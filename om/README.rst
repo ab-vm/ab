@@ -1,6 +1,7 @@
 ============================
 Om: The Object Model Library
 ============================
+
 Om is:
 * a C++ library implementing a GC and object model.
 * built on the OMR GC framework.

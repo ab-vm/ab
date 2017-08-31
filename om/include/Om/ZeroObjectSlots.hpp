@@ -9,12 +9,12 @@ namespace Om {
 class ZeroObjectSlots {
 public:
 	auto inline operator()(Ref<Object> object) -> void {
-		for (auto && slot : object->slots()) {
+		for (auto&& slot : object->slots()) {
 			slot = nullptr;
 		}
 	}
 };
 
-} // namespace Om
+}  // namespace Om
 
-#endif // OM_ZEROOBJECTSLOTS_HPP_
+#endif  // OM_ZEROOBJECTSLOTS_HPP_

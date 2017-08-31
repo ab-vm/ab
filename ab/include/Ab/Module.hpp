@@ -17,9 +17,8 @@ public:
 	auto instantiate() -> Om::Ref<Instance>;
 
 private:
-
 };
 
-} // namespace Ab
+}  // namespace Ab
 
-#endif // AB_MODULE_HPP_
+#endif  // AB_MODULE_HPP_

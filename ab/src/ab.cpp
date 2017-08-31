@@ -21,12 +21,12 @@ bootstrap(VirtualMachine& vm) {
 	klass->klass = klass;
 };
 
-Shape {
+Shape{
 
 };
 
-BaseShape {
+BaseShape{
 
 };
 
-} // namespace ab
+}  // namespace Ab

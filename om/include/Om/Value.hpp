@@ -11,12 +11,10 @@ public:
 	constexpr inline Value();
 
 	/// Construct
-	template <typename Type>
-	constexpr inline Value(const Type& x);
+	template <typename Type> constexpr inline Value(const Type& x);
 
 	/// Cast this to Type.
-	template <typename Type>
-	constexpr Type to() const;
+	template <typename Type> constexpr Type to() const;
 
 private:
 	std::uintptr_t value_{0};
@@ -35,12 +33,12 @@ constexpr inline Value::Value() : value_{0} {
 template <typename Type>
 constexpr inline Value::Value(const Type& x)
 	: value_{(std::uintptr_t)x} {
-		  // static_assert(sizeof(Type) == sizeof(std::uintptr_t), "Values must be pointer-width.");
+		  // static_assert(sizeof(Type) == sizeof(std::uintptr_t), "Values must be
+		  // pointer-width.");
 	  };
 
 /// TODO: Assert uintptr_t is convertible to Type
-template <typename Type>
-constexpr inline Type Value::to() const {
+template <typename Type> constexpr inline Type Value::to() const {
 	// static_assert(sizeof(Type) == sizeof(std::uintptr_t), "Values are pointer-width.");
 	return static_cast<Type>(value_);
 }

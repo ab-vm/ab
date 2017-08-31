@@ -14,6 +14,6 @@ public:
 	static const char COMMIT[];
 };
 
-} // namespace Pith
+}  // namespace Pith
 
-#endif // PITH_VERSION_HPP_
+#endif  // PITH_VERSION_HPP_

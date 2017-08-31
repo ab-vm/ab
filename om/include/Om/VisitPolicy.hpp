@@ -11,10 +11,8 @@ namespace Om {
 ///
 /// Specialize `class VisitPolicy` to define visitation behaviour for your type.
 /// /// @group Visitation
-template <typename Type>
-struct VisitPolicy : public MetaPolicy {
-	template <typename Visitor>
-	static void visit(Visitor&& visitor, Type* x);
+template <typename Type> struct VisitPolicy : public MetaPolicy {
+	template <typename Visitor> static void visit(Visitor&& visitor, Type* x);
 };
 
 /// The default visit policy. Just call the public member function visit.
@@ -22,25 +20,21 @@ struct VisitPolicy : public MetaPolicy {
 /// ```c++
 /// template <Visitor> visit(Visitor&& visitor);
 /// ```
-template <typename Type>
-struct StructVisitPolicy {
+template <typename Type> struct StructVisitPolicy {
 	template <typename Visitor, typename From, typename To>
 	static inline constexpr void visit(Visitor&& visitor, Type* x) {
 		return x->visit(visitor);
 	}
 };
 
-template <typename Type>
-struct VisitPolicy : public StructVisitPolicy<Type> {};
+template <typename Type> struct VisitPolicy : public StructVisitPolicy<Type> {};
 
-template <typename Visitor>
-struct ObjectVisitPolicy {
+template <typename Visitor> struct ObjectVisitPolicy {
 	static inline constexpr void visit(Visitor&& visitor, Object* object) {
 	}
 };
 
-template <>
-class VisitPolicy<Object> : public ObjectVisitPolicy {};
+template <> class VisitPolicy<Object> : public ObjectVisitPolicy {};
 
 /*
 class VisitP

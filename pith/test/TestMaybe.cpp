@@ -33,8 +33,7 @@ struct HasCons {
 	}
 };
 
-template <typename T>
-void fail(T x) {
+template <typename T> void fail(T x) {
 	ADD_FAILURE();
 };
 

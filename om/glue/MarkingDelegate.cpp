@@ -20,25 +20,23 @@
 
 #include "EnvironmentBase.hpp"
 #include "MarkingScheme.hpp"
-#include "omrExampleVM.hpp"
 #include "OMRVMThreadListIterator.hpp"
+#include "omrExampleVM.hpp"
 
 #include "MarkingDelegate.hpp"
 
-void
-MM_MarkingDelegate::scanRoots(MM_EnvironmentBase *env)
-{
-	OMR_VM_Example *omrVM = (OMR_VM_Example *)env->getOmrVM()->_language_vm;
+void MM_MarkingDelegate::scanRoots(MM_EnvironmentBase* env) {
+	OMR_VM_Example* omrVM = (OMR_VM_Example*)env->getOmrVM()->_language_vm;
 	J9HashTableState state;
-	RootEntry *rEntry = NULL;
-	rEntry = (RootEntry *)hashTableStartDo(omrVM->rootTable, &state);
+	RootEntry* rEntry = NULL;
+	rEntry = (RootEntry*)hashTableStartDo(omrVM->rootTable, &state);
 	while (rEntry != NULL) {
 		_markingScheme->markObject(env, rEntry->rootPtr);
-		rEntry = (RootEntry *)hashTableNextDo(&state);
+		rEntry = (RootEntry*)hashTableNextDo(&state);
 	}
-	OMR_VMThread *walkThread;
+	OMR_VMThread* walkThread;
 	GC_OMRVMThreadListIterator threadListIterator(env->getOmrVM());
-	while((walkThread = threadListIterator.nextOMRVMThread()) != NULL) {
+	while ((walkThread = threadListIterator.nextOMRVMThread()) != NULL) {
 		if (NULL != walkThread->_savedObject1) {
 			_markingScheme->markObject(env, (omrobjectptr_t)walkThread->_savedObject1);
 		}
@@ -48,21 +46,18 @@ MM_MarkingDelegate::scanRoots(MM_EnvironmentBase *env)
 	}
 }
 
-void
-MM_MarkingDelegate::masterCleanupAfterGC(MM_EnvironmentBase *env)
-{
+void MM_MarkingDelegate::masterCleanupAfterGC(MM_EnvironmentBase* env) {
 	OMRPORT_ACCESS_FROM_OMRVM(env->getOmrVM());
 	J9HashTableState state;
-	ObjectEntry *rEntry = NULL;
-	OMR_VM_Example *omrVM = (OMR_VM_Example *)env->getOmrVM()->_language_vm;
-	rEntry = (ObjectEntry *)hashTableStartDo(omrVM->objectTable, &state);
+	ObjectEntry* rEntry = NULL;
+	OMR_VM_Example* omrVM = (OMR_VM_Example*)env->getOmrVM()->_language_vm;
+	rEntry = (ObjectEntry*)hashTableStartDo(omrVM->objectTable, &state);
 	while (rEntry != NULL) {
 		if (!_markingScheme->isMarked(rEntry->objPtr)) {
-			omrmem_free_memory((void *)rEntry->name);
+			omrmem_free_memory((void*)rEntry->name);
 			rEntry->name = NULL;
 			hashTableDoRemove(&state);
 		}
-		rEntry = (ObjectEntry *)hashTableNextDo(&state);
+		rEntry = (ObjectEntry*)hashTableNextDo(&state);
 	}
 }
-

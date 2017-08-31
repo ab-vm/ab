@@ -19,4 +19,4 @@ auto Process::kill() -> Error {
 	return Error::SUCCESS;
 }
 
-} // namespace ab
+}  // namespace Ab

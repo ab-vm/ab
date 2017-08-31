@@ -7,6 +7,6 @@ namespace Om {
 
 using Size = std::size_t;
 
-} // namespace Om
+}  // namespace Om
 
-#endif // OM_SIZE_HPP_
+#endif  // OM_SIZE_HPP_

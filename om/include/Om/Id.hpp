@@ -14,7 +14,6 @@ using RawId = std::uintptr_t;
 
 class Id {
 public:
-
 	inline constexpr auto value() const -> RawId {
 		return value_;
 	}

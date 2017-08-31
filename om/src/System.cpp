@@ -6,18 +6,14 @@
 
 namespace Om {
 
-System::System() :
-	state_{SystemState::DEAD} {
-}
-
 System::~System() {
-	PITH_ASSERT(state() == SystemState::DEAD);
+	PITH_ASSERT(state_ == SystemState::DEAD);
 }
 
 auto System::init(const SystemConfig& config) -> SystemError {
 	PITH_ASSERT(state_ == SystemState::DEAD);
 	PITH_ASSERT(heap_.init(config.heap_) == HeapError::SUCCESS);
-	PITH_ASSERT(lock_.init() == Pith::SharedLockError::success);
+	PITH_ASSERT(lock_.init() == Pith::SharedLockError::SUCCESS);
 	state_ = SystemState::ACTIVE;
 	return SystemError::SUCCESS;
 }
@@ -41,4 +37,4 @@ auto System::detach(Context* cx) -> AttachError {
 	return AttachError::SUCCESS;
 }
 
-} // namespace Om
+}  // namespace Om

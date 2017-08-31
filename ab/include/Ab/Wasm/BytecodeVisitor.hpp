@@ -16,7 +16,7 @@ public:
 	virtual void operator()(Wasm::Bytecode b);
 };
 
-} // namespace Wasm
-} // namespace Ab
+}  // namespace Wasm
+}  // namespace Ab
 
-#endif // AB_WASM_BYTECODEVISITOR_HPP_
+#endif  // AB_WASM_BYTECODEVISITOR_HPP_

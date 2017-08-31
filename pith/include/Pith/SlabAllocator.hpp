@@ -10,10 +10,8 @@ namespace Pith {
 /// C++ Allocator. Supports bulk-freeing.
 /// To support bulk freeing, the slab allocator can only allocate POD datastructures.
 /// There is no garuntee that a destructor will be called.
-class SlabAllocator {
+class SlabAllocator {};
 
-};
+}  // namespace Pith
 
-}
-
-#endif // PITH_SLABALLOCATOR_HPP_
+#endif  // PITH_SLABALLOCATOR_HPP_

@@ -6,4 +6,4 @@
 /// The Ab WASM interpreter.
 namespace Ab {}
 
-#endif // AB_HPP_
+#endif  // AB_HPP_

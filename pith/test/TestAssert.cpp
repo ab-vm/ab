@@ -11,10 +11,11 @@ TEST(Assert, unreachable) {
 }
 
 TEST(Assert, success) {
-	EXPECT_EXIT({
-		PITH_ASSERT(true);
-		std::cerr << "Success" << std::endl;
-		exit(0);
-	},
-	testing::ExitedWithCode(0), "Success");
+	EXPECT_EXIT(
+		{
+			PITH_ASSERT(true);
+			std::cerr << "Success" << std::endl;
+			exit(0);
+		},
+		testing::ExitedWithCode(0), "Success");
 }

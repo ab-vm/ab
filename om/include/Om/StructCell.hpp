@@ -6,9 +6,9 @@
 
 namespace Om {
 
-/// A wrapper for heap-allocated C/C++ native structs. The wrapper places an object header on the struct.
-template <typename Type>
-class StructCell : public Cell {
+/// A wrapper for heap-allocated C/C++ native structs. The wrapper places an object header on the
+/// struct.
+template <typename Type> class StructCell : public Cell {
 public:
 	inline Type* operator->();
 	inline constexpr const Type& operator*() const;
@@ -25,23 +25,19 @@ private:
 // Implementation
 //
 
-template <typename Type>
-inline Type* StructCell<Type>::operator->() {
+template <typename Type> inline Type* StructCell<Type>::operator->() {
 	return &value_;
 }
 
-template <typename Type>
-inline constexpr const Type* StructCell<Type>::operator->() const {
+template <typename Type> inline constexpr const Type* StructCell<Type>::operator->() const {
 	return &value_;
 }
 
-template <typename Type>
-inline Type& StructCell<Type>::operator*() {
+template <typename Type> inline Type& StructCell<Type>::operator*() {
 	return value_;
 }
 
-template <typename Type>
-inline constexpr const Type& StructCell<Type>::operator*() const {
+template <typename Type> inline constexpr const Type& StructCell<Type>::operator*() const {
 	return value_;
 }
 

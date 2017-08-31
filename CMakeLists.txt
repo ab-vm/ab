@@ -1,30 +1,47 @@
 cmake_minimum_required(VERSION 3.2 FATAL_ERROR)
 
+project(ab-vm LANGUAGES C CXX)
+
 list(APPEND CMAKE_MODULE_PATH
 	${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules
 	${CMAKE_CURRENT_SOURCE_DIR}/external/omr/cmake/modules
 )
 
-# Global configuration
+# OMR Configuration
 
-project(ab-vm)
+set(OMR_GLUE_TARGET "om_omr_glue" CACHE PATH "Om Implements the OMR glue")
+set(OMR_FVTEST OFF CACHE BOOL "Disable OMR Testing in Ab")
+set(OMR_GC ON CACHE BOOL "Enable OMR GC in Ab, for Om")
+set(OMR_JITBUILDER ON CACHE BOOL "Enable OMR Jitbuilder, for Ab")
+set(OMR_WARNINGS_AS_ERRORS OFF CACHE BOOL "Disable warnings as errors")
 
+# Global Configuration
+
+include(OmrPlatform)
 include(Utilities)
 
-enable_testing()
-
-set(CMAKE_CXX_STANDARD 11)
-
-set(CMAKE_EXPORT_COMPILE_COMMANDS true)
+omr_platform_global_setup()
 
 get_git_commit(GIT_COMMIT)
 
-# OMR Configuration
+enable_testing()
 
-set(OMR_GLUE_TARGET "om_omr_glue" CACHE PATH "Om Implements the OMR glue" FORCE)
-set(OMR_FVTEST     OFF CACHE BOOL "Disable OMR Testing in Ab" FORCE)
-set(OMR_GC         ON  CACHE BOOL "Enable OMR GC in Ab, for Om" FORCE)
-set(OMR_JITBUILDER OFF CACHE BOOL "Enable OMR Jitbuilder, for Ab" FORCE)
+# Use C++11
+
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED true)
+set(CMAKE_CXX_EXTENSIONS off)
+
+# Misc utilities
+
+set(CMAKE_EXPORT_COMPILE_COMMANDS true)
+
+# Warnings
+
+add_compile_options(
+	-Wno-error -Wall
+)
+
 
 # Sub directories
 
