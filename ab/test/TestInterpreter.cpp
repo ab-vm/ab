@@ -1,12 +1,13 @@
 #include <Ab/Config.hpp>
-#include "Test.hpp"
+#include "Ab/Test/BasicTest.hpp"
 #include <Ab/Instruction.hpp>
 #include <Ab/Interpreter.hpp>
 #include <gtest/gtest.h>
 
-class TestInterpreter : public Ab::Test::BasicTest {};
+namespace Ab {
+namespace Test {
 
-using namespace Ab;
+class TestInterpreter : public BasicTest {};
 
 TEST_F(TestInterpreter, basic) {
 	Interpreter interpreter;
@@ -14,3 +15,6 @@ TEST_F(TestInterpreter, basic) {
 		Ab::Instruction::UNREACHABLE,
 	};
 }
+
+}  // namespace Test
+}  // namespace Ab
