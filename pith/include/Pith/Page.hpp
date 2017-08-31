@@ -21,12 +21,14 @@ const constexpr std::size_t PAGE_ALIGNMENT = PAGE_SIZE;
 
 class alignas(PAGE_ALIGNMENT) Page {
 public:
-	struct Permissions {
+	struct Permission {
 		static const constexpr int EXECUTE = PROT_EXEC;
 		static const constexpr int WRITE = PROT_WRITE;
 		static const constexpr int READ = PROT_READ;
 		static const constexpr int NONE = PROT_NONE;
 	};
+
+	using Permissions = Permission;
 
 	/// Will bring a page into memory, with no permissions.
 	static inline auto map(const Span<Page>& pages, int permissions = Page::Permissions::NONE)
