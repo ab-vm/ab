@@ -2,189 +2,113 @@
 #define AB_MEMORY_HPP_
 
 #include <Pith/Address.hpp>
-#include <sys.mman.h>
-
+#include <Pith/Assert.hpp>
+#include <Pith/Page.hpp>
+#include <Pith/Result.hpp>
 #include <cstdint>
-#include <cstdlib>
-#include <type_traits>
 
-namespace ab {
+namespace Ab {
 
-typedef unsigned long Value;
-
-/// init an object
-template <typename Type, typename... Args> bool init(Type t, Args... args);
-
-#if 0  // heapCache
-class Heap;
-
-class HeapCache {
-public:
-	static const uint8_t defaultSize = 1_KiB;
-
-	/// Raw byte allocator. May GC.
-	inline uint8_t* allocateBytes(size_t size) {
-		if (bytes < (start - end)) {
-			if (!renewCache(bytes)) {
-				return nullptr;
-			}
-		}
-		auto x = rawMemory;
-		rawMemory += bytes;
-		return x;
-	}
-
-	bool renewCache(size_t size) {
-		heap.allocateBytes(defaultSize + bytes);
-	}
-
-	inline uint8_t* allocateBytesNoGC(std::size_t bytes) {
-		
-	}
-private:
-	uint8_t* rawMemory;
-	uint8_t* end;
-};
-
-#endif  // 0
-
-class Heap {
-public:
-};
-
-class MemoryConfig {
-public:
+struct MemoryConfig {
+	Pith::Span<Pith::Page> reservedPages_;
 	std::size_t initialPageCount_;
-	std::size_t maxPageCount_;
 
-	void verify() {
-		PITH_ASSERT(maxPageCount_ <= initialPageCount_);
-		PITH_ASSERT(maxPageCount > 1);
-		PITH_ASSERT(initialPageCount > 1);
+	inline auto verify() const -> void {
+		PITH_ASSERT(reservedPages_.length() <= initialPageCount_);
 	}
 };
 
-enum class MemoryState { ACTIVE, DEAD };
+enum class MemoryState { DEAD, ACTIVE };
 
-enum class MemoryError {
-	SUCCESS,
-	ERROR
-}
+enum class MemoryError { SUCCESS, ERROR };
 
 class Memory {
 public:
-	Memory() : memoryState_{MemoryState::DEAD} {};
-
-	inline auto init(MemoryConfig& memoryConfig) -> MemoryError {
-		PITH_ASSERT(state_ == MemoryState::DEAD);
-		memoryConfig.verify();
-
-		pageSize_ = memoryConfig.pageSize_;
-		pageCount_ = memoryConfig.initialPageCount_;
-		maxPageCount = memoryConfig.maxPageCount_;
-
-		void* mapResult =
-			mmap(nullptr, pageSize_ * pageCount_, PROT_NONE, MAP_ANON | MAP_PRIVATE);
-
-		if (mapResult == MAP_FAILED) {
-			// TODO implement error handling
-			ASSERT_UNREACHABLE();
-		}
-		baseAddress_ = mapResult;
-
-		mprotect(baseAddress_, pageCount_ * pageSize_, PROT_READ | PROT_WRITE);
-
-		state_ = MemoryState.ALIVE;
-		return MemoryError::SUCCESS;
+	static constexpr inline auto defaultConfig() -> const MemoryConfig& {
+		return defaultConfig_;
 	}
 
-	inline auto kill() -> MemoryError {
-		PITH_ASSERT(memoryState_ == MemoryState::ALIVE);
-		memoryState = MemoryState.DEAD;
-		return MemoryError::SUCCESS;
+	inline constexpr Memory()
+		: reservedPages_{nullptr, 0}, activePageCount_{0}, state_{MemoryState::DEAD} {};
+
+	~Memory();
+
+	inline auto init(const MemoryConfig& config) -> MemoryError;
+
+	inline auto kill() -> void;
+
+	inline auto grow(std::size_t n = 1) -> MemoryError;
+
+	inline auto activePages() const -> Pith::Span<Pith::Page> {
+		return Pith::Span<Pith::Page>{reservedPages().value(), activePageCount_};
 	}
 
-	Pith::Address baseAddress() {
-		return baseAddress_;
-	};
-
-	std::size_t size() {
-		return pageCount_ * pageSize_;
-	}
-
-	std::size_t pageCount() {
-		return pageCount_;
-	}
-
-	std::size_t maxSize() {
-		return maxSize_;
-	}
-
-	std::size_t getMaxPageCount() {
-		return maximumSize_ * pageCount_;
-	}
-
-	inline auto grow(std::size_t n) -> MemoryError {
-		if (pageCount + pageCount_ > maxPageCount) {
-			return MemoryError ::ERROR;
-		}
-
-		Span<Page> newPageSpan{pages_.end() + 1, n};
-		std::size_t growSize = pageCount * pageSize_;
-
-		Span<Page> newPages{pages_.end() + 1, n};
-		int perm = Page::Permission::READ | Page::Permission::WRITE;
-		Result<Page*, PageMapErrror> result = Page::map(newPages, perm);
-		PITH_ASSERT(result);
-
-		return MemoryError::SUCCESS;
+	inline auto reservedPages() const -> const Pith::Span<Pith::Page>& {
+		return reservedPages_;
 	}
 
 private:
-	Span<Page> pages_;
-	void* baseAddress_;
-	std::size_t maxPageCount_;
+	static constexpr const MemoryConfig defaultConfig_{
+		{nullptr, Pith::mebibytes(1)},  // reservedPages_
+		1  // initialPageCount_
+	};
+
+	Pith::Span<Pith::Page> reservedPages_;
+	std::size_t activePageCount_;
 	MemoryState state_;
 };
 
-class Memory {
-public:
-	Heap heap;
+inline Memory::~Memory() {
+	PITH_ASSERT(state_ == MemoryState::DEAD);
+}
 
-	/// Allocate an object on the heap.
-	/// auto x = allocate<Type>(initializer, args...)
-	/// initializer(Type* x, args...);
-	/// Type must be a simply allocated struct.
-	/// The initializer's return value is ignored.
-	template <typename Type, typename InitFunc, typename... InitArgs>
-	Type* allocate(MemoryContext* mx, InitFunc&& init, InitArgs&&... initArgs) {
-		Type* x = allocateBytes<Type>(sizeof(Type));
-		if (x != nullptr) {
-			init(x, initArgs...);
-		}
-		return x;
-		static_assert(std::is_pod<Type>(), "Type must be a simple struct");
-	}
-};
+inline auto Memory::init(const MemoryConfig& config) -> MemoryError {
+	PITH_ASSERT(state_ == MemoryState::DEAD);
+	config.verify();
 
-class MemoryContext {
-public:
-	MemoryContext(Memory& memory) : memory{memory} {
+	auto result = Pith::Page::map(config.reservedPages_);
+
+	if (!result) {
+		return MemoryError::ERROR;
 	}
 
-private:
-	Memory& memory;
+	reservedPages_.value(result());
+	reservedPages_.length(config.reservedPages_.length());
 
-	template <typename Type> Type* allocateBytes() {
-		static_cast<Type>(allocateBytes(sizeof(Type)));
+	int error = Pith::Page::setPermissions(
+		activePages(), Pith::Page::Permission::READ | Pith::Page::Permission::WRITE);
+
+	if (error != 0) {
+		PITH_ASSERT(Pith::Page::unmap(reservedPages_) == 0);
+		return MemoryError::ERROR;
 	}
 
-	template <typename Type = void*> allocateBytes(std::size_t bytes) {
-		// TODO: something better than malloc
-		return static_cast<Type>(std::malloc(bytes));
-	}
-};
+	state_ = MemoryState::ACTIVE;
+	return MemoryError::SUCCESS;
+}
 
-}  // namespace ab
+inline auto Memory::kill() -> void {
+	PITH_ASSERT(state_ == MemoryState::ACTIVE);
+	state_ = MemoryState::DEAD;
+	PITH_ASSERT(Pith::Page::unmap(reservedPages_) == 0);
+}
+
+inline auto Memory::grow(std::size_t n) -> MemoryError {
+	PITH_ASSERT(state_ == MemoryState::ACTIVE);
+
+	if (activePageCount_ + n > reservedPages().length()) {
+		return MemoryError::ERROR;
+	}
+
+	Pith::Span<Pith::Page> newPages{activePages().end(), n};
+	int perm = Pith::Page::Permission::READ | Pith::Page::Permission::WRITE;
+	auto result = Pith::Page::map(newPages, perm);
+	PITH_ASSERT(result);
+
+	activePageCount_ += n;
+
+	return MemoryError::SUCCESS;
+}
+}  // namespace Ab
 
 #endif  // AB_MEMORY_HPP_
