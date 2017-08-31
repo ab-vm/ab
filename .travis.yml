@@ -6,7 +6,6 @@ addons:
       - cmake
       - libclang-3.4-dev
       - libnuma-dev
-      - ninja-build
 os:
   - linux
   - osx
