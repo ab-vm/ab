@@ -37,19 +37,17 @@ public:
 
 	/// Copy constructor.
 	template <typename Other>
-	explicit constexpr inline Box<Box<Other>&>(Box<Other>& other) : value_{other()} {
+	explicit constexpr inline Box(Box<Other>& other) : value_{other()} {
 	}
 
 	/// Copy constructor.
 	template <typename Other>
-	explicit constexpr inline Box<const Box<Other>&>(const Box<Other>& other)
-		: value_{other()} {
+	explicit constexpr inline Box(const Box<Other>& other) : value_{other()} {
 	}
 
 	/// Move constructor.
 	template <typename Other>
-	explicit constexpr inline Box<Box<Other>&&>(Box<Other>&& other)
-		: value_{std::move(other())} {
+	explicit constexpr inline Box(Box<Other>&& other) : value_{std::move(other())} {
 	}
 
 	~Box() = default;
