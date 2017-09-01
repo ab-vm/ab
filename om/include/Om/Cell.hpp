@@ -24,7 +24,7 @@ public:
 		return value_ & ~Tag::MASK;
 	}
 
-	auto hasTag(Tag::Type tag) -> bool {
+	inline auto hasTag(Tag::Type tag) -> bool {
 		return value_ & tag;
 	}
 
