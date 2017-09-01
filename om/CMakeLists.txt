@@ -19,8 +19,6 @@ configure_file(
 
 set(OM_DEBUG On CACHE Bool "Enable/Disable Om debug features and checks.")
 
-# set(OMR_GLUE ${CURRENT_SOURCE_DIR}/glue CACHE PATH "The Om Glue" FORCE)
-
 add_library(om
 	src/Context.cpp
 	src/Heap.cpp

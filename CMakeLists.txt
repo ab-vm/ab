@@ -26,9 +26,9 @@ get_git_commit(GIT_COMMIT)
 
 enable_testing()
 
-# Use C++11
+# Use C++14
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED true)
 set(CMAKE_CXX_EXTENSIONS off)
 
