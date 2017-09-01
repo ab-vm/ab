@@ -11,7 +11,5 @@ os:
   - osx
 language: cpp
 cache: ccache
-compiler:
-  - clang
 script:
   - ./ci/travis/build.sh
