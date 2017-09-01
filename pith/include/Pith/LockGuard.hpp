@@ -8,7 +8,8 @@
 
 namespace Pith {
 
-template <typename LockType = SharedLock, Access access = Access::EXCLUSIVE> class LockGuard;
+template <typename LockType = SharedLock, Access access = Access::EXCLUSIVE>
+class[[maybe_unused]] LockGuard;
 
 /// Readable alias to LockGuard<Lock, Access::exclusive>
 template <typename LockType = SharedLock>
