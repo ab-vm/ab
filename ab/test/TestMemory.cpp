@@ -14,5 +14,14 @@ TEST_F(TestMemory, initAndKill) {
 	m.kill();
 }
 
+TEST_F(TestMemory, grow) {
+	Memory m;
+	m.init(Memory::defaultConfig());
+	for (std::size_t i = 0; i < 3; i++) {
+		EXPECT_EQ(m.grow(), MemoryError::SUCCESS);
+	}
+	m.kill();
+}
+
 }  // namespace Test
 }  // namespace Ab
