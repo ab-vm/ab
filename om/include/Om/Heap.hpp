@@ -22,7 +22,7 @@ struct HeapConfig {
 
 class Heap {
 public:
-	static const constexpr HeapConfig DEFAULT_CONFIG = {nullptr, 1_GiB, 1_MiB, 1_MiB};
+	static const constexpr HeapConfig DEFAULT_CONFIG{nullptr, 1_GiB, 1_MiB, 1_MiB};
 
 	static constexpr inline auto defaultConfig() -> const HeapConfig& {
 		return DEFAULT_CONFIG;
