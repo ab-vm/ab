@@ -9,15 +9,15 @@ int string[] = {1, 2, 3, 4};
 TEST(TestSpan, defaultConstructor) {
 	Span<int> s;
 	EXPECT_EQ(s.value(), nullptr);
-	EXPECT_EQ(s.length(), 0);
-	EXPECT_EQ(s.size(), 0);
+	EXPECT_EQ(s.length(), 0u);
+	EXPECT_EQ(s.size(), 0u);
 }
 
 TEST(TestSpan, valueConstructor) {
 	Span<int> s{string};
 	EXPECT_EQ(s.value(), string);
-	EXPECT_EQ(s.length(), 0);
-	EXPECT_EQ(s.size(), 0);
+	EXPECT_EQ(s.length(), 0u);
+	EXPECT_EQ(s.size(), 0u);
 }
 
 TEST(TestSpan, lengthConstructor) {
