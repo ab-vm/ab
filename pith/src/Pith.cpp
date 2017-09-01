@@ -2,7 +2,7 @@
 #include <Pith/Version.hpp>
 #include <iostream>
 
-extern "C" int pith_main(int argc, char** argv) {
+extern "C" auto pith_main([[maybe_unused]] int argc, [[maybe_unused]] char** argv) -> int {
 	std::cout << "Pith version " << Pith::Version::STRING << " " << Pith::Version::COMMIT
 		  << std::endl;
 	return 0;
