@@ -51,6 +51,13 @@ public:
 		return Pith::NOTHING;
 	}
 
+	template <typename Native, typename ...Args>
+	auto inline allocateNative(Args&&... args) -> Ref<Native> {
+		// TODO: Implement native allocation
+		// TODO: Handle concurrency and locking
+		Data* p = new Native{std::forward<Args>(args)...};
+		return Ref<Native>{p};
+	}
 private:
 };
 
