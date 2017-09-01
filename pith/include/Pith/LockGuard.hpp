@@ -20,12 +20,12 @@ template <typename LockType = SharedLock>
 using ExclusiveLockGuard = LockGuard<LockType, Access::EXCLUSIVE>;
 
 /// RAII: Holds shared access to lock for lifetime.
-template <typename T> class LockGuard<T, Access::SHARED> {
+template <typename T> class[[maybe_unused]] LockGuard<T, Access::SHARED> {
 public:
 	using LockType = T;
 
 	/// Obtain shared access on the lock. Cannot fail, but will block.
-	explicit LockGuard(LockType& lock);
+	explicit LockGuard(LockType & lock);
 
 	/// Release shared access to the SharedLock.
 	~LockGuard<LockType, Access::SHARED>();
@@ -50,7 +50,7 @@ private:
 };
 
 /// RAII: Holds a lock exclusively for lifetime.
-template <typename T> class LockGuard<T, Access::EXCLUSIVE> {
+template <typename T> class [[maybe_unused]] LockGuard<T, Access::EXCLUSIVE> {
 public:
 	using LockType = T;
 
