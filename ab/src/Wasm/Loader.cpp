@@ -7,7 +7,7 @@
 namespace Ab {
 namespace Wasm {
 
-auto Loader::operator()(ActiveContext& cx, std::istream& in)
+auto Loader::operator()([[maybe_unused]] ActiveContext& cx, [[maybe_unused]] std::istream& in)
 	-> Pith::Result<Om::Ref<Module>, LoaderError> {
 	PITH_ASSERT_UNREACHABLE();
 	return Pith::err(LoaderError{});
