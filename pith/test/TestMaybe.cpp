@@ -17,14 +17,27 @@ TEST(Maybe, value) {
 	EXPECT_TRUE(just(1));
 }
 
-struct MyDefaultConstructibleType {
+struct Int {
+	int x_;
+};
+
+struct MyDefaultConstructibleType : public Int {
 	MyDefaultConstructibleType() : x_{1} {
 	}
 	int x_;
 };
 
-TEST(MAybe, defaultConstructor) {
+struct NonDefaultConstructibleInt {
+	NonDefaultConstructibleInt() = delete;
+	int x_;
+};
+
+TEST(Maybe, defaultConstructor) {
 	Maybe<MyDefaultConstructibleType> m(inPlace);
+}
+
+TEST(Maybe, nonDefaultConstructible) {
+	Maybe<NonDefaultConstructibleInt> i{inPlace, 1};
 }
 
 struct HasCons {
@@ -33,7 +46,7 @@ struct HasCons {
 	}
 };
 
-template <typename T> void fail([[maybe_unused]] T x) {
+template <typename T> void fail([[gnu::unused]] T x) {
 	ADD_FAILURE();
 };
 

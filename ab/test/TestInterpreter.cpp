@@ -10,7 +10,7 @@ namespace Test {
 class TestInterpreter : public BasicTest {};
 
 TEST_F(TestInterpreter, basic) {
-	[[maybe_unused]] const Ab::Instruction program[] = {
+	[[gnu::unused]] const Ab::Instruction program[] = {
 		Ab::Instruction::UNREACHABLE,
 	};
 

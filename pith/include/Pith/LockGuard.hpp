@@ -9,7 +9,7 @@
 namespace Pith {
 
 template <typename LockType = SharedLock, Access access = Access::EXCLUSIVE>
-class[[maybe_unused]] LockGuard;
+class[[gnu::unused]] LockGuard;
 
 /// Readable alias to LockGuard<Lock, Access::exclusive>
 template <typename LockType = SharedLock>
@@ -20,7 +20,7 @@ template <typename LockType = SharedLock>
 using ExclusiveLockGuard = LockGuard<LockType, Access::EXCLUSIVE>;
 
 /// RAII: Holds shared access to lock for lifetime.
-template <typename T> class[[maybe_unused]] LockGuard<T, Access::SHARED> {
+template <typename T> class[[gnu::unused]] LockGuard<T, Access::SHARED> {
 public:
 	using LockType = T;
 
@@ -50,7 +50,7 @@ private:
 };
 
 /// RAII: Holds a lock exclusively for lifetime.
-template <typename T> class [[maybe_unused]] LockGuard<T, Access::EXCLUSIVE> {
+template <typename T> class [[gnu::unused]] LockGuard<T, Access::EXCLUSIVE> {
 public:
 	using LockType = T;
 

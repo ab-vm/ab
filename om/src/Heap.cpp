@@ -7,7 +7,7 @@
 
 namespace Om {
 
-auto Heap::init([[maybe_unused]] const HeapConfig& config) -> HeapError {
+auto Heap::init([[gnu::unused]] const HeapConfig& config) -> HeapError {
 	/// TODO: Bring up the OMR heap here.
 	PITH_TRACE();
 	PITH_ASSERT(condition_ == HeapCondition::DEAD);

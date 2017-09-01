@@ -5,7 +5,7 @@
 using namespace Pith;
 
 TEST(TestPage, stackAllocate) {
-	[[maybe_unused]] Page p;
+	[[gnu::unused]] Page p;
 }
 
 TEST(TestPage, mapOnePage) {
