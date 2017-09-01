@@ -7,6 +7,6 @@ find_program(SPHINX_EXECUTABLE
 
 include(FindPackageHandleStandardArgs)
 
-find_package_handle_standard_args(Sphinx DEFAULT_MSG
+find_package_handle_standard_args(SPHINX DEFAULT_MSG
 	SPHINX_EXECUTABLE
 )
