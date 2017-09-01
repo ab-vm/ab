@@ -1,6 +1,11 @@
 .vscode/
 .idea/
-build/
+
+# Build Directories
+
+build*
+_build
 scratch/
+
+# 
 .DS_Store
-*.o
