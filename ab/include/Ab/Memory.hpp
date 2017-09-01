@@ -14,7 +14,7 @@ struct MemoryConfig {
 	std::size_t initialPageCount_;
 
 	inline auto verify() const -> void {
-		PITH_ASSERT(reservedPages_.length() <= initialPageCount_);
+		PITH_ASSERT(reservedPages_.length() >= initialPageCount_);
 	}
 };
 
