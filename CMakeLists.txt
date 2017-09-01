@@ -40,7 +40,7 @@ macro(ab_setup)
 
 	# Compilation warnings
 
-	add_compile_options(-Werror -Wall -Wextra)
+	add_compile_options(-fno-exceptions -Werror -Wall -Wextra)
 
 	# Use clang tidy for static analysis
 
