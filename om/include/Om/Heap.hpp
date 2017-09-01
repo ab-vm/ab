@@ -20,6 +20,8 @@ struct HeapConfig {
 	std::size_t initialSize_;
 };
 
+enum class HeapCondition { DEAD, ACTIVE };
+
 class Heap {
 public:
 	static const constexpr HeapConfig DEFAULT_CONFIG{nullptr, 1_GiB, 1_MiB, 1_MiB};
@@ -37,7 +39,7 @@ public:
 private:
 	HeapConfig config_;
 	Pith::SharedLock lock_;
-	bool dead_;
+	HeapCondition condition_;
 };
 
 }  // namespace Om
