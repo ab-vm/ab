@@ -28,6 +28,7 @@ public:
 };
 
 class Interpreter {
+public:
 	auto next(InterpreterState& state) -> Instruction {
 		return state.program_[state.pc_];
 	}
@@ -35,13 +36,11 @@ class Interpreter {
 	auto inline operator()(InterpreterState& state) -> void {
 		auto instruction = next(state);
 		switch (instruction) {
-			case Instruction::UNREACHABLE:
-				PITH_ASSERT_UNREACHABLE();
-				break;
-			case Instruction::NOP:
-				break;
-			case Instruction::BR:
-				break;
+		case Instruction::UNREACHABLE:
+			PITH_ASSERT_UNREACHABLE();
+			break;
+		case Instruction::NOP:
+			break;
 		};
 		state.pc_ += 1;
 	}

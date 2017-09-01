@@ -10,10 +10,14 @@ namespace Test {
 class TestInterpreter : public BasicTest {};
 
 TEST_F(TestInterpreter, basic) {
-	Interpreter interpreter;
-	const Ab::Instruction program[] = {
+	[[maybe_unused]] const Ab::Instruction program[] = {
 		Ab::Instruction::UNREACHABLE,
 	};
+
+	Interpreter interpret;
+	InterpreterState state;
+
+	interpret(state);
 }
 
 }  // namespace Test
