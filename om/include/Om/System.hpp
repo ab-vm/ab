@@ -48,6 +48,11 @@ public:
 		return state_;
 	}
 
+	template <typename Function>
+	inline auto mapRoots(const ExclusiveAccess& exclusive, Function&& function) -> void {
+		function(exclusive);
+	}
+
 protected:
 	friend class Context;
 
