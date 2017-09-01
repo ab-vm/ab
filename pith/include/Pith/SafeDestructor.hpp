@@ -23,7 +23,7 @@ template <typename Type> struct SafeDestructor<Type, true> {
 
 /// No destructor.
 template <typename Type> struct SafeDestructor<Type, false> {
-	static inline auto destroy(Type& value) -> void {
+	static inline auto destroy([[maybe_unused]] Type& value) -> void {
 		// Do nothing
 	}
 
