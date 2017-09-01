@@ -26,7 +26,7 @@ public:
 
 	template <Access access> inline auto unlock() noexcept -> void;
 
-	template <Access access> inline constexpr auto isLocked() const noexcept -> bool;
+	template <Access access> inline auto isLocked() const noexcept -> bool;
 
 private:
 	int sharedCount_ = 0;
@@ -59,12 +59,12 @@ template <> inline auto SharedLock::unlock<Access::EXCLUSIVE>() noexcept -> void
 	exclusiveCount_ -= 1;
 }
 
-template <> inline constexpr auto SharedLock::isLocked<Access::SHARED>() const noexcept -> bool {
+template <> inline auto SharedLock::isLocked<Access::SHARED>() const noexcept -> bool {
 	// TODO: Implement
 	return false;
 }
 
-template <> inline constexpr auto SharedLock::isLocked<Access::EXCLUSIVE>() const noexcept -> bool {
+template <> inline auto SharedLock::isLocked<Access::EXCLUSIVE>() const noexcept -> bool {
 	// TODO: Implement
 	return false;
 }
