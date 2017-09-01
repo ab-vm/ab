@@ -14,9 +14,14 @@
 /// Stringify x. x will be expanded by the preprocessor.
 #define PITH_STRINGIFY(x) PITH_STRINGIFY_RAW(x)
 
+/// The name of the current C++ source file. A char[] literal.
 #define PITH_FILE_STR() __FILE__
 
+/// The current line number in the C++ source file. A char[] literal.
 #define PITH_LINE_STR() PITH_STRINGIFY(__LINE__)
+
+/// The string literal file:line, describing the current line in the source code. A char[] literal.
+#define PITH_LOCATION_STR() PITH_FILE_STR() ":" PITH_LINE_STR()
 
 #if defined(__clang__) || defined(__GNUC__)
 #define PITH_FUNCTION_STR() __PRETTY_FUNCTION__

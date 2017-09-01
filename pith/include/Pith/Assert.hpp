@@ -3,6 +3,7 @@
 
 #include <Pith/Config.hpp>
 #include <Pith/CppUtilities.hpp>
+#include <cstdlib>
 #include <iostream>
 #include <sstream>
 
@@ -22,12 +23,11 @@ inline auto trap() -> void {
 ///       in: <function>
 ///       note: <note>
 /// ```
-inline auto fail(
-	const char* file, const char* line, const char* function, const char* message,
-	const char* note) -> void {
+[[noreturn]] inline auto
+fail(const char* location, const char* function, const char* message, const char* note) -> void {
 	std::stringstream str;
 
-	str << file << ":" << line << ": Error: " << message << std::endl;
+	str << location << ": Error: " << message << std::endl;
 	str << "\tin: " << function << std::endl;
 
 	if (note != nullptr) {
@@ -35,15 +35,15 @@ inline auto fail(
 	}
 
 	std::cerr << str.str() << std::endl;
-	trap();
+	std::abort();
 }
 
 /// Check condition, fail if false.
-inline auto check(
-	bool value, const char* file, const char* line, const char* function, const char* message,
-	const char* note) -> void {
+inline auto
+check(bool value, const char* location, const char* function, const char* message, const char* note)
+	-> void {
 	if (!value) {
-		fail(file, line, function, message, note);
+		fail(location, function, message, note);
 	}
 }
 
@@ -51,34 +51,23 @@ inline auto check(
 }  // namespace Pith
 
 /// Assert that x is true.
-#define PITH_ASSERT(x) PITH_ASSERT_MSG((x), "Assertion Failed")
+#define PITH_ASSERT(x)                                                                             \
+	::Pith::check(                                                                             \
+		(x), PITH_LOCATION_STR(), PITH_FUNCTION_STR(), "Assertion Failed",                 \
+		PITH_STRINGIFY(X))
 
 /// Assert that x is true. Report with message on failure.
 #define PITH_ASSERT_MSG(x, message)                                                                \
-	::Pith::check(                                                                             \
-		(x), PITH_FILE_STR(), PITH_LINE_STR(), PITH_FUNCTION_STR(), (message),             \
-		PITH_STRINGIFY(x))
+	::Pith::check((x), PITH_LOCATION_STR(), PITH_FUNCTION_STR(), (message), PITH_STRINGIFY(x))
 
 /// Unconditional crash.
-#define PITH_ASSERT_UNREACHABLE() PITH_ASSERT_UNREACHABLE_MSG("Unreachable statement reached")
+#define PITH_ASSERT_UNREACHABLE()                                                                  \
+	::Pith::fail(                                                                              \
+		PITH_LOCATION_STR(), PITH_FUNCTION_STR(), "Unreachable statement reached",         \
+		nullptr)
 
 /// Unconditional crash with message.
 #define PITH_ASSERT_UNREACHABLE_MSG(message)                                                       \
-	::Pith::fail(PITH_FILE_STR(), PITH_LINE_STR(), PITH_FUNCTION_STR(), (message), nullptr)
-
-/// Assert condition equals success.
-#define PITH_ASSERT_SUCCESS(x) PITH_ASSERT(x == decltype(x)::SUCCESS)
-
-#define PITH_CRASH_FAST 1
-
-/// PITH_ERROR(e)
-/// return an error object.
-/// When PITH_CRASH_FAST is enabled, this will crash instead of return.
-/// TODO: Come up with an error api that makes sense.
-#if defined PITH_CRASH_FAST
-#define PITH_ERROR(error) (trap(), (error))
-#else
-#define PITH_ERROR(error) (error);
-#endif
+	::Pith::fail(PITH_LOCATION_STR(), PITH_FUNCTION_STR(), (message), nullptr)
 
 #endif  // PITH_ASSERT_HPP_
