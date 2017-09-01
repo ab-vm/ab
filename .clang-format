@@ -63,7 +63,7 @@ IncludeCategories:
   - Regex:           'gtest/.*'
     Priority:        6
 IncludeIsMainRegex: '(Test[-_](test|unittest))?$'
-IndentCaseLabels: true
+IndentCaseLabels: false
 IndentWidth:     8
 IndentWrappedFunctionNames: false
 JavaScriptQuotes: Leave
