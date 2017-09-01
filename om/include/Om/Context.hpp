@@ -39,11 +39,11 @@ public:
 		return system_;
 	}
 
-	inline constexpr auto system() const -> const System& {
+	inline auto system() const -> const System& {
 		return system_;
 	}
 
-	inline constexpr auto state() const -> ContextState {
+	inline auto state() const -> ContextState {
 		return state_;
 	}
 
