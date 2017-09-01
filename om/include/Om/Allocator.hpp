@@ -39,6 +39,7 @@ public:
 	auto inline allocate<GcSafe::yes, InitFunction>(ActiveContext& cx, InitFunction&& init)
 		-> Pith::Maybe<Ref<Object>> {
 		// TODO: Implement allocation
+		PITH_ASSERT_UNREACHABLE();
 		return Pith::NOTHING;
 	}
 
@@ -46,6 +47,7 @@ public:
 	auto inline allocate<GcSafe::no, InitFunction>(ActiveContext& cx, InitFunction&& init)
 		-> Pith::Maybe<Ref<Object>> {
 		// TODO: Implement allocation
+		PITH_ASSERT_UNREACHABLE();
 		return Pith::NOTHING;
 	}
 
