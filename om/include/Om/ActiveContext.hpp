@@ -27,7 +27,7 @@ public:
 		return context_;
 	}
 
-	inline constexpr auto context() const -> const Context& {
+	inline auto context() const -> const Context& {
 		return context_;
 	}
 
