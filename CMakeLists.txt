@@ -39,7 +39,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS true)
 # Warnings
 
 add_compile_options(
-	-Wno-error -Wall
+	-Wno-error -Wall -Wextra
 )
 
 
