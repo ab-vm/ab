@@ -36,7 +36,7 @@ public:
 		auto alloc = Maybe<Ref<Object>>{rawAllocator_.allocate<gcSafe>(cx, mib(32))};
 	}
 
-	inline constexpr auto raw() -> RawAllocator& {
+	inline auto raw() -> RawAllocator& {
 		return rawAllocator_;
 	}
 
