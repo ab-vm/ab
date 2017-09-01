@@ -109,6 +109,7 @@ inline auto Memory::grow(std::size_t n) -> MemoryError {
 
 	return MemoryError::SUCCESS;
 }
+
 }  // namespace Ab
 
 #endif  // AB_MEMORY_HPP_
