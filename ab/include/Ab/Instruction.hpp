@@ -15,7 +15,9 @@ enum class Instruction : std::uint8_t {
 	UNREACHABLE = 0x00,  // Wasm::Bytecode::UNREACHABLE
 
 	/// No operation
-	NOP = 0x01,  // Wasm::Bytecode::NOP
+	NOP = 0x01  // Wasm::Bytecode::NOP
+
+#if 0
 	/// Begin a sequence of expressions, yielding 0 or 1 values.
 	/// Immediates:
 	///   sig: block_type
@@ -176,6 +178,8 @@ enum class Instruction : std::uint8_t {
 	/// TODO: Numeric operators
 
 	/// TODO: Conversions
+#endif  // 0
+
 };
 
 enum class Typecode : uint8_t {
