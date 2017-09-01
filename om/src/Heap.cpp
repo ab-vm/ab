@@ -1,5 +1,4 @@
 #include <Om/Error.hpp>
-#include <Om/ErrorCategory.hpp>
 #include <Om/Heap.hpp>
 #include <Pith/Assert.hpp>
 #include <Pith/Debug.hpp>

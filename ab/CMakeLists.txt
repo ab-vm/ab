@@ -16,7 +16,6 @@ configure_file(
 )
 
 add_library(ab
-	src/ErrorCategory.cpp
 	src/Memory.cpp
 	src/Process.cpp
 	src/Version.cpp
