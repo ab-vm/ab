@@ -1,6 +1,8 @@
 project(abi)
 project_version(abi 0 1 0)
 
+ab_setup()
+
 add_executable(abi
 	src/abi.cpp
 )

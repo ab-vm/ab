@@ -8,6 +8,8 @@ set(PITH_COMMIT ${GIT_COMMIT})
 
 project(pith VERSION ${PITH_VERSION} LANGUAGES CXX)
 
+ab_setup()
+
 configure_file(
 	include/Pith/Config.hpp.in
 	include/Pith/Config.hpp

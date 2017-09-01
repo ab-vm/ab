@@ -20,28 +20,35 @@ set(OMR_WARNINGS_AS_ERRORS OFF CACHE BOOL "Disable warnings as errors")
 include(OmrPlatform)
 include(Utilities)
 
-omr_platform_global_setup()
-
 get_git_commit(GIT_COMMIT)
 
 enable_testing()
-
-# Use C++14
-
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_STANDARD_REQUIRED true)
-set(CMAKE_CXX_EXTENSIONS off)
 
 # Misc utilities
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS true)
 
-# Warnings
+# Project setup
 
-add_compile_options(
-	-Wno-error -Wall -Wextra
-)
+macro(ab_setup)
 
+	# Use C++14
+
+	set(CMAKE_CXX_STANDARD 14)
+	set(CMAKE_CXX_STANDARD_REQUIRED true)
+	set(CMAKE_CXX_EXTENSIONS off)
+
+	# Compilation warnings
+
+	add_compile_options(-Werror -Wall -Wextra)
+
+	# Use clang tidy for static analysis
+
+	if(CLANG_TIDY_FOUND)
+		set(CMAKE_CXX_CLANG_TIDY ${CLANG_TIDY_EXECUTABLE})
+	endif()
+
+endmacro()
 
 # Sub directories
 

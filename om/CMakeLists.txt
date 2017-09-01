@@ -10,6 +10,8 @@ project(om
 	LANGUAGES CXX
 )
 
+ab_setup()
+
 enable_testing()
 
 configure_file(

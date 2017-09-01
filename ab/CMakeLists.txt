@@ -10,6 +10,8 @@ project(ab
 	LANGUAGES CXX
 )
 
+ab_setup()
+
 configure_file(
 	"include/Ab/Config.hpp.in"
 	"include/Ab/Config.hpp"
