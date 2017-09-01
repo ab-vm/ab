@@ -4,8 +4,8 @@
 
 using namespace Pith;
 
-TEST(TestPage, StackAllocate) {
-	Page p;
+TEST(TestPage, stackAllocate) {
+	[[maybe_unused]] Page p;
 }
 
 TEST(TestPage, mapOnePage) {
