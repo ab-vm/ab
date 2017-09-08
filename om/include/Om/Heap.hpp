@@ -24,24 +24,24 @@ enum class HeapCondition { DEAD, ACTIVE };
 
 class Heap {
 public:
-	static const constexpr HeapConfig DEFAULT_CONFIG{nullptr, 1_GiB, 1_MiB, 1_MiB};
 
-	static constexpr inline auto defaultConfig() -> const HeapConfig& {
-		return DEFAULT_CONFIG;
-	}
+	static constexpr inline auto defaultConfig() -> const HeapConfig&;
 
-	Heap();
-	~Heap();
+	inline Heap();
+	inline ~Heap();
 
 	auto init(const HeapConfig& config) -> HeapError;
 	auto kill() -> HeapError;
 
 private:
-	HeapConfig config_;
+	static const constexpr HeapConfig DEFAULT_CONFIG{nullptr, 1_GiB, 1_MiB, 1_MiB};
+	
 	Pith::SharedLock lock_;
 	HeapCondition condition_;
 };
 
 }  // namespace Om
+
+#include <Om/Heap.inl.hpp>
 
 #endif  // OM_GC_HPP_
