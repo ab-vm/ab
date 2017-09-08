@@ -19,7 +19,7 @@ auto Context::init() -> ContextError {
 	return ContextError::SUCCESS;
 }
 
-auto Om::Context::kill() -> ContextError {
+auto Context::kill() -> ContextError {
 	PITH_ASSERT(state_ == ContextState::INACTIVE);
 	system().detach(this);
 	state_ = ContextState::DEAD;
@@ -32,6 +32,14 @@ auto Context::system() -> System& {
 
 auto Context::system() const -> const System& {
 	return system_;
+}
+
+auto Context::stackRoots() -> StackRootList& {
+	return stackRoots_;
+}
+
+auto Context::stackRoots() const -> const StackRootList& {
+	return stackRoots_;
 }
 
 auto Context::state() const -> ContextState {

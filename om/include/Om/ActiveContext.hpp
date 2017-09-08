@@ -8,8 +8,6 @@ namespace Om {
 
 class ActiveContext {
 public:
-	ActiveContext() = delete;
-
 	explicit inline ActiveContext(Context& context) : context_{context} {
 		context_.activate();
 	}

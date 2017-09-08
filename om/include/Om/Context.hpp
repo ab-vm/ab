@@ -3,6 +3,7 @@
 
 #include <Om/Config.hpp>
 #include <Om/Debug.hpp>
+#include <Om/StackRootList.hpp>
 #include <Om/System.hpp>
 #include <Pith/Assert.hpp>
 
@@ -26,6 +27,10 @@ public:
 
 	inline auto system() const -> const System&;
 
+	inline auto stackRoots() -> StackRootList&;
+
+	inline auto stackRoots() const -> const StackRootList&;
+
 	inline auto state() const -> ContextState;
 
 protected:
@@ -46,6 +51,7 @@ protected:
 
 private:
 	System& system_;
+	StackRootList stackRoots_;
 	ContextState state_;
 };
 
