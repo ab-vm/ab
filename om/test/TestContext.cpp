@@ -11,7 +11,11 @@ TEST(TestContext, basic) {
 	system.init(System::defaultConfig());
 	Context cx{system};
 	cx.init();
-	ActiveContext acx{cx};
+	{
+		ActiveContext acx{cx};
+	}
+	cx.kill();
+	system.kill();
 }
 
 } // namespace Test
