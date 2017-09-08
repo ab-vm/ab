@@ -5,7 +5,10 @@
 #include <Om/GcSafe.hpp>
 #include <Om/Object.hpp>
 #include <Om/Ref.hpp>
-#include <Pith/Maybe.hpp>
+#include <Om/StackRootRef.hpp>
+#include <Pith/Result.hpp>
+#include <Pith/Debug.hpp>
+#include <Om/NativeCell.hpp>
 
 namespace Om {
 
@@ -18,54 +21,52 @@ class AllocationContext {
 public:
 };
 
+enum class AllocationError {
+	OUT_OF_MEMORY,
+};
+
 class Allocator {
 public:
-	Allocator() {
-	}
+	inline Allocator();
 
-	~Allocator() {
-	}
+	inline ~Allocator();
 
-	bool init() {
-		return false;
-	}
+	inline auto init() -> bool;
 
-	bool kill() {
-		return false;
-	}
-
-	template <GcSafe gcSafe, typename InitFunction>
-	auto allocate(InitFunction init) -> Pith::Maybe<Ref<Object>>;
+	inline auto kill() -> bool;
 
 #if 0
-	template <typename InitFunction>
-	auto inline allocate<GcSafe::YES, InitFunction>(ActiveContext& cx, InitFunction&& init)
-		-> Pith::Maybe<Ref<Object>> {
-		// TODO: Implement allocation
-		PITH_ASSERT_UNREACHABLE();
-		return Pith::NOTHING;
-	}
+	template <GcSafe gcSafe, typename InitFunction>
+	inline auto allocate(InitFunction init) -> Pith::Maybe<Ref<Object>>;
 
 	template <typename InitFunction>
-	auto inline allocate<GcSafe::NO, InitFunction>(ActiveContext& cx, InitFunction&& init)
-		-> Pith::Maybe<Ref<Object>> {
-		// TODO: Implement allocation
-		PITH_ASSERT_UNREACHABLE();
-		return Pith::NOTHING;
-	}
-#endif  // 0
+	auto inline allocate<GcSafe::YES, InitFunction>(ActiveContext& cx, InitFunction&& init) -> Pith::Maybe<Ref<Object>>;
 
-	template <typename Native, typename... Args>
-	auto inline allocateNative(Args&&... args) -> Ref<Native> {
-		// TODO: Implement native allocation
-		// TODO: Handle concurrency and locking
-		Native* p = new Native{std::forward<Args>(args)...};
-		return Ref<Native>{p};
-	}
+	template <typename InitFunction>
+	auto inline allocate<GcSafe::NO, InitFunction>(ActiveContext& cx, InitFunction&& init) -> Pith::Maybe<Ref<Object>>;
+
+#endif // 0
+
+	template <GcSafe gcSafe, typename T, typename... Args>
+	inline auto allocateNative(ActiveContext& cx, Args&& ...args)
+		-> Pith::Result<Ref<T>, AllocationError>;
+
+#if 0
+	template <GcSafe gcSafe, typename T, typename... Args>
+	auto inline allocateStruct(ActiveContext& cx, Args&&... args) -> Ref<StructCell<T>>;
+#endif //0
 
 private:
+
+#if 0
+	template <GcSafe gcSafe>
+	auto inline allocateRaw(std::size_t size) -> Pith::Address;
+#endif // 0
+
 };
 
 }  // namespace Om
+
+#include <Om/Allocator.inl.hpp>
 
 #endif  // OM_ALLOCATOR_HPP_

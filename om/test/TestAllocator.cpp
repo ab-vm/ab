@@ -3,14 +3,23 @@
 
 using namespace Om;
 
-struct MyStruct {
-	MyStruct(int x) : x{x} {
-	}
+struct MyIntCell : public NativeCell {
+	MyIntCell(int x) : NativeCell{sizeof(MyIntCell)}, x{x} {}
 	int x;
 };
 
 TEST(Allocator, base) {
+	System sys{};
+	sys.init(System::DEFAULT_CONFIG);
+	Context cx{sys};
+	cx.init();
+	ActiveContext acx{cx};
 	Om::Allocator allocator;
+	auto result = allocator.allocateNative<GcSafe::YES, MyIntCell>(acx, 1);
+	EXPECT_TRUE(result);
+	StackRootRef<MyIntCell> root{acx, result()};
+	EXPECT_EQ(root->x, 1);
+	EXPECT_EQ(root->size(), sizeof(MyIntCell));
 }
 
 #if OM_DISABLE
