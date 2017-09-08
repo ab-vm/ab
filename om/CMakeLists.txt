@@ -28,8 +28,6 @@ add_library(om
 	src/Version.cpp
 )
 
-set_property(TARGET om PROPERTY CXX_STANDARD 11)
-
 target_include_directories(om
 	PUBLIC
 		$<BUILD_INTERFACE: include>
