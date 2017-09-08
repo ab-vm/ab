@@ -3,6 +3,8 @@
 
 using namespace Om;
 
+#if 0
+
 TEST(Ref, Constructor) {
 	Ref<void> ref;
 	EXPECT_EQ(ref, nullptr);
@@ -32,3 +34,5 @@ TEST(Ref, Raw) {
 	Ref<const MyStruct> ref{&s};
 	EXPECT_EQ(ref.raw(), &s);
 }
+
+#endif // 0
