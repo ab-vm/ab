@@ -31,7 +31,7 @@ fail(const char* location, const char* function, const char* message, const char
 	str << "\tin: " << function << std::endl;
 
 	if (note != nullptr) {
-		str << "\tnote: " << message << std::endl;
+		str << "\tnote: " << note << std::endl;
 	}
 
 	std::cerr << str.str() << std::endl;
@@ -54,7 +54,7 @@ check(bool value, const char* location, const char* function, const char* messag
 #define PITH_ASSERT(x)                                                                             \
 	::Pith::check(                                                                             \
 		(x), PITH_LOCATION_STR(), PITH_FUNCTION_STR(), "Assertion Failed",                 \
-		PITH_STRINGIFY(X))
+		PITH_STRINGIFY(x))
 
 /// Assert that x is true. Report with message on failure.
 #define PITH_ASSERT_MSG(x, message)                                                                \
