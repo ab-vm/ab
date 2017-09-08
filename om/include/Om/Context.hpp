@@ -14,71 +14,35 @@ enum class ContextState { DEAD, INACTIVE, ACTIVE, PAUSED };
 
 class Context {
 public:
-	Context(System& system) : system_{system}, state_{ContextState::DEAD} {
-	}
+	inline Context(System& system);
 
-	~Context() {
-		PITH_ASSERT(state() == ContextState::DEAD);
-	}
+	inline ~Context();
 
-	inline auto init() -> ContextError {
-		PITH_ASSERT(state() == ContextState::DEAD);
-		PITH_ASSERT(system().attach(this) == AttachError::SUCCESS);
-		state_ = ContextState::INACTIVE;
-		return ContextError::SUCCESS;
-	}
+	inline auto init() -> ContextError;
 
-	inline auto kill() -> ContextError {
-		PITH_ASSERT(state_ == ContextState::INACTIVE);
-		system().detach(this);
-		state_ = ContextState::DEAD;
-		return ContextError::SUCCESS;
-	}
+	inline auto kill() -> ContextError;
 
-	inline auto system() -> System& {
-		return system_;
-	}
+	inline auto system() -> System&;
 
-	inline auto system() const -> const System& {
-		return system_;
-	}
+	inline auto system() const -> const System&;
 
-	inline auto state() const -> ContextState {
-		return state_;
-	}
+	inline auto state() const -> ContextState;
 
 protected:
 	friend class ActiveContext;
 
-	inline auto activate() -> void {
-		PITH_TRACE();
-		OM_DEBUG_ASSERT(state_ == ContextState::INACTIVE);
-		state_ = ContextState::ACTIVE;
-		// TODO: Attach context to physical thread
-		// TODO: Obtain shared heap access
-	}
+	/// Activate this context.
+	inline auto activate() -> void;
 
-	inline auto deactivate() -> void {
-		PITH_TRACE();
-		OM_DEBUG_ASSERT(state_ == ContextState::ACTIVE);
-		state_ = ContextState::INACTIVE;
-		// TODO: Detach context from physical thread
-		// TODO: Release shared heap access
-	}
+	/// Deactivate this context.
+	inline auto deactivate() -> void;
 
-	inline auto pause() -> void {
-		PITH_TRACE();
-		OM_DEBUG_ASSERT(state_ == ContextState::ACTIVE);
-		state_ = ContextState::INACTIVE;
-		// TODO: Release shared heap access
-	}
+	/// Pause an activated context.
+	/// Used by GC internals. At a GC safepoint, all active contexts are paused.
+	inline auto pause() -> void;
 
-	inline auto resume() -> void {
-		PITH_TRACE();
-		OM_DEBUG_ASSERT(state_ == ContextState::INACTIVE);
-		state_ = ContextState::ACTIVE;
-		// TODO: Obtain shared heap access.
-	}
+	/// Resume an active but paused context.
+	inline auto resume() -> void;
 
 private:
 	System& system_;
@@ -86,5 +50,7 @@ private:
 };
 
 }  // namespace Om
+
+#include <Om/Context.inl.hpp>
 
 #endif  // OM_CONTEXT_HPP_
