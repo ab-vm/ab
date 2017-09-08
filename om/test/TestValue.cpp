@@ -1,15 +1,23 @@
 #include <Om/Value.hpp>
 #include <gtest/gtest.h>
 
-using namespace Om;
+#if 0
+
+namespace Om {
+namespace Test {
 
 TEST(Value, constructor) {
-	Value x1 = 1;
-	Value x2 = 1.0;
-	Value x3 = nullptr;
+	[[gnu::unused]] Value x1 = 1;
+	[[gnu::unused]] Value x2 = 1.0;
+	[[gnu::unused]] Value x3 = nullptr;
 }
 
 TEST(Value, to) {
 	Value x = 1;
 	EXPECT_EQ(1, Value(1).to<int>());
 }
+
+} // namespace Test
+} // namespace Om
+
+#endif // 0
