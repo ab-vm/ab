@@ -8,27 +8,25 @@
 
 namespace Pith {
 
+/// RAII: Holds a lock for the duration of it's lifetime.
+/// The LockGuard is capable of locking any subclass of SharedLock.
+/// The LockGuard is parameterized on it's access.
+///   * Access::SHARED: Multiple lockguards hold the SharedLock.
+///   * Access::EXCLUSIVE: No lock guard
 template <typename LockType = SharedLock, Access access = Access::EXCLUSIVE>
 class[[gnu::unused]] LockGuard;
 
-/// Readable alias to LockGuard<Lock, Access::exclusive>
-template <typename LockType = SharedLock>
-using SharedLockGuard = LockGuard<LockType, Access::SHARED>;
-
-/// Readable alias to LockGuard<LockType, Access::SHARED>.
-template <typename LockType = SharedLock>
-using ExclusiveLockGuard = LockGuard<LockType, Access::EXCLUSIVE>;
-
 /// RAII: Holds shared access to lock for lifetime.
-template <typename T> class[[gnu::unused]] LockGuard<T, Access::SHARED> {
+template <typename T>
+class [[gnu::unused]] LockGuard<T, Access::SHARED> {
 public:
 	using LockType = T;
 
 	/// Obtain shared access on the lock. Cannot fail, but will block.
-	explicit LockGuard(LockType & lock);
+	inline explicit LockGuard(LockType & lock);
 
 	/// Release shared access to the SharedLock.
-	~LockGuard<LockType, Access::SHARED>();
+	inline ~LockGuard<LockType, Access::SHARED>();
 
 	/// Not copy assignable.
 	LockGuard& operator=(const LockGuard& other) = delete;
@@ -40,17 +38,18 @@ protected:
 	friend class LockGuard<LockType, Access::EXCLUSIVE>;
 
 	/// Release shared access. Unsafe.
-	void disengage();
+	inline void disengage();
 
 	/// Reaquire shared access. Unsafe.
-	void engage();
+	inline void engage();
 
 private:
 	LockType& lock_;
 };
 
 /// RAII: Holds a lock exclusively for lifetime.
-template <typename T> class [[gnu::unused]] LockGuard<T, Access::EXCLUSIVE> {
+template <typename T>
+class [[gnu::unused]] LockGuard<T, Access::EXCLUSIVE> {
 public:
 	using LockType = T;
 
@@ -79,47 +78,16 @@ private:
 	LockType& lock_;
 };
 
-/// TODO: implement
-template <typename LockType> inline SharedLockGuard<LockType> sharedLock(LockType& lock) {
-	return SharedLockGuard<LockType>(lock);
-}
+/// Readable alias to LockGuard<LockType, Access::exclusive>
+template <typename LockType = SharedLock>
+using SharedLockGuard = LockGuard<LockType, Access::SHARED>;
 
-/// TODO: implement
-template <typename LockType> inline ExclusiveLockGuard<LockType> exclusiveLock(LockType& lock) {
-	return ExclusiveLockGuard<LockType>(lock);
-}
-
-/// Try to obtain shared access without blocking. Returns `nothing` on failure.
-/// TODO: implement
-template <typename LockType> inline Maybe<SharedLockGuard<LockType>> trySharedLock(LockType& lock) {
-	return SharedLockGuard<LockType>(lock);
-}
-
-/// Obtain exclusive access. Will not block. Can fail.
-/// TODO: implement
-template <typename LockType>
-inline Maybe<ExclusiveLockGuard<LockType>> tryExclusiveLock(LockType& lock) {
-	return ExclusiveLockGuard<LockType>(lock);
-}
-
-template <typename LockType>
-LockGuard<LockType, Access::SHARED>::LockGuard(LockType& lock) : lock_{lock} {
-	// lock_.lock<Access::shared>();
-}
-
-template <typename LockType> LockGuard<LockType, Access::SHARED>::~LockGuard() {
-	// lock_.unlock<Access::shared>();
-}
-
-template <typename LockType>
-LockGuard<LockType, Access::EXCLUSIVE>::LockGuard(LockType& lock) : lock_{lock} {
-	// lock_.lock<Access::EXCLUSIVE>();
-}
-
-template <typename LockType> LockGuard<LockType, Access::EXCLUSIVE>::~LockGuard() {
-	// lock_.unlock<Access::EXCLUSIVE>();
-}
+/// Readable alias to LockGuard<LockTypeType, Access::SHARED>.
+template <typename LockType = SharedLock>
+using ExclusiveLockGuard = LockGuard<LockType, Access::EXCLUSIVE>;
 
 }  // namespace Pith
+
+#include <Pith/LockGuard.inl.hpp>
 
 #endif  // PITH_LOCKGUARD_HPP_
