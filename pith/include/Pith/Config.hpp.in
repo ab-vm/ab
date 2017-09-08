@@ -13,6 +13,10 @@
 /// Enable very slow debug code.
 #cmakedefine PITH_DEBUG_SLOW
 
+/// Abort the process in the event of an error
+/// Essentially enabling "disgraceful" error handling.
+#cmakedefine PITH_FAIL_FAST
+
 /// Never define this. Used to guard permanently-disabled code.
 #undef PITH_DISABLE
 
