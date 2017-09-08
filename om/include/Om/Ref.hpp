@@ -5,11 +5,17 @@
 #include <Pith/Address.hpp>
 #include <Pith/Meta/Mixin.hpp>
 #include <cstddef>
+#include <type_traits>
+#include <Om/Cell.hpp>
 
 namespace Om {
 
 /// A pointer to managed memory. It is GC-Unsafe.
-template <typename Type> class Ref final {
+template <typename Type> class Ref {
+	static_assert(std::is_base_of<Cell, Type>::value,
+		"You may only construct Refs as pointers to managed types. "
+		"All managed types must subclass Om::Cell.");
+
 public:
 	inline constexpr Ref() : value_{nullptr} {
 	}
