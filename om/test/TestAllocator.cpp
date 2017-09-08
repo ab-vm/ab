@@ -9,10 +9,10 @@ struct MyStruct {
 	int x;
 };
 
-TEST(Allocator) {
+TEST(Allocator, base) {
 	Om::Allocator allocator;
-	Allocator
 }
+
 #if OM_DISABLE
 
 TEST(Allocator, allocateStruct) {

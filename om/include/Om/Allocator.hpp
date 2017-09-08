@@ -4,6 +4,7 @@
 #include <Om/Config.hpp>
 #include <Om/GcSafe.hpp>
 #include <Om/Object.hpp>
+#include <Om/Ref.hpp>
 #include <Pith/Maybe.hpp>
 
 namespace Om {
@@ -15,7 +16,6 @@ class ActiveContext;
 
 class AllocationContext {
 public:
-	Omr::TLH tlh_;
 };
 
 class Allocator {
@@ -27,16 +27,19 @@ public:
 	}
 
 	bool init() {
+		return false;
 	}
 
 	bool kill() {
+		return false;
 	}
 
 	template <GcSafe gcSafe, typename InitFunction>
 	auto allocate(InitFunction init) -> Pith::Maybe<Ref<Object>>;
 
+#if 0
 	template <typename InitFunction>
-	auto inline allocate<GcSafe::yes, InitFunction>(ActiveContext& cx, InitFunction&& init)
+	auto inline allocate<GcSafe::YES, InitFunction>(ActiveContext& cx, InitFunction&& init)
 		-> Pith::Maybe<Ref<Object>> {
 		// TODO: Implement allocation
 		PITH_ASSERT_UNREACHABLE();
@@ -44,20 +47,22 @@ public:
 	}
 
 	template <typename InitFunction>
-	auto inline allocate<GcSafe::no, InitFunction>(ActiveContext& cx, InitFunction&& init)
+	auto inline allocate<GcSafe::NO, InitFunction>(ActiveContext& cx, InitFunction&& init)
 		-> Pith::Maybe<Ref<Object>> {
 		// TODO: Implement allocation
 		PITH_ASSERT_UNREACHABLE();
 		return Pith::NOTHING;
 	}
+#endif  // 0
 
-	template <typename Native, typename ...Args>
+	template <typename Native, typename... Args>
 	auto inline allocateNative(Args&&... args) -> Ref<Native> {
 		// TODO: Implement native allocation
 		// TODO: Handle concurrency and locking
-		Data* p = new Native{std::forward<Args>(args)...};
+		Native* p = new Native{std::forward<Args>(args)...};
 		return Ref<Native>{p};
 	}
+
 private:
 };
 
