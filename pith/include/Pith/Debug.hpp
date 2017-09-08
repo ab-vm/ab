@@ -14,7 +14,7 @@ namespace Pith {
 namespace {
 
 inline auto trace(const char* function) -> void {
-	std::cerr << "*TRACE>" << function << std::endl;
+	std::cerr << "TRACE!> " << function << std::endl;
 }
 
 }  // namespace
