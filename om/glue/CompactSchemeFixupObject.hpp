@@ -15,12 +15,12 @@
  * Contributors:
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
  *******************************************************************************/
-
+ 
 #ifndef COMPACTSCHEMEOBJECTFIXUP_HPP_
 #define COMPACTSCHEMEOBJECTFIXUP_HPP_
 
-#include "objectdescription.h"
 #include "omrcfg.h"
+#include "objectdescription.h"
 
 #include "CompactScheme.hpp"
 #include "GCExtensionsBase.hpp"
@@ -37,22 +37,22 @@ private:
 	MM_CompactScheme *_compactScheme;
 	*/
 public:
+
 	/**
 	 * Perform fixup for a single object
 	 * @param env[in] the current thread
 	 * @param objectPtr pointer to object for fixup
 	 */
-	void fixupObject(MM_EnvironmentStandard* env, omrobjectptr_t objectPtr);
+	void fixupObject(MM_EnvironmentStandard *env, omrobjectptr_t objectPtr);
 
 	static void verifyForwardingPtr(omrobjectptr_t objectPtr, omrobjectptr_t forwardingPtr);
 
-	MM_CompactSchemeFixupObject(MM_EnvironmentBase* env, MM_CompactScheme* compactScheme)
-	/*	:
-			_omrVM(env->getOmrVM()),
-			_extensions(env->getExtensions()),
-			_compactScheme(compactScheme)*/
-	{
-	}
+	MM_CompactSchemeFixupObject(MM_EnvironmentBase* env, MM_CompactScheme *compactScheme)
+/*	:
+		_omrVM(env->getOmrVM()),
+		_extensions(env->getExtensions()),
+		_compactScheme(compactScheme)*/
+	{}
 
 protected:
 private:

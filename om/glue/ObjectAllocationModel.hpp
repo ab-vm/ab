@@ -18,7 +18,8 @@
 /**
  * Class definition for the Java object allocation model.
  */
-class MM_ObjectAllocationModel : public MM_AllocateInitialization {
+class MM_ObjectAllocationModel : public MM_AllocateInitialization
+{
 	/*
 	 * Member data and types
 	 */
@@ -28,10 +29,13 @@ public:
 	 * objects and are used in GC_ObjectModel::initializeAllocation() to determine how to
 	 * initialize the header of a newly allocated object.
 	 */
-	enum { allocation_category_example };
+	enum {
+		allocation_category_example
+	};
 
 protected:
 private:
+
 	/*
 	 * Member functions
 	 */
@@ -41,12 +45,13 @@ public:
 	/**
 	 * Initializer.
 	 */
-	MMINLINE omrobjectptr_t initializeObject(MM_EnvironmentBase* env, void* allocatedBytes) {
+	MMINLINE omrobjectptr_t
+	initializeObject(MM_EnvironmentBase *env, void *allocatedBytes)
+	{
 		omrobjectptr_t objectPtr = (omrobjectptr_t)allocatedBytes;
 
 		if (NULL != objectPtr) {
-			env->getExtensions()->objectModel.setObjectSize(
-				objectPtr, getAllocateDescription()->getBytesRequested());
+			env->getExtensions()->objectModel.setObjectSize(objectPtr, getAllocateDescription()->getBytesRequested());
 		}
 
 		return objectPtr;
@@ -55,12 +60,8 @@ public:
 	/**
 	 * Constructor.
 	 */
-	MM_ObjectAllocationModel(
-		MM_EnvironmentBase* env, uintptr_t requiredSizeInBytes,
-		uintptr_t allocateObjectFlags = 0)
-		: MM_AllocateInitialization(
-			  env, allocation_category_example, requiredSizeInBytes,
-			  allocateObjectFlags) {
-	}
+	MM_ObjectAllocationModel(MM_EnvironmentBase *env,  uintptr_t requiredSizeInBytes, uintptr_t allocateObjectFlags = 0)
+		: MM_AllocateInitialization(env, allocation_category_example, requiredSizeInBytes, allocateObjectFlags)
+	{}
 };
 #endif /* OBJECTALLOCATIONMODEL_HPP_ */
