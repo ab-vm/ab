@@ -3,6 +3,6 @@
 
 namespace Ab {
 
-const MemoryConfig Memory::defaultConfig_;
+constexpr const MemoryConfig Memory::defaultConfig_;
 
 }  // namespace Ab
