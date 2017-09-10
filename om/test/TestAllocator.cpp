@@ -13,13 +13,17 @@ TEST(Allocator, base) {
 	sys.init(System::DEFAULT_CONFIG);
 	Context cx{sys};
 	cx.init();
-	ActiveContext acx{cx};
-	Om::Allocator allocator;
-	auto result = allocator.allocateNative<GcSafe::YES, MyIntCell>(acx, 1);
-	EXPECT_TRUE(result);
-	StackRootRef<MyIntCell> root{acx, result()};
-	EXPECT_EQ(root->x, 1);
-	EXPECT_EQ(root->size(), sizeof(MyIntCell));
+	{
+		ActiveContext acx{cx};
+		Om::Allocator allocator;
+		auto result = allocator.allocateNative<GcSafe::YES, MyIntCell>(acx, 1);
+		EXPECT_TRUE(result);
+		StackRootRef<MyIntCell> root{acx, result()};
+		EXPECT_EQ(root->x, 1);
+		EXPECT_EQ(root->size(), sizeof(MyIntCell));
+	}
+	cx.kill();
+	sys.kill();
 }
 
 #if OM_DISABLE
