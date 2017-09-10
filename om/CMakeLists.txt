@@ -24,6 +24,7 @@ set(OM_DEBUG On CACHE Bool "Enable/Disable Om debug features and checks.")
 add_library(om
 	src/Context.cpp
 	src/Heap.cpp
+	src/Process.cpp
 	src/System.cpp
 	src/Version.cpp
 )
