@@ -1,5 +1,4 @@
-project(abi)
-project_version(abi 0 1 0)
+project(abi LANGUAGES C CXX VERSION 0.0.1)
 
 ab_setup()
 
