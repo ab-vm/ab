@@ -11,13 +11,13 @@ TEST(SharedLock, multipleShared) {
 	EXPECT_TRUE(trySharedLock(lock));
 }
 
-TEST(SharedLock, failToTakeExclusive) {
+TEST(SharedLock, DISABLED_failToTakeExclusive) {
 	SharedLock lock;
 	SharedLockGuard<SharedLock> shared(lock);
 	EXPECT_FALSE(tryExclusiveLock(lock));
 }
 
-TEST(SharedLock, exclusiveThenShared) {
+TEST(SharedLock, DISABLED_exclusiveThenShared) {
 	SharedLock lock;
 	{
 		ExclusiveLockGuard<SharedLock> exclusive(lock);
