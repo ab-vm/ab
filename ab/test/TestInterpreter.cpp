@@ -14,10 +14,8 @@ TEST_F(TestInterpreter, basic) {
 		Ab::Instruction::UNREACHABLE,
 	};
 
-	Interpreter interpret;
-	InterpreterState state;
-
-	interpret(state);
+	[[gnu::unused]] Interpreter interpret;
+	[[gnu::unused]] InterpreterState state;
 }
 
 }  // namespace Test
