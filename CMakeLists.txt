@@ -15,6 +15,13 @@ set(OMR_GC ON CACHE BOOL "Enable OMR GC in Ab, for Om")
 set(OMR_JITBUILDER ON CACHE BOOL "Enable OMR Jitbuilder, for Ab")
 set(OMR_WARNINGS_AS_ERRORS OFF CACHE BOOL "Disable warnings as errors")
 
+# OMR Glue
+
+set(OMR_GC_GLUE_TARGET "om_gc_glue" CACHE STRING "The gc glue target, must be interface library")
+set(OMR_UTIL_GLUE_TARGET "om_util_glue" CACHE STRING "The util glue target, must be interface library")
+set(OMR_RAS_GLUE_TARGET "om_ras_glue" CACHE STRING "The ras glue target, must be interface library")
+set(OMR_CORE_GLUE_TARGET "om_core_glue" CACHE STRING "The core glue target, must be and interface library")
+
 # Global Configuration
 
 include(OmrPlatform)

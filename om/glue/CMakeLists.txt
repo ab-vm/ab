@@ -16,8 +16,9 @@
 #    Multiple authors (IBM Corp.) - initial implementation and documentation
 ###############################################################################
 
-add_library(omr_example_gc_glue INTERFACE)
-target_sources(omr_example_gc_glue INTERFACE
+add_library(om_gc_glue INTERFACE)
+
+target_sources(om_gc_glue INTERFACE
 	${CMAKE_CURRENT_SOURCE_DIR}/CollectorLanguageInterfaceImpl.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/CompactSchemeFixupObject.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/EnvironmentDelegate.cpp
@@ -31,38 +32,41 @@ target_sources(omr_example_gc_glue INTERFACE
 	${CMAKE_CURRENT_SOURCE_DIR}/VerboseManagerImpl.cpp
 )
 
-target_include_directories(omr_example_gc_glue INTERFACE
+target_include_directories(om_gc_glue INTERFACE
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_CURRENT_SOURCE_DIR}/..
 )
 
-add_library(omr_example_util_glue INTERFACE)
-target_sources(omr_example_util_glue INTERFACE
+add_library(om_util_glue INTERFACE)
+
+target_sources(om_util_glue INTERFACE
 	${CMAKE_CURRENT_SOURCE_DIR}/UtilGlue.c
 )
 
-target_include_directories(omr_example_util_glue INTERFACE
+target_include_directories(om_util_glue INTERFACE
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_CURRENT_SOURCE_DIR}/..
 )
 
-add_library(omr_example_core_glue INTERFACE)
-target_sources(omr_example_core_glue INTERFACE
+add_library(om_core_glue INTERFACE)
+
+target_sources(om_core_glue INTERFACE
 	${CMAKE_CURRENT_SOURCE_DIR}/LanguageVMGlue.c
 	${CMAKE_CURRENT_SOURCE_DIR}/omrExampleVM.cpp
 )
 
-target_include_directories(omr_example_core_glue INTERFACE
+target_include_directories(om_core_glue INTERFACE
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_CURRENT_SOURCE_DIR}/..
 )
 
-add_library(omr_example_ras_glue INTERFACE)
-target_sources(omr_example_ras_glue INTERFACE
+add_library(om_ras_glue INTERFACE)
+
+target_sources(om_ras_glue INTERFACE
 	${CMAKE_CURRENT_SOURCE_DIR}/Profiling.c
 )
 
-target_include_directories(omr_example_ras_glue INTERFACE
+target_include_directories(om_ras_glue INTERFACE
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_CURRENT_SOURCE_DIR}/..
 )
