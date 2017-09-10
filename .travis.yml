@@ -1,15 +1,16 @@
+language: cpp
+cache: ccache
+script:
+  - ./ci/travis/build.sh
+os: linux
 addons:
   apt:
     sources:
       - ubuntu-toolchain-r-test
     packages:
+      - g++-6
       - cmake
       - libclang-3.4-dev
       - libnuma-dev
-os:
-  - linux
-  - osx
-language: cpp
-cache: ccache
-script:
-  - ./ci/travis/build.sh
+before_install:
+  - export CC=gcc-6 CXX=g++-6
