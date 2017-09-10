@@ -6,7 +6,7 @@
 
 namespace Om {
 
-const SystemConfig System::DEFAULT_CONFIG;
+constexpr const SystemConfig System::DEFAULT_CONFIG;
 
 System::~System() {
 	PITH_ASSERT(state_ == SystemState::DEAD);
