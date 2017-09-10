@@ -19,7 +19,7 @@ const constexpr std::size_t PAGE_ALIGNMENT = PAGE_SIZE;
 
 }  // namespace
 
-class alignas(PAGE_ALIGNMENT) Page {
+class Page {
 public:
 	struct Permission {
 		static const constexpr int EXECUTE = PROT_EXEC;
@@ -71,7 +71,6 @@ private:
 };
 
 static_assert(sizeof(Page) == PAGE_SIZE, "Page size must be correct.");
-static_assert(alignof(Page) == PAGE_ALIGNMENT, "Page allignment must be correct.");
 
 }  // namespace Pith
 
