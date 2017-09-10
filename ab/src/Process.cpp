@@ -1,6 +1,7 @@
+#include <Ab/Config.hpp>
 #include <Ab/Process.hpp>
-
-#include <cassert>
+#include <Om/Process.hpp>
+#include <Pith/Assert.hpp>
 
 namespace Ab {
 
@@ -8,17 +9,31 @@ namespace Ab {
 bool Process::initialized_ = false;
 
 // static
-auto Process::init() -> Error {
-	assert(initialized_ == false);
+auto Process::init() -> ProcessError {
+	PITH_ASSERT(initialized_ == false);
+
+	auto e = Om::Process::init();
+	if (e != Om::ProcessError::SUCCESS) {
+		return ProcessError::OM_ERROR;
+	}
+
 	initialized_ = true;
-	return Error::SUCCESS;
+
+	return ProcessError::SUCCESS;
 }
 
 // static
-auto Process::kill() -> Error {
-	assert(initialized_ == true);
+auto Process::kill() -> ProcessError {
+	PITH_ASSERT(initialized_ == true);
+
 	initialized_ = false;
-	return Error::SUCCESS;
+
+	auto e = Om::Process::kill();
+	if (e != Om::ProcessError::SUCCESS) {
+		return ProcessError::OM_ERROR;
+	}
+
+	return ProcessError::SUCCESS;
 }
 
 }  // namespace Ab
