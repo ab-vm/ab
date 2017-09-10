@@ -4,12 +4,10 @@
 #include <iostream>
 
 extern "C" auto main([[gnu::unused]] int argc, [[gnu::unused]] char** argv) -> int {
-	// Process wide init
 	PITH_ASSERT(Ab::Process::init() == Ab::ProcessError::SUCCESS);
 
 	std::cout << Ab::Version::ABIGAIL << std::endl;
 
-	// tear down in reverse order.
 	PITH_ASSERT(Ab::Process::kill() == Ab::ProcessError::SUCCESS);
 	return 0;
 };
