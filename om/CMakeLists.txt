@@ -31,13 +31,20 @@ add_library(om
 
 target_include_directories(om
 	PUBLIC
-		$<BUILD_INTERFACE: include>
-		$<BUILD_INTERFACE: ${CMAKE_CURRENT_BINARY_DIR}/include>
+		include
+		glue
+		${CMAKE_BINARY_DIR}/external/omr
+		# $<BUILD_INTERFACE:./include>
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../external/omr/include_core>
 )
 
 target_link_libraries(om
 	PUBLIC
 		pith
+		omrgc
+		# omrcore
+		# omrport
 )
 
 add_subdirectory(glue)
