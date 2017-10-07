@@ -23,29 +23,18 @@ public:
 	InterpreterState state_;
 };
 
-class Stack {
-public:
-};
+class Stack {};
 
 class Interpreter {
 public:
-	auto next(InterpreterState& state) -> Instruction {
-		return state.program_[state.pc_];
-	}
+	auto inline operator()(InterpreterState& state) -> void;
 
-	auto inline operator()(InterpreterState& state) -> void {
-		auto instruction = next(state);
-		switch (instruction) {
-		case Instruction::UNREACHABLE:
-			PITH_ASSERT_UNREACHABLE();
-			break;
-		case Instruction::NOP:
-			break;
-		};
-		state.pc_ += 1;
-	}
+private:
+	auto next(InterpreterState& state) -> Instruction;
 };
 
 }  // namespace Ab
+
+#include <Ab/Interpreter.inl.hpp>
 
 #endif  // AB_INTERPRETER_HPP_
