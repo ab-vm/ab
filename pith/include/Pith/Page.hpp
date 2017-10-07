@@ -3,75 +3,54 @@
 
 #include <Pith/Config.hpp>
 #include <Pith/Address.hpp>
-#include <Pith/ArrayBox.hpp>
 #include <Pith/Bytes.hpp>
+#include <Pith/Process.hpp>
 #include <Pith/Result.hpp>
-#include <Pith/Span.hpp>
 #include <errno.h>
 #include <sys/mman.h>
+#include <system_error>
+#include <unistd.h>
 
 namespace Pith {
 
-namespace {
+struct PagePermission {
+	static const constexpr int execute = PROT_EXEC;
+	static const constexpr int write = PROT_WRITE;
+	static const constexpr int read = PROT_READ;
+	static const constexpr int none = PROT_NONE;
+};
 
-const constexpr std::size_t PAGE_SIZE = kibibytes(4);
-const constexpr std::size_t PAGE_ALIGNMENT = PAGE_SIZE;
-
-}  // namespace
+struct PageError : public std::runtime_error {
+	using std::runtime_error::runtime_error;
+};
 
 class Page {
 public:
-	struct Permission {
-		static const constexpr int EXECUTE = PROT_EXEC;
-		static const constexpr int WRITE = PROT_WRITE;
-		static const constexpr int READ = PROT_READ;
-		static const constexpr int NONE = PROT_NONE;
-	};
+	Page() = delete;
 
-	using Permissions = Permission;
+	/// The size of a page. Must be determined at run time.
+	static auto size() noexcept -> std::size_t;
 
 	/// Will bring a page into memory, with no permissions.
-	static inline auto map(const Span<Page>& pages, int permissions = Page::Permissions::NONE)
-		-> Result<Page*, int> {
-		Page* p = (Page*)mmap(
-			pages.value(), pages.size(), permissions, MAP_ANON | MAP_PRIVATE, 0, 0);
+	static auto map(const std::size_t n, const int permissions = PagePermission::none)
+		-> Address;
 
-		if (p != nullptr) {
-			return ok(p);
-		} else {
-			return err(errno);  // TODO: Return errno
-		}
-	}
+	/// Will bring a page into memory, with no permissions.
+	static auto
+	map(const Address address, const std::size_t size,
+	    const int permissions = PagePermission::none) -> Address;
 
 	/// Unmap a page from memory.
 	/// Returns 0 on success.
-	static inline auto unmap(const Span<Page>& pages) -> int {
-		int e = munmap(pages.value(), pages.size());
-		if (e == 0) {
-			return 0;
-		} else {
-			return errno;
-		}
-	}
+	static auto unmap(const Address address, const std::size_t size) -> void;
 
-	static inline auto setPermissions(const Span<Page>& pages, int permissions) -> int {
-		return mprotect(pages.value(), pages.size(), permissions);
-	}
-
-	inline constexpr auto bytes() const -> const ByteArrayBox<PAGE_SIZE>& {
-		return bytes_;
-	}
-
-	inline auto bytes() -> const ByteArrayBox<PAGE_SIZE>& {
-		return bytes_;
-	}
-
-private:
-	ByteArrayBox<PAGE_SIZE> bytes_;
+	static auto
+	setPermissions(const Address address, const std::size_t size, const int permissions)
+		-> void;
 };
 
-static_assert(sizeof(Page) == PAGE_SIZE, "Page size must be correct.");
-
 }  // namespace Pith
+
+#include <Pith/Page.inl.hpp>
 
 #endif  // PITH_PAGE_HPP_
