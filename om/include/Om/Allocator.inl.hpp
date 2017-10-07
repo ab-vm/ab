@@ -5,9 +5,11 @@
 
 namespace Om {
 
-Allocator::Allocator() {}
+Allocator::Allocator() {
+}
 
-Allocator::~Allocator() {}
+Allocator::~Allocator() {
+}
 
 auto Allocator::init() -> bool {
 	return true;
@@ -39,10 +41,10 @@ auto Allocator::allocateRaw(std::size_t size) -> Pith::Address {
 	return malloc(size);
 }
 
-#endif // 0
+#endif  // 0
 
 template <GcSafe gcSafe, typename T, typename... Args>
-auto Allocator::allocateNative(ActiveContext& acx, Args&& ...args)
+auto Allocator::allocateNative(ActiveContext& acx, Args&&... args)
 	-> Pith::Result<Ref<T>, AllocationError> {
 	/// TODO: Implement OMR allocations
 	PITH_TRACE();
@@ -60,8 +62,8 @@ auto Allocator::allocateStruct(Args&&... args) -> Ref<StructCell<T>>
 		T* p = new T{std::forward<Args>(args)...};
 		return Ref<StructCell<T>>{p};
 }
-#endif // 0
+#endif  // 0
 
-} // namespace Om
+}  // namespace Om
 
-#endif // OM_ALLOCATOR_INL_HPP_
+#endif  // OM_ALLOCATOR_INL_HPP_

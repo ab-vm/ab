@@ -3,12 +3,12 @@
 
 #include <Om/Config.hpp>
 #include <Om/GcSafe.hpp>
+#include <Om/NativeCell.hpp>
 #include <Om/Object.hpp>
 #include <Om/Ref.hpp>
 #include <Om/StackRootRef.hpp>
-#include <Pith/Result.hpp>
 #include <Pith/Debug.hpp>
-#include <Om/NativeCell.hpp>
+#include <Pith/Result.hpp>
 
 namespace Om {
 
@@ -45,24 +45,22 @@ public:
 	template <typename InitFunction>
 	auto inline allocate<GcSafe::NO, InitFunction>(ActiveContext& cx, InitFunction&& init) -> Pith::Maybe<Ref<Object>>;
 
-#endif // 0
+#endif  // 0
 
 	template <GcSafe gcSafe, typename T, typename... Args>
-	inline auto allocateNative(ActiveContext& cx, Args&& ...args)
+	inline auto allocateNative(ActiveContext& cx, Args&&... args)
 		-> Pith::Result<Ref<T>, AllocationError>;
 
 #if 0
 	template <GcSafe gcSafe, typename T, typename... Args>
 	auto inline allocateStruct(ActiveContext& cx, Args&&... args) -> Ref<StructCell<T>>;
-#endif //0
+#endif  // 0
 
 private:
-
 #if 0
 	template <GcSafe gcSafe>
 	auto inline allocateRaw(std::size_t size) -> Pith::Address;
-#endif // 0
-
+#endif  // 0
 };
 
 }  // namespace Om
