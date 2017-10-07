@@ -3,112 +3,70 @@
 
 #include <Pith/Address.hpp>
 #include <Pith/Assert.hpp>
+#include <Pith/Bytes.hpp>
 #include <Pith/Page.hpp>
 #include <Pith/Result.hpp>
+#include <Pith/Span.hpp>
 #include <cstdint>
 
 namespace Ab {
 
 struct MemoryConfig {
-	Pith::Span<Pith::Page> reservedPages_;
-	std::size_t initialPageCount_;
+	Pith::Address address{nullptr};
+	std::size_t minPageCount{1};
+	std::size_t maxPageCount{4};
 
-	inline auto verify() const -> void {
-		PITH_ASSERT(reservedPages_.length() >= initialPageCount_);
-	}
+	inline auto verify() const -> void;
 };
 
-enum class MemoryState { DEAD, ACTIVE };
+class MemoryError : public std::runtime_error {
+	using std::runtime_error::runtime_error;
+};
 
-enum class MemoryError { SUCCESS, ERROR };
-
+/// The WASM contiguous raw memory subsystem.
+/// web assembly gives programs low level access to a contiguous region of memory.
+/// The Memory class manages that giant blob of memory. Per the spec, Memory can be grown, but does
+/// not shrink. Each call
 class Memory {
 public:
-	static constexpr inline auto defaultConfig() -> const MemoryConfig& {
-		return defaultConfig_;
-	}
+	/// The size of a memory page.
+	static auto pageSize() -> std::size_t;
 
-	inline constexpr Memory()
-		: reservedPages_{nullptr, 0}, activePageCount_{0}, state_{MemoryState::DEAD} {};
+	/// Bring up the memory subsystem with the default config.
+	Memory();
+
+	/// Bring up the memory subsytem.
+	Memory(const MemoryConfig& config);
 
 	~Memory();
 
-	inline auto init(const MemoryConfig& config) -> MemoryError;
+	/// The address.
+	inline auto addresss() const -> Pith::Address;
 
-	inline auto kill() -> void;
+	/// The size of the allocated memory.
+	inline auto size() const -> std::size_t;
 
-	inline auto grow(std::size_t n = 1) -> MemoryError;
+	/// Grow the memory by n pages.
+	auto grow(std::size_t n = 1) -> void;
 
-	inline auto activePages() const -> Pith::Span<Pith::Page> {
-		return Pith::Span<Pith::Page>{reservedPages().value(), activePageCount_};
-	}
-
-	inline auto reservedPages() const -> const Pith::Span<Pith::Page>& {
-		return reservedPages_;
-	}
+	/// Shrink the memory by n pages.
+	auto shrink(std::size_t n = 1) -> void;
 
 private:
-	static constexpr const MemoryConfig defaultConfig_{
-		{nullptr, Pith::mebibytes(1)},  // reservedPages_
-		1  // initialPageCount_
-	};
+	auto reserve(const Pith::Address address, std::size_t n) -> Pith::Address;
 
-	Pith::Span<Pith::Page> reservedPages_;
-	std::size_t activePageCount_;
-	MemoryState state_;
+	auto activate(const Pith::Address address, const std::size_t n) -> void;
+
+	auto deactivate(const Pith::Address address, const std::size_t n) -> void;
+
+	auto release(const Pith::Address address, const std::size_t n) -> void;
+
+	Pith::Address address_;
+	std::size_t pageCount_;
+	std::size_t maxPageCount_;
 };
 
-inline Memory::~Memory() {
-	PITH_ASSERT(state_ == MemoryState::DEAD);
-}
-
-inline auto Memory::init(const MemoryConfig& config) -> MemoryError {
-	PITH_ASSERT(state_ == MemoryState::DEAD);
-	config.verify();
-
-	auto result = Pith::Page::map(config.reservedPages_);
-
-	if (!result) {
-		return MemoryError::ERROR;
-	}
-
-	reservedPages_.value(result());
-	reservedPages_.length(config.reservedPages_.length());
-
-	int error = Pith::Page::setPermissions(
-		activePages(), Pith::Page::Permission::READ | Pith::Page::Permission::WRITE);
-
-	if (error != 0) {
-		PITH_ASSERT(Pith::Page::unmap(reservedPages_) == 0);
-		return MemoryError::ERROR;
-	}
-
-	state_ = MemoryState::ACTIVE;
-	return MemoryError::SUCCESS;
-}
-
-inline auto Memory::kill() -> void {
-	PITH_ASSERT(state_ == MemoryState::ACTIVE);
-	state_ = MemoryState::DEAD;
-	PITH_ASSERT(Pith::Page::unmap(reservedPages_) == 0);
-}
-
-inline auto Memory::grow(std::size_t n) -> MemoryError {
-	PITH_ASSERT(state_ == MemoryState::ACTIVE);
-
-	if (activePageCount_ + n > reservedPages().length()) {
-		return MemoryError::ERROR;
-	}
-
-	Pith::Span<Pith::Page> newPages{activePages().end(), n};
-	int perm = Pith::Page::Permission::READ | Pith::Page::Permission::WRITE;
-	auto result = Pith::Page::map(newPages, perm);
-	PITH_ASSERT(result);
-
-	activePageCount_ += n;
-
-	return MemoryError::SUCCESS;
-}
+#include <Ab/Memory.inl.hpp>
 
 }  // namespace Ab
 
