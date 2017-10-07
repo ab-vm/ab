@@ -4,7 +4,8 @@
 
 namespace Ab {
 
-template <> bool init(Klass* k, Klass* parentKlass) {
+template <>
+bool init(Klass* k, Klass* parentKlass) {
 	VirtualMachine vm;
 
 	heap->allocate<Klass>();

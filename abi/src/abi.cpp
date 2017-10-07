@@ -1,13 +1,20 @@
-#include <Ab/Version.hpp>
+#include <Ab/ModuleLoader.hpp>
 #include <Ab/Process.hpp>
-#include <Pith/Assert.hpp>
+#include <Ab/Version.hpp>
 #include <iostream>
 
-extern "C" auto main([[gnu::unused]] int argc, [[gnu::unused]] char** argv) -> int {
-	PITH_ASSERT(Ab::Process::init() == Ab::ProcessError::SUCCESS);
+namespace Abi {
+struct Config {
+	const char* module;
+};
+
+}  // namespace Abi
+
+extern "C" auto main(int argc, char** argv) -> int {
+	Ab::Process::init();
+	Ab::ModuleLoader loader();
 
 	std::cout << Ab::Version::ABIGAIL << std::endl;
-
-	PITH_ASSERT(Ab::Process::kill() == Ab::ProcessError::SUCCESS);
+	Ab::Process::kill();
 	return 0;
 };

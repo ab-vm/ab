@@ -10,15 +10,13 @@
 namespace Ab {
 namespace Wasm {
 
-class LoaderError {};
+enum class LoaderError { UNKNOWN_ERROR };
 
 class Loader {
 public:
 	/// Load a module from a binary stream
 	auto operator()(ActiveContext& cx, std::istream& in)
 		-> Pith::Result<Om::Ref<Module>, LoaderError>;
-
-private:
 };
 
 }  // namespace Wasm

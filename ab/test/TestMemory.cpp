@@ -9,18 +9,14 @@ namespace Test {
 class TestMemory : public BasicTest {};
 
 TEST_F(TestMemory, initAndKill) {
-	Memory m;
-	ASSERT_EQ(m.init(Memory::defaultConfig()), MemoryError::SUCCESS);
-	m.kill();
+	Memory m{};
 }
 
 TEST_F(TestMemory, grow) {
-	Memory m;
-	m.init(Memory::defaultConfig());
+	Memory m{};
 	for (std::size_t i = 0; i < 3; i++) {
-		EXPECT_EQ(m.grow(), MemoryError::SUCCESS);
+		m.grow();
 	}
-	m.kill();
 }
 
 }  // namespace Test

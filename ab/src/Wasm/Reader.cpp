@@ -28,12 +28,12 @@ auto Reader::leb128(std::int64_t& result) -> void {
 auto Reader::section(Module* m) -> void {
 	auto id = sectionId(m);
 	switch (id) {
-		case SectionId::TYPE:
-			typeSection();
-			break;
-		case SectionId::IMPORT:
-			importSection();
-			break;
+	case SectionId::TYPE:
+		typeSection();
+		break;
+	case SectionId::IMPORT:
+		importSection();
+		break;
 	}
 }
 

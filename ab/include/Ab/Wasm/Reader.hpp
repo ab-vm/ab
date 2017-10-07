@@ -4,33 +4,32 @@
 namespace Ab {
 namespace Wasm {
 
+namespace Error {
+
+enum class Kind : int { SUCCESS, FAIL, BAD_HEADER };
+
+struct Base {
+	ReaderErrorKind kind_;
+	virtual ReaderErrorKind kind();
+};
+
+struct BadHeader : public Base {
+	virtual auto kind -> Kind() {
+		return Kind::BAD_HEADER;
+	}
+};
+
+}  // namespace Error
+
 class Reader {
-	namespace Error {
-
-	enum class Kind : int { SUCCESS, FAIL, BAD_HEADER };
-
-	struct Base {
-		ReaderErrorKind kind_;
-		virtual ReaderErrorKind kind();
-	};
-
-	struct BadHeader : public Base {
-		virtual auto kind -> Kind() {
-			return Kind::BAD_HEADER;
-		}
-	};
-
-	}  // namespace Error
-
+public:
 	auto Reader(std::istream& in);
 
 	auto read() -> Result<Ref<Module>, ReaderError::Base>;
 
 	auto error() const -> const ReaderError&;
 
-	inline auto uint8(std::uint8_t result) -> bool {
-		in_ >> s
-	}
+	inline auto uint8(std::uint8_t result) -> bool;
 
 	auto uint16() -> bool;
 
