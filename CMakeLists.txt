@@ -7,6 +7,18 @@ list(APPEND CMAKE_MODULE_PATH
 	${CMAKE_CURRENT_SOURCE_DIR}/external/omr/cmake/modules
 )
 
+include(FindClangTidy)
+include(OmrPlatform)
+include(Utilities)
+
+# Global Configuration
+
+omr_platform_global_setup()
+
+get_git_commit(GIT_COMMIT)
+
+enable_testing()
+
 # OMR Configuration
 
 set(OMR_GLUE_TARGET "om_omr_glue" CACHE PATH "Om Implements the OMR glue")
@@ -21,15 +33,6 @@ set(OMR_GC_GLUE_TARGET "om_gc_glue" CACHE STRING "The gc glue target, must be in
 set(OMR_UTIL_GLUE_TARGET "om_util_glue" CACHE STRING "The util glue target, must be interface library")
 set(OMR_RAS_GLUE_TARGET "om_ras_glue" CACHE STRING "The ras glue target, must be interface library")
 set(OMR_CORE_GLUE_TARGET "om_core_glue" CACHE STRING "The core glue target, must be and interface library")
-
-# Global Configuration
-
-include(OmrPlatform)
-include(Utilities)
-
-get_git_commit(GIT_COMMIT)
-
-enable_testing()
 
 # Misc utilities
 
