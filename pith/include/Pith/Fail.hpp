@@ -13,20 +13,20 @@ namespace Pith {
 #ifdef PITH_FAIL_FAST
 
 template <typename T>
-inline auto [[noreturn]] fail(T x) -> T {
+inline auto[[noreturn]] fail(T x) -> T {
 	std::abort();
 	return x;
 }
 
-#else // PITH_FAIL_FAST
+#else  // PITH_FAIL_FAST
 
 template <typename T>
 inline auto fail(T x) -> T {
 	return x;
 }
 
-#endif // PITH_FAIL_FAST
+#endif  // PITH_FAIL_FAST
 
-} // namespace Pith
+}  // namespace Pith
 
-#endif // PITH_FAIL_HPP_
+#endif  // PITH_FAIL_HPP_

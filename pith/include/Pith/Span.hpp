@@ -7,7 +7,8 @@
 namespace Pith {
 
 /// A span of memory. Pointer and length pair.
-template <typename Type> class Span {
+template <typename Type>
+class Span {
 public:
 	// Zeroing constructor.
 	inline constexpr Span() : value_{nullptr}, length_{0} {

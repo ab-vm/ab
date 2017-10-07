@@ -19,6 +19,7 @@ add_library(pith SHARED
 	src/SharedLock.cpp
 	src/Pith.cpp
 	src/Version.cpp
+	src/Process.cpp
 )
 
 target_include_directories(pith

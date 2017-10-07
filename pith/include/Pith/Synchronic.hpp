@@ -5,7 +5,8 @@ namespace Pith {
 
 enum class WaitHint { OPTIMIZE_LATENCY, OPTIMIZE_UTILIZATION };
 
-template <typename T> class Synchronic {
+template <typename T>
+class Synchronic {
 public:
 	using Type = T;
 

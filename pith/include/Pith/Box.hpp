@@ -16,7 +16,8 @@ namespace Pith {
 ///   i = 3;
 ///   i(); // 3
 ///   ```
-template <typename T> class Box {
+template <typename T>
+class Box {
 public:
 	using Type = T;
 
@@ -67,23 +68,31 @@ public:
 		return value_;
 	}
 
+	inline auto value() & -> Type& {
+		return value_;
+	}
+
 	/// @}
 
-	template <typename Other> inline auto operator=(const Box<Other>& x) -> Box<Type>& {
+	template <typename Other>
+	inline auto operator=(const Box<Other>& x) -> Box<Type>& {
 		value_ = x();
 		return *this;
 	}
 
-	template <typename Other> inline auto operator=(Box<Other>& x) -> Box<Type>& {
+	template <typename Other>
+	inline auto operator=(Box<Other>& x) -> Box<Type>& {
 		value_ = std::move(x());
 	}
 
-	template <typename Other> inline auto operator=(const Other& x) -> Box<Type>& {
+	template <typename Other>
+	inline auto operator=(const Other& x) -> Box<Type>& {
 		value_ = x;
 		return *this;
 	}
 
-	template <typename Other> inline auto operator=(Other&& x) -> Box<Type>& {
+	template <typename Other>
+	inline auto operator=(Other&& x) -> Box<Type>& {
 		value_ = std::move(x);
 		return *this;
 	}

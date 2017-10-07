@@ -22,11 +22,14 @@ public:
 
 	auto kill() noexcept -> SharedLockError;
 
-	template <Access access> inline void lock() noexcept;
+	template <Access access>
+	inline void lock() noexcept;
 
-	template <Access access> inline auto unlock() noexcept -> void;
+	template <Access access>
+	inline auto unlock() noexcept -> void;
 
-	template <Access access> inline auto isLocked() const noexcept -> bool;
+	template <Access access>
+	inline auto isLocked() const noexcept -> bool;
 
 private:
 	int sharedCount_ = 0;
@@ -39,32 +42,38 @@ private:
 /// Implementation
 ///
 
-template <> inline auto SharedLock::lock<Access::SHARED>() noexcept -> void {
+template <>
+inline auto SharedLock::lock<Access::SHARED>() noexcept -> void {
 	// TODO: Implement
 	sharedCount_ += 1;
 };
 
-template <> inline auto SharedLock::lock<Access::EXCLUSIVE>() noexcept -> void {
+template <>
+inline auto SharedLock::lock<Access::EXCLUSIVE>() noexcept -> void {
 	// TODO: Implement
 	exclusiveCount_ += 1;
 }
 
-template <> inline auto SharedLock::unlock<Access::SHARED>() noexcept -> void {
+template <>
+inline auto SharedLock::unlock<Access::SHARED>() noexcept -> void {
 	// TODO: Implement
 	sharedCount_ -= 1;
 }
 
-template <> inline auto SharedLock::unlock<Access::EXCLUSIVE>() noexcept -> void {
+template <>
+inline auto SharedLock::unlock<Access::EXCLUSIVE>() noexcept -> void {
 	// TODO: Implement
 	exclusiveCount_ -= 1;
 }
 
-template <> inline auto SharedLock::isLocked<Access::SHARED>() const noexcept -> bool {
+template <>
+inline auto SharedLock::isLocked<Access::SHARED>() const noexcept -> bool {
 	// TODO: Implement
 	return false;
 }
 
-template <> inline auto SharedLock::isLocked<Access::EXCLUSIVE>() const noexcept -> bool {
+template <>
+inline auto SharedLock::isLocked<Access::EXCLUSIVE>() const noexcept -> bool {
 	// TODO: Implement
 	return false;
 }

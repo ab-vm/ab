@@ -10,12 +10,12 @@ SharedLock::SharedLock() noexcept = default;
 // TODO(rwy0717): Implement
 SharedLock::~SharedLock() noexcept = default;
 
-auto SharedLock::init() -> SharedLockError {
+auto SharedLock::init() noexcept -> SharedLockError {
 	PITH_TRACE();
 	return SharedLockError::SUCCESS;
 }
 
-auto SharedLock::kill() -> SharedLockError {
+auto SharedLock::kill() noexcept -> SharedLockError {
 	PITH_TRACE();
 	return SharedLockError::SUCCESS;
 }

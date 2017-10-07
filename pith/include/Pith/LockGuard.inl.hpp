@@ -46,10 +46,11 @@ LockGuard<LockType, Access::EXCLUSIVE>::LockGuard(LockType& lock) : lock_{lock} 
 	// lock_.lock<Access::EXCLUSIVE>();
 }
 
-template <typename LockType> LockGuard<LockType, Access::EXCLUSIVE>::~LockGuard() {
+template <typename LockType>
+LockGuard<LockType, Access::EXCLUSIVE>::~LockGuard() {
 	// lock_.unlock<Access::EXCLUSIVE>();
 }
 
-} // namespace Pith
+}  // namespace Pith
 
-#endif // PITH_LOCKGUARD_INL_HPP_
+#endif  // PITH_LOCKGUARD_INL_HPP_

@@ -18,7 +18,7 @@ class[[gnu::unused]] LockGuard;
 
 /// RAII: Holds shared access to lock for lifetime.
 template <typename T>
-class [[gnu::unused]] LockGuard<T, Access::SHARED> {
+class[[gnu::unused]] LockGuard<T, Access::SHARED> {
 public:
 	using LockType = T;
 
@@ -49,12 +49,12 @@ private:
 
 /// RAII: Holds a lock exclusively for lifetime.
 template <typename T>
-class [[gnu::unused]] LockGuard<T, Access::EXCLUSIVE> {
+class[[gnu::unused]] LockGuard<T, Access::EXCLUSIVE> {
 public:
 	using LockType = T;
 
 	/// Obtain exclusive access. Cannot fail, but will block.
-	explicit LockGuard(LockType& lock);
+	explicit LockGuard(LockType & lock);
 
 	/// release exclusive access
 	~LockGuard();

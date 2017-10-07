@@ -14,10 +14,12 @@ namespace Impl {
 /// 1. Types with complex destructors. The destructor will be called correctly.
 /// 2. Types with trivial destructors. No destructor is called.
 /// 3. Pointer types. nullptr is specially treated as a synonym for nothing.
-template <typename Type, bool = std::is_trivially_destructible<Type>::value> class MaybeBase;
+template <typename Type, bool = std::is_trivially_destructible<Type>::value>
+class MaybeBase;
 
 /// Storage for types that are not trivially_destructible.
-template <typename Type> class MaybeBase<Type, false> {
+template <typename Type>
+class MaybeBase<Type, false> {
 public:
 	static_assert(std::is_object<Type>::value, "Type must be std::is_object");
 
@@ -33,7 +35,8 @@ public:
 		reset();
 	}
 
-	template <typename... Args> inline void emplace(Args&&... args) {
+	template <typename... Args>
+	inline void emplace(Args&&... args) {
 		reset();
 		new (&storage_) Type(std::forward<Args>(args)...);
 		isJust_ = true;
@@ -66,7 +69,8 @@ private:
 };
 
 /// Storage for trivially_destructible types.
-template <typename Type> class MaybeBase<Type, true> {
+template <typename Type>
+class MaybeBase<Type, true> {
 public:
 	static_assert(std::is_object<Type>::value, "Type must be std::is_object");
 	static_assert(!std::is_reference<Type>::value, "Type may not be a reference");
@@ -79,7 +83,8 @@ public:
 		new (&storage_) Type(std::forward<Args>(args)...);
 	}
 
-	template <typename... Args> inline void emplace(Args&&... args) {
+	template <typename... Args>
+	inline void emplace(Args&&... args) {
 		reset();
 		new (&storage_) Type(std::forward<Args>(args)...);
 		isJust_ = true;
@@ -111,7 +116,8 @@ private:
 /// Maybe storage for nullable pointer types. Destructor is not called--pointers are trivially
 /// destructible. nullptr is treated as Nothing. This class has no storage or performance overhead
 /// compared to a normal pointer.
-template <typename Type> class MaybeBase<Type*, true> {
+template <typename Type>
+class MaybeBase<Type*, true> {
 public:
 	static_assert(std::is_object<Type>::value, "Type must be std::is_object");
 

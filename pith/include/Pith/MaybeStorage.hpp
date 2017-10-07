@@ -12,14 +12,16 @@
 
 namespace Pith {
 
-template <typename Type, bool nullable = TypeTrait::Nullable<Type>::value> class MaybeStorage;
+template <typename Type, bool nullable = TypeTrait::Nullable<Type>::value>
+class MaybeStorage;
 
 /// Nullable storage is tricky. Essentially, there is always a value,
 /// but that value has a representation for "Nothing/Null".
 /// The value is constructed and destructed with the storage.
 /// The value must be constructible and assignable.
 /// @see_also Om::TypeTrait::Nullable
-template <typename Type> class MaybeStorage<Type, true> {
+template <typename Type>
+class MaybeStorage<Type, true> {
 public:
 	static_assert(std::is_object<Type>::value, "Type must be std::is_object");
 
@@ -40,7 +42,8 @@ public:
 		value_ = TypeTrait::Null<Type>::value;
 	}
 
-	template <typename Arg> inline auto set(InPlace, Arg&& arg) -> void {
+	template <typename Arg>
+	inline auto set(InPlace, Arg&& arg) -> void {
 		value_ = std::forward<Arg>(arg);
 	}
 
@@ -56,7 +59,8 @@ private:
 	Type value_;
 };
 
-template <typename Type> class MaybeStorage<Type, false> {
+template <typename Type>
+class MaybeStorage<Type, false> {
 public:
 	static_assert(std::is_object<Type>::value, "Type must be std::is_object");
 
@@ -85,7 +89,8 @@ public:
 		}
 	}
 
-	template <typename... Args> inline auto set(InPlace, Args&&... args) -> void {
+	template <typename... Args>
+	inline auto set(InPlace, Args&&... args) -> void {
 		set(nothing);
 		new (&storage_) Type(std::forward<Args>(args)...);
 		isJust_ = true;

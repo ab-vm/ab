@@ -26,7 +26,8 @@ namespace Pith {
 ///   m1(f); /// 1
 ///   m2(f); // no output
 ///   ```
-template <typename Type> class Maybe {
+template <typename Type>
+class Maybe {
 public:
 	static_assert(!std::is_same<Type, InPlace>::value, "Maybe cannot hold the InPlace tag");
 	static_assert(!std::is_same<Type, Nothing>::value, "Maybe cannot hold the Nothing tag");
@@ -223,15 +224,18 @@ private:
 };
 
 /// A value constructor for maybe objects.
-template <typename Type> auto just(Type&& value) -> Maybe<Type> {
+template <typename Type>
+auto just(Type&& value) -> Maybe<Type> {
 	return Maybe<Type>{std::forward<Type>(value)};
 }
 
 namespace TypeTrait {
 
-template <typename Type> struct Nullable<Maybe<Type>> : public std::true_type {};
+template <typename Type>
+struct Nullable<Maybe<Type>> : public std::true_type {};
 
-template <typename Type> struct Null<Maybe<Type>> {
+template <typename Type>
+struct Null<Maybe<Type>> {
 	using value_type = Nothing&;
 	static constexpr const Nothing& value{nothing};
 };

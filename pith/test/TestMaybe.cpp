@@ -46,7 +46,8 @@ struct HasCons {
 	}
 };
 
-template <typename T> void fail([[gnu::unused]] T x) {
+template <typename T>
+void fail([[gnu::unused]] T x) {
 	ADD_FAILURE();
 };
 
