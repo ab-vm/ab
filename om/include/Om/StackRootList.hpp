@@ -27,8 +27,8 @@ private:
 	StackRootRef<Cell>* head_;
 };
 
-} // namespace Om
+}  // namespace Om
 
 #include <Om/StackRootList.inl.hpp>
 
-#endif // OM_STACKROOTLIST_HPP_
+#endif  // OM_STACKROOTLIST_HPP_

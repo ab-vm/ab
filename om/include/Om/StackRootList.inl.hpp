@@ -17,6 +17,6 @@ auto StackRootList::head(StackRootRef<Cell>* h) -> StackRootList& {
 	return *this;
 }
 
-} // namespace Om
+}  // namespace Om
 
-#endif // OM_STACKROOTLIST_INL_HPP_
+#endif  // OM_STACKROOTLIST_INL_HPP_

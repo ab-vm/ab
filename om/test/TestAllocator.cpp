@@ -1,11 +1,18 @@
+#include <Om/Config.hpp>
 #include <Om/Allocator.hpp>
+#include <Om/NativeCell.hpp>
 #include <gtest/gtest.h>
 
-using namespace Om;
+namespace Om {
+namespace Test {
 
-struct MyIntCell : public NativeCell {
-	MyIntCell(int x) : NativeCell{sizeof(MyIntCell)}, x{x} {}
-	int x;
+struct IntCell : public NativeCell {
+public:
+	IntCell() : IntCell(0) {
+	}
+	IntCell(int x) : NativeCell{sizeof(IntCell)}, value{x} {
+	}
+	int value;
 };
 
 TEST(Allocator, base) {
@@ -16,11 +23,11 @@ TEST(Allocator, base) {
 	{
 		ActiveContext acx{cx};
 		Om::Allocator allocator;
-		auto result = allocator.allocateNative<GcSafe::YES, MyIntCell>(acx, 1);
+		auto result = allocator.allocateNative<GcSafe::YES, IntCell>(acx, 1);
 		EXPECT_TRUE(result);
-		StackRootRef<MyIntCell> root{acx, result()};
-		EXPECT_EQ(root->x, 1);
-		EXPECT_EQ(root->size(), sizeof(MyIntCell));
+		StackRootRef<IntCell> root{acx, result()};
+		EXPECT_EQ(root->value, 1);
+		EXPECT_EQ(root->size(), sizeof(IntCell));
 	}
 	cx.kill();
 	sys.kill();
@@ -56,12 +63,18 @@ TEST(Allocator, allocate) {
 
 	e = runtime.init();
 	ASSERT_FALSE(e);
+	-0
 
-	Context c(runtime);
+		Contexjuuk,
+		, , , , , , , , t c(runtime);
 	Maybe<Object*> m = c.allocator().allocate();
 	EXPECT_TRUE(m);
 
 	e = runtime.kill();
 	EXPECT_FALSE(e);
 }
+
 #endif  // OM_DISABLE
+
+}  // namespace Test
+}  // namespace Om

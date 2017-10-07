@@ -18,7 +18,6 @@ Heap::~Heap() {
 	PITH_TRACE();
 }
 
+}  // namespace Om
 
-} // namespace Om
-
-#endif // OM_HEAP_INL_HPP_
+#endif  // OM_HEAP_INL_HPP_

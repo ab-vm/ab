@@ -12,7 +12,7 @@ namespace Om {
 class SystemLock : public Pith::SharedLock {};
 
 template <Pith::Access access>
-class SystemLockGuard : public Pith::LockGuard<SystemLock, access>{};
+class SystemLockGuard : public Pith::LockGuard<SystemLock, access> {};
 
 using SharedAccess = SystemLockGuard<Pith::Access::SHARED>;
 using ExclusiveAccess = SystemLockGuard<Pith::Access::EXCLUSIVE>;

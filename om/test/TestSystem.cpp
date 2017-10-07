@@ -8,5 +8,5 @@ TEST(TestSystem, base) {
 	// TODO: Write system up/down test
 }
 
-} // namespace Test
-} // namespace Om
+}  // namespace Test
+}  // namespace Om

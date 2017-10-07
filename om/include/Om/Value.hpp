@@ -30,6 +30,6 @@ static_assert(sizeof(Value) == sizeof(Pith::Address), "Value must be pointer-wid
 
 #include <Om/Value.inl.hpp>
 
-#endif // 0
+#endif  // 0
 
 #endif  // OM_VALUE_HPP_

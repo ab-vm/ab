@@ -10,8 +10,12 @@
 
 namespace Om {
 
+/// A wrapper for heap-allocating struct.
+/// The structs must be POD types, with no destructor.
+/// There is no marking function for these cells, they are leaf objects only.
+/// TODO: Unimplemented.
 template <typename T>
-class StructCell : public NativeCell, public Pith::Box<T> {};
+class StructCell : public NativeCell {};
 
 }  // namespace Om
 

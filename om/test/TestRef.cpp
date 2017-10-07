@@ -35,4 +35,4 @@ TEST(Ref, Raw) {
 	EXPECT_EQ(ref.raw(), &s);
 }
 
-#endif // 0
+#endif  // 0

@@ -10,11 +10,9 @@ constexpr inline Value::Value() : value_{0} {
 
 /// TODO: Assert Type is convertible to uintptr_t
 template <typename Type>
-constexpr inline Value::Value(const Type& x)
-	: value_{(std::uintptr_t)x}
-{
-		  // static_assert(sizeof(Type) == sizeof(std::uintptr_t), "Values must be
-		  // pointer-width.");
+constexpr inline Value::Value(const Type& x) : value_{(std::uintptr_t)x} {
+	// static_assert(sizeof(Type) == sizeof(std::uintptr_t), "Values must be
+	// pointer-width.");
 }
 
 /// TODO: Assert uintptr_t is convertible to Type.
@@ -24,6 +22,6 @@ constexpr inline auto Value::to() const -> Type {
 	return static_cast<Type>(value_);
 }
 
-} // namespace Om
+}  // namespace Om
 
-#endif // OM_VALUE_INL_HPP_
+#endif  // OM_VALUE_INL_HPP_

@@ -2,17 +2,19 @@
 #define OM_REF_HPP_
 
 #include <Om/Config.hpp>
+#include <Om/Cell.hpp>
 #include <Pith/Address.hpp>
 #include <Pith/Meta/Mixin.hpp>
 #include <cstddef>
 #include <type_traits>
-#include <Om/Cell.hpp>
 
 namespace Om {
 
 /// A pointer to managed memory. It is GC-Unsafe.
-template <typename Type> class Ref {
-	static_assert(std::is_base_of<Cell, Type>::value,
+template <typename Type>
+class Ref {
+	static_assert(
+		std::is_base_of<Cell, Type>::value,
 		"You may only construct Refs as pointers to managed types. "
 		"All managed types must subclass Om::Cell.");
 
@@ -46,7 +48,8 @@ public:
 	}
 
 	/// Cast Ref<A> to Ref<B>
-	template <typename To> inline constexpr auto to() const -> Ref<To> {
+	template <typename To>
+	inline constexpr auto to() const -> Ref<To> {
 		return Ref<To>{reinterpret_cast<To*>(this->raw())};
 	}
 
@@ -75,7 +78,8 @@ private:
 
 namespace {
 
-template <typename T> inline constexpr auto makeRef(T* p) -> Ref<T> {
+template <typename T>
+inline constexpr auto makeRef(T* p) -> Ref<T> {
 	return Ref<T>(p);
 }
 

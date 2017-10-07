@@ -24,7 +24,6 @@ enum class HeapCondition { DEAD, ACTIVE };
 
 class Heap {
 public:
-
 	static constexpr inline auto defaultConfig() -> const HeapConfig&;
 
 	inline Heap();
@@ -35,7 +34,7 @@ public:
 
 private:
 	static const constexpr HeapConfig DEFAULT_CONFIG{nullptr, 1_GiB, 1_MiB, 1_MiB};
-	
+
 	Pith::SharedLock lock_;
 	HeapCondition condition_;
 };

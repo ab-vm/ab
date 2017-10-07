@@ -1,6 +1,6 @@
 #include <Om/Config.hpp>
-#include <Om/StackRootRef.hpp>
 #include <Om/StackRootList.hpp>
+#include <Om/StackRootRef.hpp>
 #include <gtest/gtest.h>
 
 namespace Om {

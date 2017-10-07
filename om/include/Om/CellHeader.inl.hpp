@@ -27,6 +27,6 @@ auto CellHeader::unsetTag(Tag::Type tag) -> void {
 constexpr auto CellHeader::kind() const -> CellKind {
 	return CellKind::UNKNOWN;
 }
-} // namespace Om
+}  // namespace Om
 
-#endif // OM_CELLHEADER_INL_HPP_
+#endif  // OM_CELLHEADER_INL_HPP_

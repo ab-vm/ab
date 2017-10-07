@@ -16,6 +16,6 @@ StackRootRef<T>::~StackRootRef() {
 	acx_.context().stackRoots().head(prev_);
 }
 
-} // namespace Om
+}  // namespace Om
 
 #endif  // OM_STACKROOTREF_INL_HPP_

@@ -29,8 +29,8 @@ private:
 	std::uintptr_t value_;
 };
 
-} // namespace Om
+}  // namespace Om
 
 #include <Om/CellHeader.inl.hpp>
 
-#endif // OM_CELLHEADER_HPP_
+#endif  // OM_CELLHEADER_HPP_

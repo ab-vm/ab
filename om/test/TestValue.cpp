@@ -20,4 +20,4 @@ TEST(Value, to) {
 } // namespace Test
 } // namespace Om
 
-#endif // 0
+#endif  // 0
