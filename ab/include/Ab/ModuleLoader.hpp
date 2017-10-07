@@ -9,33 +9,8 @@ class Module;
 
 class ModuleLoader {
 public:
+	ModuleLoader();
 };
-
-BaseCompiler{
-
-};
-
-load(file) {
-	compile(verify(read(open(find(name))));
-};
-
-class String {
-	std::size_t begin;
-	std::size_t end;
-};
-
-class Array {
-	std::size_t length;
-	std::size_t element;
-};
-
-namespace Raw {}
-
-struct String {
-	char* value_;
-	std::size_t length_;
-};
-};  // namespace Ab
 
 }  // namespace Ab
 
