@@ -1,5 +1,5 @@
 ==============================
-Ab: A wasm interpreter library
+Ab: A WASM interpreter library
 ==============================
 
 .. highlight:: C++
