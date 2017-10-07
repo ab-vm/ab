@@ -50,7 +50,7 @@ macro(ab_setup)
 
 	# Compilation warnings
 
-	add_compile_options(-fno-exceptions -Werror -Wall -Wextra)
+	add_compile_options(-Wall -Wextra -Wno-unused-parameter)
 
 	# Use clang tidy for static analysis
 
