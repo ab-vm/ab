@@ -4,12 +4,13 @@
 #include <Ab/Config.hpp>
 #include <Om/ActiveContext.hpp>
 #include <Om/Context.hpp>
+#include <Om/System.hpp>
 
 namespace Ab {
 
-class Context : public Om::Context {};
-
-class ActiveContext : public Om::ActiveContext {};
+using System = Om::System;
+using Context = Om::Context;
+using ActiveContext = Om::Context;
 
 }  // namespace Ab
 
