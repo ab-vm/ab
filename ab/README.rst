@@ -18,6 +18,8 @@ Usage
 .. code-block:: C++
 
 	int main(int argc, char ** argv) {
-		// TODO: Basic API sample for ab
+		Ab::Process::init();
+		Ab::System system;
+		Ab::Process::kill();
 		return 0;
 	}
