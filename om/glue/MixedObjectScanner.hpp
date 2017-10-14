@@ -19,24 +19,20 @@
 #ifndef MIXEDOBJECTSCANNER_HPP_
 #define MIXEDOBJECTSCANNER_HPP_
 
-#include "ObjectScanner.hpp"
 #include "GCExtensionsBase.hpp"
 #include "ObjectModel.hpp"
+#include "ObjectScanner.hpp"
 
-class GC_MixedObjectScanner : public GC_ObjectScanner
-{
+class GC_MixedObjectScanner : public GC_ObjectScanner {
 	/* Data Members */
 private:
-	fomrobject_t * const _endPtr;	/**< end scan pointer */
-	fomrobject_t *_mapPtr;			/**< pointer to first slot in current scan segment */
+	fomrobject_t* const _endPtr; /**< end scan pointer */
+	fomrobject_t* _mapPtr; /**< pointer to first slot in current scan segment */
 
 protected:
-
 public:
-
 	/* Member Functions */
 private:
-
 protected:
 	/**
 	 * @param[in] env The scanning thread environment
@@ -52,12 +48,11 @@ protected:
 	}
 
 	/**
-	 * Subclasses must call this method to set up the instance description bits and description pointer.
+	 * Subclasses must call this method to set up the instance description bits and description
+	 * pointer.
 	 * @param[in] env The scanning thread environment
 	 */
-	MMINLINE void
-	initialize(MM_EnvironmentBase *env)
-	{
+	MMINLINE void initialize(MM_EnvironmentBase* env) {
 		GC_ObjectScanner::initialize(env);
 
 		intptr_t slotCount = _endPtr - _scanPtr;
@@ -79,30 +74,31 @@ public:
 	 * In-place instantiation and initialization for mixed obect scanner.
 	 * @param[in] env The scanning thread environment
 	 * @param[in] objectPtr The object to scan
-	 * @param[in] allocSpace Pointer to space for in-place instantiation (at least sizeof(GC_MixedObjectScanner) bytes)
+	 * @param[in] allocSpace Pointer to space for in-place instantiation (at least
+	 * sizeof(GC_MixedObjectScanner) bytes)
 	 * @param[in] flags Scanning context flags
 	 * @return Pointer to GC_MixedObjectScanner instance in allocSpace
 	 */
-	MMINLINE static GC_MixedObjectScanner *
-	newInstance(MM_EnvironmentBase *env, omrobjectptr_t objectPtr, void *allocSpace, uintptr_t flags)
-	{
-		GC_MixedObjectScanner *objectScanner = NULL;
+	MMINLINE static GC_MixedObjectScanner* newInstance(
+		MM_EnvironmentBase* env, omrobjectptr_t objectPtr, void* allocSpace,
+		uintptr_t flags) {
+		GC_MixedObjectScanner* objectScanner = NULL;
 		if (NULL != allocSpace) {
-			new(allocSpace) GC_MixedObjectScanner(env, objectPtr, flags);
-			objectScanner = (GC_MixedObjectScanner *)allocSpace;
+			new (allocSpace) GC_MixedObjectScanner(env, objectPtr, flags);
+			objectScanner = (GC_MixedObjectScanner*)allocSpace;
 			objectScanner->initialize(env);
 		}
 		return objectScanner;
 	}
 
-	MMINLINE uintptr_t getBytesRemaining() { return sizeof(fomrobject_t) * (_endPtr - _scanPtr); }
+	MMINLINE uintptr_t getBytesRemaining() {
+		return sizeof(fomrobject_t) * (_endPtr - _scanPtr);
+	}
 
 	/**
 	 * @see GC_ObjectScanner::getNextSlotMap()
 	 */
-	virtual fomrobject_t *
-	getNextSlotMap(uintptr_t &slotMap, bool &hasNextSlotMap)
-	{
+	virtual fomrobject_t* getNextSlotMap(uintptr_t& slotMap, bool& hasNextSlotMap) {
 		intptr_t slotCount = _endPtr - _scanPtr;
 
 		/* Initialize the slot map assuming all slots are reference slots or NULL */
@@ -122,9 +118,8 @@ public:
 	/**
 	 * @see GC_ObjectScanner::getNextSlotMap(uintptr_t&, uintptr_t&, bool&)
 	 */
-	virtual fomrobject_t *
-	getNextSlotMap(uintptr_t &slotMap, uintptr_t &leafMap, bool &hasNextSlotMap)
-	{
+	virtual fomrobject_t*
+	getNextSlotMap(uintptr_t& slotMap, uintptr_t& leafMap, bool& hasNextSlotMap) {
 		leafMap = 0;
 		return getNextSlotMap(slotMap, hasNextSlotMap);
 	}

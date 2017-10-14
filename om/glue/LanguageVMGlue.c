@@ -20,23 +20,23 @@
 #include "omrvm.h"
 
 omr_error_t
-OMR_Glue_BindCurrentThread(OMR_VM *omrVM, const char *threadName, OMR_VMThread **omrVMThread)
-{
+OMR_Glue_BindCurrentThread(OMR_VM* omrVM, const char* threadName, OMR_VMThread** omrVMThread) {
 	omr_error_t rc = OMR_ERROR_NONE;
 
-	OMR_VMThread *currentThread = omr_vmthread_getCurrent(omrVM);
+	OMR_VMThread* currentThread = omr_vmthread_getCurrent(omrVM);
 	if (NULL == currentThread) { /* not already attached */
 		omrthread_t self = NULL;
 		if (0 == omrthread_attach_ex(&self, J9THREAD_ATTR_DEFAULT)) {
-			void *languageThread = NULL;
-			OMR_VMThread *newOMRThread = NULL;
+			void* languageThread = NULL;
+			OMR_VMThread* newOMRThread = NULL;
 
 			rc = OMR_Glue_AllocLanguageThread(omrVM->_language_vm, &languageThread);
 			if (OMR_ERROR_NONE != rc) {
 				goto done;
 			}
 
-			rc = OMR_Thread_FirstInit(omrVM, self, languageThread, &newOMRThread, threadName);
+			rc = OMR_Thread_FirstInit(
+				omrVM, self, languageThread, &newOMRThread, threadName);
 			if (OMR_ERROR_NONE != rc) {
 				OMR_Glue_FreeLanguageThread(languageThread);
 				goto done;
@@ -50,7 +50,7 @@ OMR_Glue_BindCurrentThread(OMR_VM *omrVM, const char *threadName, OMR_VMThread *
 			}
 			/* success */
 			*omrVMThread = newOMRThread;
-done:
+		done:
 			if (OMR_ERROR_NONE != rc) {
 				/* error cleanup */
 				omrthread_detach(self);
@@ -66,9 +66,7 @@ done:
 	return rc;
 }
 
-omr_error_t
-OMR_Glue_UnbindCurrentThread(OMR_VMThread *omrVMThread)
-{
+omr_error_t OMR_Glue_UnbindCurrentThread(OMR_VMThread* omrVMThread) {
 	omr_error_t rc = OMR_ERROR_NONE;
 
 	if (NULL == omrVMThread) {
@@ -77,8 +75,9 @@ OMR_Glue_UnbindCurrentThread(OMR_VMThread *omrVMThread)
 		omrthread_t self = omrVMThread->_os_thread;
 
 		if (1 == omrVMThread->_attachCount) {
-			/* cache vmThread members so that we can use them after the vmThread is destroyed */
-			void *languageThread = omrVMThread->_language_vmthread;
+			/* cache vmThread members so that we can use them after the vmThread is
+			 * destroyed */
+			void* languageThread = omrVMThread->_language_vmthread;
 
 			rc = OMR_Thread_LastFree(omrVMThread);
 			if (OMR_ERROR_NONE != rc) {
@@ -97,22 +96,16 @@ done:
 	return rc;
 }
 
-omr_error_t
-OMR_Glue_AllocLanguageThread(void *languageVM, void **languageThread)
-{
+omr_error_t OMR_Glue_AllocLanguageThread(void* languageVM, void** languageThread) {
 	*languageThread = NULL;
 	return OMR_ERROR_NONE;
 }
 
-omr_error_t
-OMR_Glue_FreeLanguageThread(void *languageThread)
-{
+omr_error_t OMR_Glue_FreeLanguageThread(void* languageThread) {
 	return OMR_ERROR_NONE;
 }
 
 omr_error_t
-OMR_Glue_LinkLanguageThreadToOMRThread(void *languageThread, OMR_VMThread *omrVMThread)
-{
+OMR_Glue_LinkLanguageThreadToOMRThread(void* languageThread, OMR_VMThread* omrVMThread) {
 	return OMR_ERROR_NONE;
 }
-

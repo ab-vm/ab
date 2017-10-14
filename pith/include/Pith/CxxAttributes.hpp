@@ -9,4 +9,4 @@
 #define PITH_UNUSED maybe_unused
 #endif
 
-#endif // PITH_ATTR_HPP_
+#endif  // PITH_ATTR_HPP_

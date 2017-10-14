@@ -17,10 +17,10 @@ inline virtual auto MakeCopy() override -> OMR::VirtualMachineState* {
 	PITH_TRACE();
 }
 
-inline virtual auto MergeInto(OMR::VirtualMachineState* other, TR::IlBuilder *b) -> void {
+inline virtual auto MergeInto(OMR::VirtualMachineState* other, TR::IlBuilder* b) -> void {
 	PITH_TRACE();
 }
 
-} // namespace Ab
+}  // namespace Ab
 
-#endif // VIRTUALMACHINESTATE_INL_HPP_
+#endif  // VIRTUALMACHINESTATE_INL_HPP_

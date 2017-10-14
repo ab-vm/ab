@@ -3,10 +3,8 @@
 
 namespace Om {
 
-class MarkContext {
+class MarkContext {};
 
-};
+}  // namespace Om
 
-} // namespace Om
-
-#endif // OM_MARKCONTEXT_HPP_
+#endif  // OM_MARKCONTEXT_HPP_

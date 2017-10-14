@@ -16,9 +16,8 @@
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
  *******************************************************************************/
 
-
-#include <string.h>
 #include "omrExampleVM.hpp"
+#include <string.h>
 
 /**
  * Hash table callback for retrieving hash value of an entry
@@ -26,10 +25,8 @@
  * @param[in] entry Entry to hash
  * @param[in] userData Data that can be passed along, unused in this callback
  */
-uintptr_t
-rootTableHashFn(void *entry, void *userData)
-{
-	const char *name = ((RootEntry *)entry)->name;
+uintptr_t rootTableHashFn(void* entry, void* userData) {
+	const char* name = ((RootEntry*)entry)->name;
 	uintptr_t length = strlen(name);
 	uintptr_t hash = 0;
 	uintptr_t i;
@@ -52,11 +49,9 @@ rootTableHashFn(void *entry, void *userData)
  * keys are identical.
  *
  */
-uintptr_t
-rootTableHashEqualFn(void *leftEntry, void *rightEntry, void *userData)
-{
-	RootEntry *loe = (RootEntry *)leftEntry;
-	RootEntry *roe = (RootEntry *)rightEntry;
+uintptr_t rootTableHashEqualFn(void* leftEntry, void* rightEntry, void* userData) {
+	RootEntry* loe = (RootEntry*)leftEntry;
+	RootEntry* roe = (RootEntry*)rightEntry;
 	return (0 == strcmp(loe->name, roe->name));
 }
 
@@ -66,10 +61,8 @@ rootTableHashEqualFn(void *leftEntry, void *rightEntry, void *userData)
  * @param[in] entry Entry to hash
  * @param[in] userData Data that can be passed along, unused in this callback
  */
-uintptr_t
-objectTableHashFn(void *entry, void *userData)
-{
-	const char *name = ((ObjectEntry *)entry)->name;
+uintptr_t objectTableHashFn(void* entry, void* userData) {
+	const char* name = ((ObjectEntry*)entry)->name;
 	uintptr_t length = strlen(name);
 	uintptr_t hash = 0;
 	uintptr_t i;
@@ -92,11 +85,9 @@ objectTableHashFn(void *entry, void *userData)
  * keys are identical.
  *
  */
-uintptr_t
-objectTableHashEqualFn(void *leftEntry, void *rightEntry, void *userData)
-{
-	ObjectEntry *loe = (ObjectEntry *)leftEntry;
-	ObjectEntry *roe = (ObjectEntry *)rightEntry;
+uintptr_t objectTableHashEqualFn(void* leftEntry, void* rightEntry, void* userData) {
+	ObjectEntry* loe = (ObjectEntry*)leftEntry;
+	ObjectEntry* roe = (ObjectEntry*)rightEntry;
 	return (0 == strcmp(loe->name, roe->name));
 }
 
@@ -107,14 +98,12 @@ objectTableHashEqualFn(void *leftEntry, void *rightEntry, void *userData)
  * @param[in] entry The entry to free
  * @param[in] userData Data that can be passed along, unused in this callback
  */
-uintptr_t
-objectTableFreeFn(void *entry, void *userData)
-{
-	OMR_VM_Example *exampleVM = (OMR_VM_Example *)userData;
+uintptr_t objectTableFreeFn(void* entry, void* userData) {
+	OMR_VM_Example* exampleVM = (OMR_VM_Example*)userData;
 	OMRPORT_ACCESS_FROM_OMRVM(exampleVM->_omrVM);
-	ObjectEntry *objEntry = (ObjectEntry *)entry;
+	ObjectEntry* objEntry = (ObjectEntry*)entry;
 
-	omrmem_free_memory((void *)objEntry->name);
+	omrmem_free_memory((void*)objEntry->name);
 	objEntry->name = NULL;
 
 	return 0;

@@ -30,6 +30,6 @@ inline auto Process::properties() noexcept -> const SystemProperties& {
 	return properties_;
 }
 
-} // namespace Pith
+}  // namespace Pith
 
-#endif // PITH_PROCESS_INL_HPP_
+#endif  // PITH_PROCESS_INL_HPP_

@@ -31,7 +31,8 @@ inline auto Page::unmap(const Address address, const std::size_t size) -> void {
 	}
 }
 
-inline auto Page::setPermissions(const Address address, const std::size_t size, const int permissions) -> void {
+inline auto
+Page::setPermissions(const Address address, const std::size_t size, const int permissions) -> void {
 	auto e = mprotect(toPointer(address), size, permissions);
 	if (e != 0) {
 		throw PageError{"Failed to set page permissions"};

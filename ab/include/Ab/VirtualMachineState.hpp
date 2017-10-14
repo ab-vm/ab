@@ -13,14 +13,13 @@ public:
 
 	inline virtual auto MakeCopy() override -> OMR::VirtualMachineState*;
 
-	inline virtual auto MergeInto(OMR::VirtualMachineState* other, TR::IlBuilder *b) -> void;
+	inline virtual auto MergeInto(OMR::VirtualMachineState* other, TR::IlBuilder* b) -> void;
 
 private:
-
 };
 
 #include <Ab/VirtualMachineState.inl.hpp>
 
-} // namespace Ab
+}  // namespace Ab
 
-#endif // AB_VIRTUALMACHINESTATE_HPP_
+#endif  // AB_VIRTUALMACHINESTATE_HPP_

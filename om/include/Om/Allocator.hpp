@@ -12,58 +12,65 @@
 
 namespace Om {
 
-/// Allocates from a per-context cache aka TLH.
-class CacheAllocator {};
-
-class ActiveContext;
-
-class AllocationContext {
+class AllocatorContext {
 public:
 };
 
-enum class AllocationError {
-	OUT_OF_MEMORY,
-};
-
-class Allocator {
+#if 0
+class RawAllocator {
 public:
-	inline Allocator();
+	inline Allocator(AllocatorContext& cx) noexcept;
 
 	inline ~Allocator();
 
-	inline auto init() -> bool;
+	inline auto allocate(const std::size_t size, const std::size_t alignment) -> Ref<Cell>;
 
-	inline auto kill() -> bool;
-
-#if 0
-	template <GcSafe gcSafe, typename InitFunction>
-	inline auto allocate(InitFunction init) -> Pith::Maybe<Ref<Object>>;
-
-	template <typename InitFunction>
-	auto inline allocate<GcSafe::YES, InitFunction>(ActiveContext& cx, InitFunction&& init) -> Pith::Maybe<Ref<Object>>;
-
-	template <typename InitFunction>
-	auto inline allocate<GcSafe::NO, InitFunction>(ActiveContext& cx, InitFunction&& init) -> Pith::Maybe<Ref<Object>>;
-
-#endif  // 0
-
-	template <GcSafe gcSafe, typename T, typename... Args>
-	inline auto allocateNative(ActiveContext& cx, Args&&... args)
-		-> Pith::Result<Ref<T>, AllocationError>;
-
-#if 0
-	template <GcSafe gcSafe, typename T, typename... Args>
-	auto inline allocateStruct(ActiveContext& cx, Args&&... args) -> Ref<StructCell<T>>;
-#endif  // 0
+	inline auto allocate(
+		const std::size_t size, const std::size_t alignment, const std::nothrow_t&) noexcept
+		-> Ref<Cell>;
 
 private:
-#if 0
-	template <GcSafe gcSafe>
-	auto inline allocateRaw(std::size_t size) -> Pith::Address;
-#endif  // 0
+};
+
+#endif
+
+template <typename T>
+class Allocator {
+public:
+	Allocator(AllocatorContext& cx);
+
+	auto allocate(std::size_t n, std::size_t alignment) -> Ref<T>;
+
+	void deallocate(Ref<T> p);
+
+	template <typename... Args>
+	void construct(Ref<T> p, Args&&... args);
+};
+
+template <typename T>
+struct AllocatorTraits {
+	using type = T;
+	using value_type = T;
+	using pointer_type = Ref<T>;
+	using const_pointer_type = Ref<const T>;
+
+	template <typename A, typename U>
+	struct rebind {
+		using other = Allocator<U>;
+	};
+
+	template <class... Args>
+	static void construct(Allocator<T>& a, Ref<T> p, Args&&... args);
 };
 
 }  // namespace Om
+
+namespace std {
+
+template <typename T>
+struct allocator_traits<Om::Allocator<T>> : public Om::AllocatorTraits<T> {};
+
+}  // namespace std
 
 #include <Om/Allocator.inl.hpp>
 

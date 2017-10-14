@@ -5,4 +5,4 @@ namespace Pith {
 bool Process::initialized_{false};
 SystemProperties Process::properties_{};
 
-} // namespace Pith
+}  // namespace Pith

@@ -10,13 +10,14 @@ constexpr auto System::defaultConfig() -> const SystemConfig& {
 	return DEFAULT_CONFIG;
 }
 
-System::System() : state_{SystemState::DEAD} {}
+System::System() : state_{SystemState::DEAD} {
+}
 
 template <typename Function>
 auto System::mapRoots(const ExclusiveAccess& exclusive, Function&& function) -> void {
 	function(exclusive);
 }
 
-} // namespace Om
+}  // namespace Om
 
-#endif // OM_SYSTEM_INL_HPP_
+#endif  // OM_SYSTEM_INL_HPP_

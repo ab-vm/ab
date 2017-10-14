@@ -12,9 +12,10 @@ struct Config {
 
 extern "C" auto main(int argc, char** argv) -> int {
 	Ab::Process::init();
-	Ab::ModuleLoader loader();
+	Ab::ModuleLoader loader{};
 
 	std::cout << Ab::Version::ABIGAIL << std::endl;
+
 	Ab::Process::kill();
 	return 0;
 };

@@ -14,7 +14,7 @@ public:
 
 	inline auto size() const -> std::size_t;
 
-	virtual auto mark(MarkContext& cx) const -> void = 0;
+	// virtual auto mark(MarkContext& cx) const -> void = 0;
 
 private:
 	std::size_t size_;

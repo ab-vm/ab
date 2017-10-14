@@ -13,6 +13,6 @@ inline auto Process::kill() -> void {
 	Om::Process::kill();
 }
 
-} // namespace Ab
+}  // namespace Ab
 
-#endif // AB_PROCESS_INL_HPP_
+#endif  // AB_PROCESS_INL_HPP_

@@ -15,6 +15,6 @@ inline auto OmrProcess::port() noexcept -> OMRPortLibrary& {
 	return port_;
 }
 
-} // namespace Om
+}  // namespace Om
 
-#endif // OM_PROCESS_INL_HPP_
+#endif  // OM_PROCESS_INL_HPP_

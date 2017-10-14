@@ -15,8 +15,10 @@ class Instance;
 class Module : public Om::NativeCell {
 public:
 	Module();
+
 	~Module();
-	auto instantiate() -> Om::Ref<Instance>;
+
+	auto mark(Om::MarkContext& cx) -> void;
 
 private:
 };

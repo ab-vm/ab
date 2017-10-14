@@ -3,6 +3,8 @@
 #include <Om/NativeCell.hpp>
 #include <gtest/gtest.h>
 
+#if 0
+
 namespace Om {
 namespace Test {
 
@@ -78,3 +80,5 @@ TEST(Allocator, allocate) {
 
 }  // namespace Test
 }  // namespace Om
+
+#endif  // 0

@@ -6,85 +6,105 @@
 #include <Pith/Address.hpp>
 #include <Pith/Meta/Mixin.hpp>
 #include <cstddef>
+#include <memory>
 #include <type_traits>
 
 namespace Om {
 
 /// A pointer to managed memory. It is GC-Unsafe.
-template <typename Type>
+template <typename T>
 class Ref {
+public:
 	static_assert(
-		std::is_base_of<Cell, Type>::value,
+		std::is_base_of<Cell, T>::value,
 		"You may only construct Refs as pointers to managed types. "
 		"All managed types must subclass Om::Cell.");
 
-public:
-	inline constexpr Ref() : value_{nullptr} {
-	}
+	using ElementType = std::remove_extent<T>;
 
-	inline constexpr Ref(Type* value) : value_{value} {
-	}
+	using DifferenceType = std::ptrdiff_t;
 
-	/// Converting copy constructor.
 	template <typename U>
-	inline constexpr Ref(const Ref<U>& other) : value_{other.template to<Type>().raw()} {
-	}
+	using Rebind = Ref<U>;
 
-	inline constexpr auto operator-> () const -> Type* {
-		return this->value_;
-	}
+	using ConstType = Rebind<const T>;
 
-	inline constexpr auto operator*() const -> Type& {
-		return *this->value_;
-	}
+	constexpr Ref();
 
-	inline constexpr auto toAddress() const -> Pith::Address {
-		return reinterpret_cast<Pith::Address>(this->raw());
-	}
+	constexpr Ref(std::nullptr_t);
 
-	inline auto operator=(Type* value) -> Ref& {
-		this->raw() = value;
-		return *this;
-	}
+	template <typename U>
+	constexpr Ref(U* other);
+
+	template <typename U>
+	constexpr Ref(const Ref<U>& other);
+
+	/// Access member from Ref.
+	constexpr auto operator-> () const -> T*;
+
+	/// Dereference the ref.
+	constexpr auto operator*() const -> T&;
+
+	constexpr auto toAddress() const -> Pith::Address;
+
+	inline auto operator=(std::nullptr_t rhs) -> Ref<T>&;
+
+	template <typename U>
+	inline auto operator=(U* rhs) -> Ref<T>&;
+
+	template <typename U>
+	inline auto operator=(const Ref<U>& rhs) -> Ref<T>&;
 
 	/// Cast Ref<A> to Ref<B>
-	template <typename To>
-	inline constexpr auto to() const -> Ref<To> {
-		return Ref<To>{reinterpret_cast<To*>(this->raw())};
-	}
+	template <typename U>
+	constexpr auto to() const -> Ref<U>;
 
 	/// Obtain the raw pointer
-	inline constexpr auto raw() const -> Type* {
-		return value_;
-	}
+	constexpr auto raw() const -> T*;
 
-	template <typename OtherType>
-	inline constexpr auto operator==(const Ref<OtherType> other) const -> bool {
-		return other.toAddress() == toAddress();
-	}
+	constexpr auto operator==(std::nullptr_t rhs) const -> bool;
 
-	template <typename OtherType>
-	inline constexpr auto operator==(OtherType* other) const -> bool {
-		return static_cast<Pith::Address>(other) == toAddress();
-	}
+	template <typename U>
+	constexpr auto operator==(const Ref<U>& rhs) const -> bool;
 
-	inline constexpr auto operator==(std::nullptr_t) const -> bool {
-		return nullptr == toAddress();
-	}
+	template <typename U>
+	constexpr auto operator==(U* rhs) const -> bool;
+
+	constexpr explicit operator Pith::Address() const;
+
+	template <typename U>
+	constexpr explicit operator U*() const;
 
 private:
-	Type* value_;
+	T* value_;
 };
 
-namespace {
-
 template <typename T>
-inline constexpr auto makeRef(T* p) -> Ref<T> {
-	return Ref<T>(p);
-}
-
-}  // namespace
+constexpr auto makeRef(T* p) -> Ref<T>;
 
 }  // namespace Om
+
+namespace std {
+template <typename T>
+struct pointer_traits<Om::Ref<T>> {
+	using pointer = Om::Ref<T>;
+
+	using element_type = typename Om::Ref<T>::ElementType;
+
+	using difference_type = typename Om::Ref<T>::DifferenceType;
+
+	template <typename U>
+	using rebind = typename Om::Ref<T>::template Rebind<U>;
+
+	static auto pointer_to(T& x) noexcept -> Om::Ref<T> {
+		return Om::Ref<T>{&x};
+	}
+};
+
+template <>
+struct pointer_traits<Om::Ref<void>> {};
+}  // namespace std
+
+#include <Om/Ref.inl.hpp>
 
 #endif  // OM_REF_HPP_

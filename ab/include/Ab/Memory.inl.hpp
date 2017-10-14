@@ -7,7 +7,8 @@ inline auto MemoryConfig::verify() const -> void {
 	PITH_ASSERT(minPageCount <= maxPageCount);
 }
 
-inline Memory::Memory() : Memory{MemoryConfig{}} {}
+inline Memory::Memory() : Memory{MemoryConfig{}} {
+}
 
 inline Memory::Memory(const MemoryConfig& config)
 	: address_{nullptr}, pageCount_{0}, maxPageCount_{config.maxPageCount} {
@@ -37,7 +38,6 @@ inline auto Memory::shrink(std::size_t n) -> void {
 
 inline auto Memory::reserve(const Pith::Address address, std::size_t n) -> Pith::Address {
 	return Pith::Page::map(address, n);
-
 }
 inline auto Memory::activate(const Pith::Address address, const std::size_t n) -> void {
 	// activate the memory region by requesting read/write permissions.
@@ -46,7 +46,8 @@ inline auto Memory::activate(const Pith::Address address, const std::size_t n) -
 }
 
 inline auto Memory::deactivate(const Pith::Address address, const std::size_t n) -> void {
-	// deactivate the memory region by disabling all permissions. this should hopefully cause the OS to unmap the memory.
+	// deactivate the memory region by disabling all permissions. this should hopefully cause
+	// the OS to unmap the memory.
 	auto permissions = Pith::PagePermission::none;
 	Pith::Page::setPermissions(address, n * Pith::Page::size(), permissions);
 }
@@ -55,4 +56,4 @@ inline auto Memory::release(const Pith::Address address, const std::size_t n) ->
 	Pith::Page::unmap(address, n * Pith::Page::size());
 }
 
-#endif // AB_MEMORY_INL_HPP_
+#endif  // AB_MEMORY_INL_HPP_

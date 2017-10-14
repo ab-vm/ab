@@ -9,7 +9,8 @@ class Module;
 
 class ModuleLoader {
 public:
-	ModuleLoader();
+	ModuleLoader() {
+	}
 };
 
 }  // namespace Ab

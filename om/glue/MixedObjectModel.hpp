@@ -25,21 +25,19 @@ class MM_GCExtensionsBase;
  * Provides information for mixed objects.
  * @ingroup GC_Base
  */
-class GC_MixedObjectModel
-{
+class GC_MixedObjectModel {
 	/*
 	 * Function members
 	 */
 private:
 protected:
 public:
-	bool
-	initialize(MM_GCExtensionsBase *extensions)
-	{
+	bool initialize(MM_GCExtensionsBase* extensions) {
 		return true;
 	}
 
-	void tearDown(MM_GCExtensionsBase *extensions) {}
+	void tearDown(MM_GCExtensionsBase* extensions) {
+	}
 };
 
 #endif /* MIXEDOBJECTMODEL_HPP_ */

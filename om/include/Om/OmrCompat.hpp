@@ -4,6 +4,6 @@
 namespace OMR {
 using Runtime = OMR_Runtime;
 using VirtualMachine = OMR_VM;
-}
+}  // namespace OMR
 
-#endif // OM_OMRCOMPAT_HPP_
+#endif  // OM_OMRCOMPAT_HPP_
