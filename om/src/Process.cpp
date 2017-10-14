@@ -6,6 +6,7 @@
 #include <omr.h>
 #include <omrport.h>
 #include <thread_api.h>
+#include <cstring>
 
 namespace Om {
 
