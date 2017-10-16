@@ -8,14 +8,6 @@ Documentation is hosted at `Read the Docs`_.
 
 For building instructions, see `Building Ab VM`_.
 
-Major Components
-================
-
-- Ab: Virtual Machine
-- Abi: Ab Interactive
-- Om: GC Object Model
-- Pith: Core C++ Utilities
-
 =============================
 
 Ab is built on `Eclipse OMR`_
