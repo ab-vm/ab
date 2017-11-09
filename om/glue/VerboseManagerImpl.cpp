@@ -57,10 +57,10 @@ bool MM_VerboseManagerImpl::configureVerboseGC(
 	OMR_VM* omrVM, char* filename, uintptr_t fileCount, uintptr_t iterations) {
 	OMRPORT_ACCESS_FROM_OMRVM(omrVM);
 	if (MM_VerboseManager::configureVerboseGC(omrVM, filename, fileCount, iterations)) {
-		this->fileCount = fileCount;
+		this->fileCount  = fileCount;
 		this->iterations = iterations;
-		size_t len = strlen(filename);
-		this->filename = (char*)omrmem_allocate_memory(len + 1, OMRMEM_CATEGORY_MM);
+		size_t len       = strlen(filename);
+		this->filename   = (char*)omrmem_allocate_memory(len + 1, OMRMEM_CATEGORY_MM);
 		strncpy(this->filename, filename, len);
 		this->filename[len] = '\0';
 		return true;
@@ -88,7 +88,7 @@ bool MM_VerboseManagerImpl::reconfigureVerboseGC(OMR_VM* omrVM) {
 #define MAX_PID_LENGTH 16
 		char pidStr[MAX_PID_LENGTH];
 		uintptr_t pid = omrsysinfo_get_pid();
-		int pidLen = snprintf(pidStr, MAX_PID_LENGTH, "_%lu", (long unsigned int)pid);
+		int pidLen    = snprintf(pidStr, MAX_PID_LENGTH, "_%lu", (long unsigned int)pid);
 		/* Allocate new buffer */
 		char* newLog = (char*)
 			omrmem_allocate_memory(pidLen + strlen(filename) + 1, OMRMEM_CATEGORY_MM);
@@ -96,7 +96,7 @@ bool MM_VerboseManagerImpl::reconfigureVerboseGC(OMR_VM* omrVM) {
 		char* extension = strchr(filename, '.');
 		if (NULL != extension) {
 			size_t nameLen = extension - filename;
-			size_t extLen = strlen(filename) - nameLen;
+			size_t extLen  = strlen(filename) - nameLen;
 			strncpy(newLog, filename, nameLen);
 			strncpy(newLog + nameLen, pidStr, pidLen);
 			strncpy(newLog + nameLen + pidLen, extension, extLen);

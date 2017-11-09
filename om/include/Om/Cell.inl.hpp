@@ -6,11 +6,16 @@
 namespace Om {
 
 /// TODO: Implement constructor
-constexpr Cell::Cell(CellKind kind) : header_{kind} {
+inline Cell::Cell(Map* map) noexcept : header_{map, CellHeader::Tag::NONE} {
 }
 
-constexpr auto Cell::kind() const -> CellKind {
-	return header_.kind();
+inline auto Cell::map() const noexcept -> Map* {
+	return header_.map();
+}
+
+inline auto Cell::map(Map* map) noexcept -> Cell& {
+	header_.map(map);
+	return *this;
 }
 
 }  // namespace Om

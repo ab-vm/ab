@@ -29,7 +29,7 @@
 OMR_VMThread*
 MM_EnvironmentDelegate::attachVMThread(OMR_VM* omrVM, const char* threadName, uintptr_t reason) {
 	OMR_VMThread* omrVMThread = NULL;
-	omr_error_t rc = OMR_ERROR_NONE;
+	omr_error_t rc            = OMR_ERROR_NONE;
 
 	rc = OMR_Glue_BindCurrentThread(omrVM, threadName, &omrVMThread);
 	if (OMR_ERROR_NONE != rc) {
@@ -85,7 +85,7 @@ bool MM_EnvironmentDelegate::isExclusiveAccessRequestWaiting() {
  */
 void MM_EnvironmentDelegate::acquireExclusiveVMAccess() {
 	if (0 == _env->getOmrVMThread()->exclusiveCount) {
-		OMR_VM* omrVM = _env->getOmrVM();
+		OMR_VM* omrVM             = _env->getOmrVM();
 		OMR_VM_Example* exampleVM = (OMR_VM_Example*)omrVM->_language_vm;
 
 		/* tell the rest of the world that a thread is going for exclusive VM< access */
@@ -128,7 +128,7 @@ void MM_EnvironmentDelegate::releaseExclusiveVMAccess() {
  * @see assumeExclusiveVMAccess(uintptr_t)
  */
 uintptr_t MM_EnvironmentDelegate::relinquishExclusiveVMAccess(bool* deferredVMAccessRelease) {
-	uintptr_t relinquishedExclusiveCount = _env->getOmrVMThread()->exclusiveCount;
+	uintptr_t relinquishedExclusiveCount   = _env->getOmrVMThread()->exclusiveCount;
 	_env->getOmrVMThread()->exclusiveCount = 0;
 	return relinquishedExclusiveCount;
 }

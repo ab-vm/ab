@@ -16,9 +16,13 @@ constexpr const std::size_t CELL_ALIGNMENT = Pith::bytes(16);
 
 struct alignas(CELL_ALIGNMENT) Cell {
 public:
-	constexpr Cell(CellKind kind);
+	inline Cell(Map* map) noexcept;
 
-	constexpr inline auto kind() const -> CellKind;
+	/// Get this cell's map, which describes the Cell's shape.
+	inline auto map() const noexcept -> Map*;
+
+	/// Set the cell's map.
+	inline auto map(Map* map) noexcept -> Cell&;
 
 private:
 	CellHeader header_;

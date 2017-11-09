@@ -7,7 +7,7 @@ Coding Style Guidelines
 Choice of Language
 ==================
 
-Ab is written in C++11 with minimal standard library usage.
+Ab is written in C++14 with minimal standard library usage.
 In particular, be suspicious of newer standard library APIs introduced since C++11.
 Ab is written without exceptions.
 

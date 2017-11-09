@@ -61,8 +61,8 @@ public:
 	bool initialize(
 		MM_EnvironmentBase* env, MM_GlobalCollector* globalCollector,
 		MM_MarkingScheme* markingScheme) {
-		_extensions = env->getExtensions();
-		_markingScheme = markingScheme;
+		_extensions      = env->getExtensions();
+		_markingScheme   = markingScheme;
 		_globalCollector = globalCollector;
 
 		return true;

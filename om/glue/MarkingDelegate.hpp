@@ -57,7 +57,7 @@ public:
 	 * @return true if delegate initialized successfully
 	 */
 	MMINLINE bool initialize(MM_EnvironmentBase* env, MM_MarkingScheme* markingScheme) {
-		_objectModel = &(env->getExtensions()->objectModel);
+		_objectModel   = &(env->getExtensions()->objectModel);
 		_markingScheme = markingScheme;
 		return true;
 	}

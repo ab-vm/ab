@@ -1,21 +1,27 @@
 #include <Om/Config.hpp>
 #include <Om/Heap.hpp>
+#include <Om/OmrThread.hpp>
 #include <Om/System.hpp>
 #include <Om/SystemLock.hpp>
 #include <Pith/Assert.hpp>
+#include <Dispatcher.hpp>
+#include <EnvironmentBase.hpp>
+#include <GCExtensionsBase.hpp>
 #include <StartupManagerImpl.hpp>
+#include <omrgcstartup.hpp>
+#include <stdexcept>
 
 namespace Om {
 
-auto OmrSystem::init() -> OmrSystemError {
-#if 0
+OmrSystem::OmrSystem() {
+	OmrThread thread;
+
+	// VM
+
 	memset(&vm_, 0, sizeof(OMR_VM));
-	vm_._runtime = &OmrProcess::runtime();
+	vm_._runtime     = &OmrProcess::runtime();
 	vm_._language_vm = this;
-
-	// todo: move this to Process::attach(*this);
-
-	auto rc = omr_attach_vm_to_runtime(&vm_);
+	auto rc          = omr_attach_vm_to_runtime(&vm_);
 	PITH_ASSERT(rc == 0);
 
 	// GC
@@ -23,20 +29,18 @@ auto OmrSystem::init() -> OmrSystemError {
 	MM_StartupManagerImpl manager(&vm_);
 	PITH_ASSERT(OMR_GC_IntializeHeapAndCollector(&vm_, &manager) == 0);
 	MM_GCExtensionsBase* extensions = MM_GCExtensionsBase::getExtensions(&vm_);
-
-	// GC Slave threads
-
 	PITH_ASSERT(extensions->dispatcher->startUpThreads() == true);
-#endif  // 0
-	return OmrSystemError::SUCCESS;
 }
 
-auto OmrSystem::kill() -> OmrSystemError {
-#if 0
-	MM_GCExtensionsBase* extensions = MM_GCExtensionsBase::getExtensions(vm_);
-	omr_error_t rc = OMR_ERROR_NONE;
+OmrSystem::~OmrSystem() noexcept {
+	OmrThread thread;
 
-	// GC Slave threads
+	MM_GCExtensionsBase* extensions = MM_GCExtensionsBase::getExtensions(&vm_);
+
+	OMRPORT_ACCESS_FROM_OMRVM(&vm_);
+
+// GC Slave threads
+#if 0
 
 	if (NULL != extensions->dispatcher) {
 		extensions->dispatcher->shutDownThreads();
@@ -45,12 +49,9 @@ auto OmrSystem::kill() -> OmrSystemError {
 	}
 
 	return rc;
-#endif  // 0
 
-#if 0
+
 	if (NULL != omrVMThread) {
-		OMRPORT_ACCESS_FROM_OMRVMTHREAD(omrVMThread);
-#if defined(OMR_GC)
 		rc = OMR_GC_ShutdownDispatcherThreads(omrVMThread);
 		if (OMR_ERROR_NONE != rc) {
 			omrtty_printf("Failed to shutdown GC slave threads, rc=%d.\n", rc);
@@ -60,7 +61,6 @@ auto OmrSystem::kill() -> OmrSystemError {
 		if (OMR_ERROR_NONE != rc) {
 			omrtty_printf("Failed to shutdown Garbage Collector, rc=%d.\n", rc);
 		}
-#endif /* OMR_GC */
 
 		omr_ras_cleanupMethodDictionary(omrVM);
 
@@ -102,45 +102,6 @@ auto OmrSystem::kill() -> OmrSystemError {
 		fflush(stderr);
 	}
 #endif  // 0
-	return OmrSystemError::SUCCESS;
-}
-
-constexpr const SystemConfig System::DEFAULT_CONFIG;
-
-System::~System() {
-	PITH_ASSERT(state_ == SystemState::DEAD);
-}
-
-auto System::init(const SystemConfig& config) -> SystemError {
-	PITH_ASSERT(state_ == SystemState::DEAD);
-
-	PITH_ASSERT(omr_.init() == OmrSystemError::SUCCESS);
-	PITH_ASSERT(heap_.init(config.heap_) == HeapError::SUCCESS);
-	PITH_ASSERT(lock_.init() == Pith::SharedLockError::SUCCESS);
-
-	state_ = SystemState::ACTIVE;
-	return SystemError::SUCCESS;
-}
-
-auto System::kill() -> SystemError {
-	PITH_ASSERT(state_ == SystemState::ACTIVE);
-
-	PITH_ASSERT(omr_.kill() == OmrSystemError::SUCCESS);
-	heap_.kill();
-	lock_.kill();
-	PITH_ASSERT(contexts_.empty());
-	state_ = SystemState::DEAD;
-	return SystemError::SUCCESS;
-}
-
-auto System::attach(Context* cx) -> AttachError {
-	contexts_.insert(cx);
-	return AttachError::SUCCESS;
-}
-
-auto System::detach(Context* cx) -> AttachError {
-	contexts_.erase(cx);
-	return AttachError::SUCCESS;
 }
 
 }  // namespace Om

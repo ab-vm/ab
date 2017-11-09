@@ -103,10 +103,10 @@ public:
 
 		/* Initialize the slot map assuming all slots are reference slots or NULL */
 		if (slotCount < _bitsPerScanMap) {
-			slotMap = (((uintptr_t)1) << slotCount) - 1;
+			slotMap        = (((uintptr_t)1) << slotCount) - 1;
 			hasNextSlotMap = false;
 		} else {
-			slotMap = ~((uintptr_t)0);
+			slotMap        = ~((uintptr_t)0);
 			hasNextSlotMap = slotCount > _bitsPerScanMap;
 		}
 

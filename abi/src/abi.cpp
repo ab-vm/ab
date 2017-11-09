@@ -2,6 +2,7 @@
 #include <Ab/Process.hpp>
 #include <Ab/Version.hpp>
 #include <iostream>
+#include <omrgc.h>
 
 namespace Abi {
 struct Config {

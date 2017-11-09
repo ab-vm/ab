@@ -65,8 +65,8 @@ enum { CONCURRENT_ROOT_TRACING1 = ((uintptr_t)((uintptr_t)CONCURRENT_ROOT_TRACIN
 MM_CollectorLanguageInterfaceImpl*
 MM_CollectorLanguageInterfaceImpl::newInstance(MM_EnvironmentBase* env) {
 	MM_CollectorLanguageInterfaceImpl* cli = NULL;
-	OMR_VM* omrVM = env->getOmrVM();
-	MM_GCExtensionsBase* extensions = MM_GCExtensionsBase::getExtensions(omrVM);
+	OMR_VM* omrVM                          = env->getOmrVM();
+	MM_GCExtensionsBase* extensions        = MM_GCExtensionsBase::getExtensions(omrVM);
 
 	cli = (MM_CollectorLanguageInterfaceImpl*)extensions->getForge()->allocate(
 		sizeof(MM_CollectorLanguageInterfaceImpl), MM_AllocationCategory::FIXED,
@@ -194,7 +194,7 @@ void MM_CollectorLanguageInterfaceImpl::scavenger_backOutIndirectObjects(
 void MM_CollectorLanguageInterfaceImpl::scavenger_reverseForwardedObject(
 	MM_EnvironmentBase* env, MM_ForwardedHeader* forwardedHeader) {
 	if (forwardedHeader->isForwardedPointer()) {
-		omrobjectptr_t originalObject = forwardedHeader->getObject();
+		omrobjectptr_t originalObject  = forwardedHeader->getObject();
 		omrobjectptr_t forwardedObject = forwardedHeader->getForwardedObject();
 
 		/* Restore the original object header from the forwarded object */
@@ -314,9 +314,9 @@ uintptr_t MM_CollectorLanguageInterfaceImpl::concurrentGC_collectRoots(
 	MM_ParallelGlobalGC* globalCollector =
 		(MM_ParallelGlobalGC*)_extensions->getGlobalCollector();
 	MM_MarkingScheme* markingScheme = globalCollector->getMarkingScheme();
-	uintptr_t bytesScanned = 0;
-	*collectedRoots = true;
-	*paidTax = true;
+	uintptr_t bytesScanned          = 0;
+	*collectedRoots                 = true;
+	*paidTax                        = true;
 
 	switch (concurrentStatus) {
 	case CONCURRENT_ROOT_TRACING1:

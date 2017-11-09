@@ -69,7 +69,7 @@ public:
 	}
 
 	inline auto operator=(Span<Type>& rhs) -> Span<Type>& {
-		value_ = rhs.value();
+		value_  = rhs.value();
 		length_ = rhs.length();
 		return *this;
 	}

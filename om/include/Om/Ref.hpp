@@ -15,11 +15,6 @@ namespace Om {
 template <typename T>
 class Ref {
 public:
-	static_assert(
-		std::is_base_of<Cell, T>::value,
-		"You may only construct Refs as pointers to managed types. "
-		"All managed types must subclass Om::Cell.");
-
 	using ElementType = std::remove_extent<T>;
 
 	using DifferenceType = std::ptrdiff_t;

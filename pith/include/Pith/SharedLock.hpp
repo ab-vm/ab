@@ -32,7 +32,7 @@ public:
 	inline auto isLocked() const noexcept -> bool;
 
 private:
-	int sharedCount_ = 0;
+	int sharedCount_    = 0;
 	int exclusiveCount_ = 0;
 	// std::mutex mutex_;
 	// atomic<int> sharedCount_;

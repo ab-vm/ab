@@ -2,16 +2,20 @@
 #define AB_WASM_BYTECODE_HPP_
 
 #include <cstdint>
+#include <cstddef>
 
 namespace Ab {
 namespace Wasm {
+namespace Binary {
+
+using RawOpCode = std::uint8_t;
 
 /// Binary encoding of wasm operators.
 /// http://webassembly.org/docs/binary-encoding/
 /// http://webassembly.org/docs/semantics/
-enum class Bytecode : std::uint8_t {
+enum class OpCode : RawOpCode {
 
-	/// Standard Bytecodes
+	/// Standard Codes
 
 	/// Control flow operators
 	/// http://webassembly.org/docs/semantics/#control-flow-structures
@@ -116,16 +120,16 @@ enum class Bytecode : std::uint8_t {
 	///   flags:  varuint32
 	///   offset: varuint32
 	/// The alignment of the address is store in the low bits of the flags as log2(n).
-	I32_LOAD = 0x28,
-	I64_LOAD = 0x29,
-	F32_LOAD = 0x2a,
-	F64_LOAD = 0x2b,
-	I32_LOAD8_S = 0x2c,
-	I32_LOAD8_U = 0x2d,
+	I32_LOAD     = 0x28,
+	I64_LOAD     = 0x29,
+	F32_LOAD     = 0x2a,
+	F64_LOAD     = 0x2b,
+	I32_LOAD8_S  = 0x2c,
+	I32_LOAD8_U  = 0x2d,
 	I32_LOAD16_S = 0x2e,
 	I32_LOAD16_U = 0x2f,
-	I64_LOAD8_S = 0x30,
-	I64_LOAD8_U = 0x31,
+	I64_LOAD8_S  = 0x30,
+	I64_LOAD8_U  = 0x31,
 	I64_LOAD16_S = 0x32,
 	I64_LOAD16_U = 0x33,
 	I64_LOAD32_S = 0x34,
@@ -135,13 +139,13 @@ enum class Bytecode : std::uint8_t {
 	/// Immediates:
 	///   flags:  varuint32
 	///   offset: varuint32
-	I32_STORE = 0x36,
-	I64_STORE = 0x37,
-	F32_STORE = 0x38,
-	F64_STORE = 0x39,
-	I32_STORE8 = 0x3a,
+	I32_STORE   = 0x36,
+	I64_STORE   = 0x37,
+	F32_STORE   = 0x38,
+	F64_STORE   = 0x39,
+	I32_STORE8  = 0x3a,
 	I32_STORE16 = 0x3b,
-	I64_STORE8 = 0x3c,
+	I64_STORE8  = 0x3c,
 	I64_STORE16 = 0x3d,
 	I64_STORE32 = 0x3e,
 
@@ -184,16 +188,7 @@ enum class Bytecode : std::uint8_t {
 	/// TODO: Conversions
 };
 
-enum class Typecode : uint8_t {
-	I32 = 0x7f,  // -0x01
-	I64 = 0x7e,  // -0x02
-	F32 = 0x7d,  // -0x03
-	F64 = 0x7c,  // -0x04
-	ANYFUNC = 0x70,  // -0x10
-	FUNC = 0x60,  // -0x20
-	EMPTY = 0x40  // -0x40
-};
-
+}  // namespace Binary
 }  // namespace Wasm
 }  // namespace Ab
 

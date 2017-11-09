@@ -19,62 +19,42 @@ namespace Om {
 
 class Context;
 
-enum class OmrSystemError { SUCCESS, FAIL };
-
 class OmrSystem {
 public:
-	auto init() -> OmrSystemError;
+	OmrSystem();
 
-	auto kill() -> OmrSystemError;
+	~OmrSystem() noexcept;
 
 	auto vm() -> OMR_VM&;
+
+	auto vm() const -> const OMR_VM&;
 
 private:
 	OMR_VM vm_;
 };
 
 struct SystemConfig {
-	HeapConfig heap_;
+	HeapConfig heap;
 };
-
-enum class SystemState { DEAD, ACTIVE };
-
-enum class SystemError { SUCCESS, FAIL };
-
-enum class AttachError { SUCCESS, FAIL };
 
 class System {
 public:
-	static const constexpr SystemConfig DEFAULT_CONFIG{Heap::defaultConfig()};
+	inline System(const SystemConfig& cfg);
 
-	static constexpr inline auto defaultConfig() -> const SystemConfig&;
-
-	inline System();
-
-	~System();
-
-	auto init(const SystemConfig& config) -> SystemError;
-
-	auto kill() -> SystemError;
-
-	inline auto state() const -> SystemState;
-
-	template <typename Function>
-	inline auto mapRoots(const ExclusiveAccess& exclusive, Function&& function) -> void;
+	inline ~System() noexcept;
 
 protected:
 	friend class Context;
 
-	AttachError attach(Context* context);
+	inline auto attach(Context* context) -> void;
 
-	AttachError detach(Context* context);
+	inline auto detach(Context* context) -> void;
 
 private:
 	OmrSystem omr_;
 	SystemLock lock_;
 	Heap heap_;
 	std::set<Context*> contexts_;
-	SystemState state_;
 };
 
 }  // namespace Om

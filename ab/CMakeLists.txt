@@ -22,6 +22,7 @@ add_library(ab
 	src/Process.cpp
 	src/Version.cpp
 	src/Wasm/Loader.cpp
+	src/Wasm/Reader.cpp
 )
 
 target_compile_features(ab

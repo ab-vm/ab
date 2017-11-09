@@ -28,7 +28,7 @@
 uintptr_t rootTableHashFn(void* entry, void* userData) {
 	const char* name = ((RootEntry*)entry)->name;
 	uintptr_t length = strlen(name);
-	uintptr_t hash = 0;
+	uintptr_t hash   = 0;
 	uintptr_t i;
 
 	for (i = 0; i < length; i++) {
@@ -64,7 +64,7 @@ uintptr_t rootTableHashEqualFn(void* leftEntry, void* rightEntry, void* userData
 uintptr_t objectTableHashFn(void* entry, void* userData) {
 	const char* name = ((ObjectEntry*)entry)->name;
 	uintptr_t length = strlen(name);
-	uintptr_t hash = 0;
+	uintptr_t hash   = 0;
 	uintptr_t i;
 
 	for (i = 0; i < length; i++) {

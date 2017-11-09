@@ -3,10 +3,10 @@
 #include <Pith/Assert.hpp>
 #include <Pith/Debug.hpp>
 #include <Pith/Process.hpp>
+#include <cstring>
 #include <omr.h>
 #include <omrport.h>
 #include <thread_api.h>
-#include <cstring>
 
 namespace Om {
 
@@ -50,8 +50,8 @@ auto OmrProcess::initPort() -> void {
 auto OmrProcess::initRuntime() -> void {
 	memset(&runtime_, 0, sizeof(OMR_Runtime));
 	runtime_._configuration._maximum_vm_count = 0;
-	runtime_._vmCount = 0;
-	runtime_._portLibrary = &port_;
+	runtime_._vmCount                         = 0;
+	runtime_._portLibrary                     = &port_;
 
 	auto e = omr_initialize_runtime(&runtime_);
 	if (e != 0) {

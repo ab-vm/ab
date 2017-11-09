@@ -6,11 +6,7 @@
 
 namespace Om {
 
-constexpr auto Heap::defaultConfig() -> const HeapConfig& {
-	return DEFAULT_CONFIG;
-}
-
-Heap::Heap() : condition_{HeapCondition::DEAD} {
+Heap::Heap(const HeapConfig& cfg) {
 	PITH_TRACE();
 }
 

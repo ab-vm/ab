@@ -12,7 +12,7 @@ template <typename T, std::size_t n>
 class ArrayBox {
 public:
 	using Element = T;
-	using Size = std::size_t;
+	using Size    = std::size_t;
 
 	static const constexpr std::size_t LENGTH = n;
 

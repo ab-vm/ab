@@ -6,24 +6,11 @@
 namespace Om {
 
 Context::Context(System& system) : system_{system}, state_{ContextState::DEAD} {
+	system_.attach(this);
 }
 
 Context::~Context() {
-	PITH_ASSERT(state() == ContextState::DEAD);
-}
-
-auto Context::init() -> ContextError {
-	PITH_ASSERT(state() == ContextState::DEAD);
-	PITH_ASSERT(system().attach(this) == AttachError::SUCCESS);
-	state_ = ContextState::INACTIVE;
-	return ContextError::SUCCESS;
-}
-
-auto Context::kill() -> ContextError {
-	PITH_ASSERT(state_ == ContextState::INACTIVE);
-	system().detach(this);
-	state_ = ContextState::DEAD;
-	return ContextError::SUCCESS;
+	system_.detach(this);
 }
 
 auto Context::system() -> System& {

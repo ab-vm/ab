@@ -74,7 +74,7 @@ public:
 	 */
 	MMINLINE void
 	setObjectSizeAndFlags(omrobjectptr_t objectPtr, uintptr_t size, uintptr_t flags) {
-		uintptr_t sizeBits = size << OMR_OBJECT_METADATA_FLAGS_BIT_COUNT;
+		uintptr_t sizeBits  = size << OMR_OBJECT_METADATA_FLAGS_BIT_COUNT;
 		uintptr_t flagsBits = flags & (uintptr_t)OMR_OBJECT_METADATA_FLAGS_MASK;
 		*(getObjectHeaderSlotAddress(objectPtr)) = (fomrobject_t)(sizeBits | flagsBits);
 	}

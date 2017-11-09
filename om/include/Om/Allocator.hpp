@@ -12,55 +12,88 @@
 
 namespace Om {
 
+class CellAllocator {};
+
+class AllocationCache {
+public:
+	auto allocate(std::size_t size) -> Pith::Address;
+	auto clear() -> void;
+	Pith::Address beg_;
+	Pith::Address end_;
+};
+
 class AllocatorContext {
 public:
+	AllocationCache cache_;
 };
 
-#if 0
 class RawAllocator {
 public:
-	inline Allocator(AllocatorContext& cx) noexcept;
-
-	inline ~Allocator();
-
-	inline auto allocate(const std::size_t size, const std::size_t alignment) -> Ref<Cell>;
-
-	inline auto allocate(
-		const std::size_t size, const std::size_t alignment, const std::nothrow_t&) noexcept
-		-> Ref<Cell>;
-
-private:
+	inline RawAllocator(AllocatorContext& cx);
 };
 
-#endif
-
+/// An allocator for T
 template <typename T>
 class Allocator {
 public:
-	Allocator(AllocatorContext& cx);
+	inline Allocator(AllocatorContext& cx);
 
-	auto allocate(std::size_t n, std::size_t alignment) -> Ref<T>;
+	template <typename U>
+	inline Allocator(const Allocator<U>& cx);
 
-	void deallocate(Ref<T> p);
+	inline ~Allocator() noexcept;
 
-	template <typename... Args>
-	void construct(Ref<T> p, Args&&... args);
+	auto allocate(std::size_t n) -> Ref<T>;
+
+	auto deallocate(Ref<T> p) -> void;
+
+	template <typename U, typename... Args>
+	auto construct(U* p, Args&&... args) -> void;
+
+	template <typename U>
+	auto destroy(Ref<U> ref) -> void;
+
+private:
+	AllocatorContext& cx_;
 };
 
+/// std::allocator_traits for Allocator<T>.
+/// This class is used by STL containers to interact with user defined containers.
+/// see: http://en.cppreference.com/w/cpp/memory/allocator_traits
 template <typename T>
-struct AllocatorTraits {
-	using type = T;
-	using value_type = T;
-	using pointer_type = Ref<T>;
+class AllocatorTraits {
+public:
+	using allocator_type     = Allocator<T>;
+	using value_type         = T;
+	using pointer_type       = Ref<T>;
 	using const_pointer_type = Ref<const T>;
+	using void_pointer       = Ref<Cell>;
+	using const_void_pointer = Ref<const Cell>;
+	using difference_type    = std::ptrdiff_t;
 
-	template <typename A, typename U>
-	struct rebind {
-		using other = Allocator<U>;
-	};
+	template <typename U>
+	using rebind_alloc = Allocator<U>;
 
-	template <class... Args>
-	static void construct(Allocator<T>& a, Ref<T> p, Args&&... args);
+	/// Rebind the traits to a different typed allocator.
+	template <typename U>
+	using rebind_traits = AllocatorTraits<U>;
+
+	/// Allocate objects.
+	/// Does not construct objects.
+	/// @param n the number of value_type objects.
+	static auto allocate(Allocator<T>& a, std::size_t n) -> Ref<T>;
+
+	/// @param the reference
+	/// @param n the number of value_type (T) objects.
+	static auto deallocate(Allocator<T>& a, Ref<T> ref, std::size_t n) -> void;
+
+	/// Construct an object. Works on any type, at any address.
+	template <typename U, typename... Args>
+	static auto construct(Allocator<T>& a, U* p, Args&&... args) -> void;
+
+	/// Destroy an object. Works on any type, at any address.
+	template <typename U>
+	static auto destroy(Allocator<T>& a, U* ref) -> void;
 };
 
 }  // namespace Om

@@ -99,7 +99,7 @@ public:
 	}
 	virtual bool concurrentGC_startConcurrentScanning(
 		MM_EnvironmentStandard* env, uintptr_t* bytesTraced, bool* collectedRoots) {
-		*bytesTraced = 0;
+		*bytesTraced    = 0;
 		*collectedRoots = false;
 		return false;
 	}

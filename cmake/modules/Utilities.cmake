@@ -31,6 +31,6 @@ function(add_ab_test name)
 	set_target_properties(${name}
 		PROPERTIES
 			CXX_CLANG_TIDY ""  # Disable because gtest errors a lot.
-			CXX_STANDARD 11
+			CXX_STANDARD 14
 	)
 endfunction(add_ab_test)

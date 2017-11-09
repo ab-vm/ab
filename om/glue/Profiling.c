@@ -126,7 +126,7 @@ void ex_omr_insertMethodEntryInMethodDictionary(OMR_VM* omrVM, const void* metho
 		/* These properties should be extracted from the language-specific method structure.
 		 */
 		tempEntry.propertyValues[EX_OMR_PROF_METHOD_NAME_IDX] = "exampleMethod";
-		tempEntry.propertyValues[EX_OMR_PROF_FILE_NAME_IDX] = "exampleFile";
+		tempEntry.propertyValues[EX_OMR_PROF_FILE_NAME_IDX]   = "exampleFile";
 		tempEntry.propertyValues[EX_OMR_PROF_LINE_NUMBER_IDX] = "1";
 
 		rc = omr_ras_insertMethodDictionary(omrVM, (OMR_MethodDictionaryEntry*)&tempEntry);

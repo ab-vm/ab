@@ -6,7 +6,7 @@
 
 namespace Pith {
 
-using Byte = std::uint8_t;
+using Byte    = std::uint8_t;
 using Address = const Byte*;
 
 template <typename T = void>

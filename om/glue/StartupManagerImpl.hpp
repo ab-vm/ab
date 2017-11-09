@@ -51,8 +51,10 @@ protected:
 
 public:
 	virtual MM_Configuration* createConfiguration(MM_EnvironmentBase* env);
+
 	virtual MM_CollectorLanguageInterface*
 	createCollectorLanguageInterface(MM_EnvironmentBase* env);
+
 	virtual MM_VerboseManagerBase* createVerboseManager(MM_EnvironmentBase* env);
 
 	MM_StartupManagerImpl(OMR_VM* omrVM)

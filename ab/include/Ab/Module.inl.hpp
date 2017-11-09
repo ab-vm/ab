@@ -5,7 +5,7 @@
 
 namespace Ab {
 
-Module::Module() : Om::NativeCell(sizeof(Module)){};
+Module::Module(Context& cx) : Om::NativeCell(cx, sizeof(Module)){};
 
 }  // namespace Ab
 

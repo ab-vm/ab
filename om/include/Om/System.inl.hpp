@@ -5,17 +5,27 @@
 
 namespace Om {
 
-// static
-constexpr auto System::defaultConfig() -> const SystemConfig& {
-	return DEFAULT_CONFIG;
+inline auto OmrSystem::vm() -> OMR_VM& {
+	return vm_;
 }
 
-System::System() : state_{SystemState::DEAD} {
+inline auto OmrSystem::vm() const -> const OMR_VM& {
+	return vm_;
 }
 
-template <typename Function>
-auto System::mapRoots(const ExclusiveAccess& exclusive, Function&& function) -> void {
-	function(exclusive);
+inline System::System(const SystemConfig& cfg) : omr_{}, lock_{}, heap_{cfg.heap} {
+}
+
+inline System::~System() noexcept {
+	PITH_ASSERT(contexts_.empty());
+}
+
+inline auto System::attach(Context* cx) -> void {
+	contexts_.insert(cx);
+}
+
+inline auto System::detach(Context* cx) -> void {
+	contexts_.erase(cx);
 }
 
 }  // namespace Om

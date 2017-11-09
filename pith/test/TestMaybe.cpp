@@ -144,7 +144,7 @@ TEST(Maybe, arrayValue) {
 #endif  // 0
 
 TEST(Maybe, pointerValue) {
-	int i = 1;
+	int i  = 1;
 	int* p = &i;
 	Maybe<int*> m(p);
 	EXPECT_EQ(*m, p);

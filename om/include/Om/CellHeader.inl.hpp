@@ -5,28 +5,46 @@
 
 namespace Om {
 
-constexpr CellHeader::CellHeader([[gnu::unused]] CellKind kind) : value_{0} {
+inline CellHeader::CellHeader() noexcept : value_{0} {
 }
 
-constexpr auto CellHeader::data() const -> std::uintptr_t {
-	return value_ & ~Tag::MASK;
+inline CellHeader::CellHeader(Tag tag) noexcept : value_{RawCellHeader(tag)} {
 }
 
-constexpr auto CellHeader::hasTag(Tag::Type tag) const -> bool {
-	return value_ & tag;
+inline CellHeader::CellHeader(Map* map) noexcept : value_{RawCellHeader(map) & MAP_MASK} {
 }
 
-auto CellHeader::setTag(Tag::Type tag) -> void {
-	value_ |= tag;
+inline CellHeader::CellHeader(Map* map, Tag tag) noexcept
+	: value_{(RawCellHeader(map) & MAP_MASK) | (RawCellHeader(tag) & TAG_MASK)} {
 }
 
-auto CellHeader::unsetTag(Tag::Type tag) -> void {
-	value_ &= ~tag;
+inline auto CellHeader::tag() const noexcept -> Tag {
+	return (Tag)(value_ & TAG_MASK);
 }
 
-constexpr auto CellHeader::kind() const -> CellKind {
-	return CellKind::UNKNOWN;
+inline auto CellHeader::tag(Tag tag) noexcept -> CellHeader& {
+	value_ = (value_ & MAP_MASK) | RawCellHeader(tag);
+	return *this;
 }
+
+inline auto CellHeader::map() const noexcept -> Map* {
+	return (Map*)(value_ & MAP_MASK);
+}
+
+inline auto CellHeader::map(Map* map) noexcept -> CellHeader& {
+	value_ = RawCellHeader(map) | (value_ & TAG_MASK);
+	return *this;
+}
+
+inline auto CellHeader::raw() const noexcept -> RawCellHeader {
+	return value_;
+}
+
+inline auto CellHeader::raw(RawCellHeader raw) noexcept -> CellHeader& {
+	value_ = raw;
+	return *this;
+}
+
 }  // namespace Om
 
 #endif  // OM_CELLHEADER_INL_HPP_

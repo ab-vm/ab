@@ -45,7 +45,7 @@ bool MM_StartupManagerImpl::handleOption(MM_GCExtensionsBase* extensions, char* 
 			 * perhaps we should set it to true here..
 			 */
 			_useSegregatedGC = true;
-			result = true;
+			result           = true;
 		}
 #endif /* defined(OMR_GC_SEGREGATED_HEAP) */
 	}

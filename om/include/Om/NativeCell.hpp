@@ -3,14 +3,18 @@
 
 #include <Om/Config.hpp>
 #include <Om/Cell.hpp>
+#include <Om/Context.hpp>
 
 namespace Om {
 
 class MarkContext;
 
+/// A native / raw data blob.
+/// Native objects are fixed sized binary blobs.
+
 class NativeCell : public Cell {
 public:
-	inline NativeCell(std::size_t size);
+	inline NativeCell(Context& cx, std::size_t size);
 
 	inline auto size() const -> std::size_t;
 

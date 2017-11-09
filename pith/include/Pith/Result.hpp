@@ -134,7 +134,7 @@ public:
 			SafeDestructor<E>{}(err_);
 		}
 		value_ = x();
-		kind_ = Kind::OK;
+		kind_  = Kind::OK;
 		return *this;
 	}
 
@@ -144,20 +144,20 @@ public:
 			SafeDestructor<E>{}(err_);
 		}
 		value_ = std::move(x());
-		kind_ = Kind::OK;
+		kind_  = Kind::OK;
 		return *this;
 	}
 
 	template <typename Ex>
 	inline auto operator=(const Err<Ex>& x) -> Result<T, E>& {
-		err_ = x();
+		err_  = x();
 		kind_ = Kind::ERR;
 		return *this;
 	}
 
 	template <typename Ex>
 	inline auto operator=(Err<Ex>&& x) -> Result<T, E>& {
-		err_ = std::move(x());
+		err_  = std::move(x());
 		kind_ = Kind::ERR;
 		return *this;
 	}
@@ -166,9 +166,9 @@ public:
 	inline auto operator=(const Result<Tx, Ex>& x) -> Result<T, E>& {
 		if (x.isValue()) {
 			value_ = x.value();
-			kind_ = Kind::OK;
+			kind_  = Kind::OK;
 		} else {
-			err_ = x.err();
+			err_  = x.err();
 			kind_ = Kind::ERR;
 		}
 		return *this;
@@ -178,9 +178,9 @@ public:
 	inline auto operator=(Result<Tx, Ex>&& x) -> Result<T, E>& {
 		if (x.isValue()) {
 			value_ = std::move(x.value());
-			kind_ = Kind::OK;
+			kind_  = Kind::OK;
 		} else {
-			err_ = std::move(x.error());
+			err_  = std::move(x.error());
 			kind_ = Kind::ERR;
 		}
 		return *this;

@@ -5,12 +5,15 @@
 
 namespace Om {
 
-NativeCell::NativeCell(std::size_t size) : Cell{CellKind::NATIVE}, size_{size} {
+#if 0
+NativeCell::NativeCell(Context& cx, std::size_t size) : Cell{cx->nativeMap()}, size_{size} {
 }
 
 auto NativeCell::size() const -> std::size_t {
 	return size_;
 }
+
+#endif  // 0
 
 }  // namespace Om
 

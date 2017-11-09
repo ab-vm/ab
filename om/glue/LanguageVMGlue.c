@@ -27,7 +27,7 @@ OMR_Glue_BindCurrentThread(OMR_VM* omrVM, const char* threadName, OMR_VMThread**
 	if (NULL == currentThread) { /* not already attached */
 		omrthread_t self = NULL;
 		if (0 == omrthread_attach_ex(&self, J9THREAD_ATTR_DEFAULT)) {
-			void* languageThread = NULL;
+			void* languageThread       = NULL;
 			OMR_VMThread* newOMRThread = NULL;
 
 			rc = OMR_Glue_AllocLanguageThread(omrVM->_language_vm, &languageThread);

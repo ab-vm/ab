@@ -15,9 +15,9 @@ namespace Pith {
 
 struct PagePermission {
 	static const constexpr int execute = PROT_EXEC;
-	static const constexpr int write = PROT_WRITE;
-	static const constexpr int read = PROT_READ;
-	static const constexpr int none = PROT_NONE;
+	static const constexpr int write   = PROT_WRITE;
+	static const constexpr int read    = PROT_READ;
+	static const constexpr int none    = PROT_NONE;
 };
 
 struct PageError : public std::runtime_error {

@@ -19,7 +19,7 @@ bootstrap(VirtualMachine& vm) {
 	auto mx = vm.memory.access();
 
 	auto klassKlass = allocate<Klass>(mx);
-	klass->klass = klass;
+	klass->klass    = klass;
 };
 
 Shape{

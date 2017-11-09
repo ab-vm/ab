@@ -3,10 +3,10 @@
 #include <Om/NativeCell.hpp>
 #include <gtest/gtest.h>
 
-#if 0
-
 namespace Om {
 namespace Test {
+
+#if OM_DISABLE
 
 struct IntCell : public NativeCell {
 public:
@@ -18,24 +18,16 @@ public:
 };
 
 TEST(Allocator, base) {
-	System sys{};
-	sys.init(System::DEFAULT_CONFIG);
+	Process::init();
+	System sys{SystemConfig{}};
 	Context cx{sys};
-	cx.init();
-	{
-		ActiveContext acx{cx};
-		Om::Allocator allocator;
-		auto result = allocator.allocateNative<GcSafe::YES, IntCell>(acx, 1);
-		EXPECT_TRUE(result);
-		StackRootRef<IntCell> root{acx, result()};
-		EXPECT_EQ(root->value, 1);
-		EXPECT_EQ(root->size(), sizeof(IntCell));
-	}
-	cx.kill();
-	sys.kill();
+	// Om::Allocator<Cell> allocator{cx};
+	// EXPECT_TRUE(result);
+	// StackRootRef<IntCell> root{acx, result()};
+	// EXPECT_EQ(root->value, 1);
+	// EXPECT_EQ(root->size(), sizeof(IntCell));
+	Process::kill();
 }
-
-#if OM_DISABLE
 
 TEST(Allocator, allocateStruct) {
 	Maybe<StructCell<MyStruct>*> m = allocateStruct<MyStruct>(42);
@@ -46,7 +38,7 @@ TEST(Allocator, allocateStruct) {
 
 TEST(Allocator, allocateArray) {
 	Maybe<ArrayCell<MyStruct>*> m = allocateArray<MyStruct>(42);
-	*m[42] = 15;
+	*m[42]                        = 15;
 	EXPECT_TRUE(m);
 	EXPECT_EQ(*m[42].x, 15);
 }
@@ -59,26 +51,7 @@ TEST(Allocator, structAllocation) {
 	EXPECT_EQ(t[]);
 };
 
-TEST(Allocator, allocate) {
-	Runtime runtime;
-	Error e;
-
-	e = runtime.init();
-	ASSERT_FALSE(e);
-	-0
-
-		Contexjuuk,
-		, , , , , , , , t c(runtime);
-	Maybe<Object*> m = c.allocator().allocate();
-	EXPECT_TRUE(m);
-
-	e = runtime.kill();
-	EXPECT_FALSE(e);
-}
-
 #endif  // OM_DISABLE
 
 }  // namespace Test
 }  // namespace Om
-
-#endif  // 0

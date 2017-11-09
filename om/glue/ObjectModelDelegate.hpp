@@ -51,9 +51,9 @@ private:
 	 * The _objectHeaderSlotSizeShift is unique to this example (transparent to OMR). It is used
 	 * to extract example object size from the object header slot.
 	 */
-	static const uintptr_t _objectHeaderSlotOffset = 0;
+	static const uintptr_t _objectHeaderSlotOffset     = 0;
 	static const uintptr_t _objectHeaderSlotFlagsShift = 0;
-	static const uintptr_t _objectHeaderSlotSizeShift = 8;
+	static const uintptr_t _objectHeaderSlotSizeShift  = 8;
 
 protected:
 public:

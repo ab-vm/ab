@@ -17,6 +17,6 @@ extern "C" auto main() -> int {
 	printStartupBanner(std::cout);
 	Process::init();
 	auto e = repl(std::cin);
-	e = Process::kill();
+	e      = Process::kill();
 	return static_cast<int>(e);
 }

@@ -2,7 +2,7 @@
 #define AB_INSTRUCTION_HPP_
 
 #include <Ab/Config.hpp>
-#include <Ab/Wasm/Bytecode.hpp>
+#include <Ab/Wasm/Binary/OpCode.hpp>
 #include <cstdint>
 
 namespace Ab {
@@ -180,16 +180,6 @@ enum class Instruction : std::uint8_t {
 	/// TODO: Conversions
 #endif  // 0
 
-};
-
-enum class Typecode : uint8_t {
-	I32 = 0x7f,  // -0x01
-	I64 = 0x7e,  // -0x02
-	F32 = 0x7d,  // -0x03
-	F64 = 0x7c,  // -0x04
-	ANYFUNC = 0x70,  // -0x10
-	FUNC = 0x60,  // -0x20
-	EMPTY = 0x40  // -0x40
 };
 
 }  // namespace Ab

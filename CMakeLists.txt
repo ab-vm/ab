@@ -58,12 +58,17 @@ macro(ab_setup)
 		set(CMAKE_CXX_CLANG_TIDY ${CLANG_TIDY_EXECUTABLE})
 	endif()
 
+  # OMR Crap
+
+  add_definitions(-DUT_DIRECT_TRACE_REGISTRATION)
+
 endmacro()
 
 # Sub directories
 
 add_subdirectory(ab)
 add_subdirectory(abi)
+add_subdirectory(ab-dump)
 add_subdirectory(doc)
 add_subdirectory(external)
 add_subdirectory(om)
