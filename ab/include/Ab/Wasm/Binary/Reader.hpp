@@ -2,10 +2,13 @@
 #define AB_WASM_BINARY_READER_HPP_
 
 #include <Ab/Config.hpp>
+
+#include <Ab/Wasm/Binary/Ir.hpp>
 #include <Ab/Wasm/Binary/OpCode.hpp>
-#include <Ab/Wasm/Binary/SectionCode.hpp>
+#include <Ab/Wasm/Binary/Section.hpp>
 #include <Ab/Wasm/Binary/TypeCode.hpp>
 #include <Ab/Wasm/Binary/Visitor.hpp>
+#include <Pith/Maybe.hpp>
 #include <cstddef>
 #include <cstdint>
 #include <istream>
@@ -16,23 +19,9 @@ namespace Ab {
 namespace Wasm {
 namespace Binary {
 
-class ModuleHeader {
-public:
-	/// The magic constant at the beginning of every module.
-	/// in LE, it's also the char array "\0asm".
-	static constexpr std::uint32_t MAGIC = 0x6d736100;
-
-	/// The WASM version. We only support 1.
-	static constexpr std::uint32_t VERSION = 0x1;
-};
-
-struct FunctionType {
-	std::vector<TypeCode> paramTypes;
-	TypeCode returnType;
-};
-
 /// Binary file reader.
 /// https://github.com/WebAssembly/design/blob/master/BinaryEncoding.md
+/// https://github.com/WebAssembly/design/blob/master/Modules.md
 class Reader {
 public:
 	Reader(Visitor& visitor, std::istream& src);
@@ -41,27 +30,110 @@ public:
 	auto operator()() -> void;
 
 private:
+	/// Header and Initialization
+
 	inline auto module() -> void;
 
 	inline auto header() -> void;
 
-	inline auto magic() -> void;
+	inline auto magic() -> std::uint32_t;
 
-	inline auto version() -> void;
+	inline auto version() -> std::uint32_t;
+
+	/// Misc Section Handling
 
 	inline auto sections() -> void;
 
-	inline auto section() -> void;
+	inline auto section(SectionCode code) -> void;
 
 	inline auto sectionCode() -> SectionCode;
 
-	inline auto typeSection() -> void;
+	/// Type Section
+
+	inline auto typeSection(const Section& out) -> void;
+
+	inline auto functionType() -> void;
 
 	inline auto typeEntry() -> void;
 
+	/// Import Section
+
+	inline auto importSection(const Section& section) -> void;
+
 	inline auto importEntry() -> void;
 
-	inline auto importSection() -> void;
+	inline auto externalKind() -> ExternalKindCode;
+
+	inline auto customSection(const Section& section) -> void;
+
+	/// Function Section
+
+	inline auto functionSection(const Section& section) -> void;
+
+	inline auto functionEntry() -> void;
+
+	/// Table Section
+
+	inline auto tableSection(const Section& section) -> void;
+
+	/// Memory Section
+
+	inline auto memorySection(const Section& section) -> void;
+
+	/// Global Section
+
+	inline auto globalSection(const Section& section) -> void;
+
+	inline auto globalEntry() -> void;
+
+	inline auto initExpression() -> Expression;
+
+	inline auto globalType(GlobalType& globalType) -> void;
+
+	/// Export Section
+
+	inline auto exportSection(const Section& section) -> void;
+
+	inline auto exportEntry() -> void;
+
+	/// Start Section
+	inline auto startSection(const Section& section) -> void;
+
+	/// Element Section
+
+	inline auto elementSection(const Section& section) -> void;
+
+	inline auto elementEntry() -> void;
+
+	/// Code Section
+
+	inline auto codeSection(const Section& section) -> void;
+
+	inline auto functionBody(std::size_t index) -> void;
+
+	inline auto localEntry() -> LocalEntry;
+
+	/// Data Section
+
+	inline auto dataSection(const Section& section) -> void;
+
+	/// Code
+
+	inline auto expression() -> Expression;
+
+	inline auto opCode() -> OpCode;
+
+	/// Common Values
+
+	inline auto tableType(TableType& out) -> void;
+
+	inline auto memoryType(MemoryType& out) -> void;
+
+	inline auto resizableLimits(ResizableLimits& out) -> void;
+
+	/// Read a utf8 string
+	/// Strings are represented in the module as a size and an array.
+	inline auto string() -> std::string;
 
 	inline auto valueType() -> TypeCode;
 
@@ -69,7 +141,7 @@ private:
 
 	inline auto elementType() -> TypeCode;
 
-	inline auto functionType() -> void;
+	inline auto typeCode() -> TypeCode;
 
 	/// Read bytes from input to construct an unsigned integer of type Integer.
 	/// An example:

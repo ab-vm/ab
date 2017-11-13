@@ -20,6 +20,7 @@ add_library(pith SHARED
 	src/Pith.cpp
 	src/Version.cpp
 	src/Process.cpp
+	src/SexprPrinter.cpp
 )
 
 target_include_directories(pith

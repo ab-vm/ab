@@ -1,8 +1,9 @@
 #ifndef AB_WASM_BYTECODE_HPP_
 #define AB_WASM_BYTECODE_HPP_
 
-#include <cstdint>
 #include <cstddef>
+#include <cstdint>
+#include <ostream>
 
 namespace Ab {
 namespace Wasm {
@@ -187,6 +188,164 @@ enum class OpCode : RawOpCode {
 
 	/// TODO: Conversions
 };
+
+inline auto toString(OpCode code) -> const char* {
+	switch (code) {
+	case OpCode::UNREACHABLE:
+		return "unreachable";
+		break;
+	case OpCode::NOP:
+		return "nop";
+		break;
+	case OpCode::BLOCK:
+		return "block";
+		break;
+	case OpCode::LOOP:
+		return "loop";
+		break;
+	case OpCode::IF:
+		return "if";
+		break;
+	case OpCode::ELSE:
+		return "else";
+		break;
+	case OpCode::END:
+		return "end";
+		break;
+	case OpCode::BR:
+		return "br";
+		break;
+	case OpCode::BR_IF:
+		return "br_if";
+		break;
+	case OpCode::BR_TABLE:
+		return "br_table";
+		break;
+	case OpCode::RETURN:
+		return "return";
+		break;
+	case OpCode::CALL:
+		return "call";
+		break;
+	case OpCode::CALL_INDIRECT:
+		return "call_indirect";
+		break;
+	case OpCode::DROP:
+		return "drop";
+		break;
+	case OpCode::SELECT:
+		return "select";
+		break;
+	case OpCode::GET_LOCAL:
+		return "get_local";
+		break;
+	case OpCode::SET_LOCAL:
+		return "set_local";
+		break;
+	case OpCode::TEE_LOCAL:
+		return "tee_local";
+		break;
+	case OpCode::GET_GLOBAL:
+		return "get_global";
+		break;
+	case OpCode::SET_GLOBAL:
+		return "set_global";
+		break;
+	case OpCode::I32_LOAD:
+		return "i32.load";
+		break;
+	case OpCode::I64_LOAD:
+		return "i64.load";
+		break;
+	case OpCode::F32_LOAD:
+		return "f32.load";
+		break;
+	case OpCode::F64_LOAD:
+		return "f64.load";
+		break;
+	case OpCode::I32_LOAD8_S:
+		return "i32.load8_s";
+		break;
+	case OpCode::I32_LOAD8_U:
+		return "i32.load8_u";
+		break;
+	case OpCode::I32_LOAD16_S:
+		return "i32.load16_s";
+		break;
+	case OpCode::I32_LOAD16_U:
+		return "i32.load16_u";
+		break;
+	case OpCode::I64_LOAD8_S:
+		return "i64.load8_s";
+		break;
+	case OpCode::I64_LOAD8_U:
+		return "i64.load8_u";
+		break;
+	case OpCode::I64_LOAD16_S:
+		return "i64.load16_s";
+		break;
+	case OpCode::I64_LOAD16_U:
+		return "i64.load16_u";
+		break;
+	case OpCode::I64_LOAD32_S:
+		return "i64.load32_s";
+		break;
+	case OpCode::I64_LOAD32_U:
+		return "i64.load32_u";
+		break;
+	case OpCode::I32_STORE:
+		return "i32.store";
+		break;
+	case OpCode::I64_STORE:
+		return "i64.store";
+		break;
+	case OpCode::F32_STORE:
+		return "f32.store";
+		break;
+	case OpCode::F64_STORE:
+		return "f64.store";
+		break;
+	case OpCode::I32_STORE8:
+		return "i32.store8";
+		break;
+	case OpCode::I32_STORE16:
+		return "i32.store16";
+		break;
+	case OpCode::I64_STORE8:
+		return "i64.store8";
+		break;
+	case OpCode::I64_STORE16:
+		return "i64.store16";
+		break;
+	case OpCode::I64_STORE32:
+		return "i64.store32";
+		break;
+	case OpCode::CURRENT_MEMORY:
+		return "current_memory";
+		break;
+	case OpCode::GROW_MEMORY:
+		return "grow_memory";
+		break;
+	case OpCode::I32_CONST:
+		return "i32.const";
+		break;
+	case OpCode::I64_CONST:
+		return "i64.const";
+		break;
+	case OpCode::F32_CONST:
+		return "f32.const";
+		break;
+	case OpCode::F64_CONST:
+		return "f64.const";
+		break;
+	default:
+		return "UNKNOWN_OPCODE";
+	}
+}
+
+inline auto operator<<(std::ostream& out, OpCode code) -> std::ostream& {
+	return out << toString(code);
+}
 
 }  // namespace Binary
 }  // namespace Wasm

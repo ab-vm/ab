@@ -22,58 +22,91 @@ inline auto Reader::module() -> void {
 }
 
 inline auto Reader::header() -> void {
-	visitor_.header();
-	magic();
-	version();
+	auto m = magic();
+	auto v = version();
+	visitor_.header(m, v);
 }
 
-inline auto Reader::magic() -> void {
+inline auto Reader::magic() -> std::uint32_t {
 	auto magic = uint32();
 	if (magic != ModuleHeader::MAGIC) {
 		throw InvalidHeader{};
 	}
+	return magic;
 }
 
-inline auto Reader::version() -> void {
+inline auto Reader::version() -> std::uint32_t {
 	auto version = uint32();
 	if (version != ModuleHeader::VERSION) {
 		throw InvalidHeader{};
 	}
+	return version;
 }
 
 auto Reader::sections() -> void {
-	auto count = uleb128();
-	for (std::size_t i = 0; i < count; i++) {
-		section();
+	while (!in_.eof()) {
+		auto code = sectionCode();
+		if (in_.eof()) {
+			break;
+		}
+		section(code);
 	}
 }
 
-inline auto Reader::section() -> void {
-	auto code = sectionCode();
-	visitor_.sectionStart(code);
+inline auto Reader::section(SectionCode code) -> void {
+	Section section;
+	section.code   = code;
+	section.length = varuint32();
 
-	switch (code) {
+	if (section.code == SectionCode::NAME) {
+		section.name = string();
+	}
+
+	visitor_.sectionStart(section);
+
+	switch (section.code) {
 	case SectionCode::TYPE:
-		typeSection();
+		typeSection(section);
 		break;
 	case SectionCode::IMPORT:
-		importSection();
+		importSection(section);
 		break;
 	case SectionCode::NAME:
+		customSection(section);
+		break;
 	case SectionCode::FUNCTION:
+		functionSection(section);
+		break;
 	case SectionCode::TABLE:
+		tableSection(section);
+		break;
 	case SectionCode::MEMORY:
+		memorySection(section);
+		break;
 	case SectionCode::GLOBAL:
+		globalSection(section);
+		break;
 	case SectionCode::EXPORT:
+		exportSection(section);
+		break;
 	case SectionCode::START:
+		startSection(section);
+		break;
 	case SectionCode::ELEMENT:
+		elementSection(section);
+		break;
 	case SectionCode::CODE:
+		codeSection(section);
+		break;
 	case SectionCode::DATA:
+		dataSection(section);
+		break;
 	default:
 		throw InvalidSection();
 		break;
 	}
-	visitor_.sectionEnd(code);
+
+	visitor_.sectionEnd(section);
 }
 
 inline auto Reader::sectionCode() -> SectionCode {
@@ -81,49 +114,319 @@ inline auto Reader::sectionCode() -> SectionCode {
 	return (SectionCode)n;
 }
 
-inline auto Reader::typeSection() -> void {
-	auto count = leb128();
+/// The type section contains the types of all functions.
+/// Every func
+inline auto Reader::typeSection(const Section& section) -> void {
+	auto count = varuint32();
 	visitor_.typeSection(count);
-	for (auto i = 0; i < count; i++) {
-		typeEntry();
+	for (std::size_t i = 0; i < count; i++) {
+		functionType();
 	}
 }
 
-inline auto Reader::typeEntry() -> void{
-	// todo
+inline auto Reader::functionType() -> void {
+	FunctionType result;
+	result.hasReturnType = false;
+	result.returnType    = TypeCode::EMPTY;
+
+	auto type = typeCode();
+
+	if (type != TypeCode::FUNC)
+		throw ReaderError{"Expected function type, got something else."};
+
+	auto paramCount = varuint32();
+
+	result.paramTypes.resize(paramCount);
+
+	for (std::size_t i = 0; i < paramCount; i++) {
+		auto paramType       = valueType();
+		result.paramTypes[i] = paramType;
+	}
+
+	auto hasReturnType = varuint1();
+
+	if (hasReturnType) {
+		auto returnType      = valueType();
+		result.hasReturnType = true;
+		result.returnType    = returnType;
+	}
+
+	visitor_.functionType(result);
 };
 
-inline auto Reader::importSection() -> void {
-	auto count = leb128();
+inline auto Reader::importSection(const Section& section) -> void {
+	auto count = varuint32();
 	visitor_.importSection(count);
-	for (auto i = 0; i < count; i++) {
+	for (std::size_t i = 0; i < count; i++) {
 		importEntry();
 	}
 }
 
 inline auto Reader::importEntry() -> void {
-	// String module, field;
-	// read(module);
-	// read(field);
-	// visitor_.importEntry(module, field);
+	ImportEntry entry;
+
+	entry.module = string();
+	entry.field  = string();
+	entry.kind   = externalKind();
+
+	switch (entry.kind) {
+	case ExternalKindCode::FUNCTION:
+		entry.type.function = varuint32();
+		break;
+	case ExternalKindCode::TABLE:
+		tableType(entry.type.table);
+		break;
+	case ExternalKindCode::MEMORY:
+		memoryType(entry.type.memory);
+		break;
+	case ExternalKindCode::GLOBAL:
+		globalType(entry.type.global);
+		break;
+	default:
+		throw ReaderError{"Unknown external kind code"};
+		break;
+	}
+
+	visitor_.importEntry(entry);
+}
+
+inline auto Reader::externalKind() -> ExternalKindCode {
+	return (ExternalKindCode)uint8();
+}
+
+inline auto Reader::functionSection(const Section& section) -> void {
+	auto count = varuint32();
+	for (std::size_t i = 0; i < count; i++) {
+		auto type = varuint32();
+		visitor_.functionEntry(i, type);
+	}
+}
+
+inline auto Reader::customSection(const Section& section) -> void {
+	// We don't do anything :)
+}
+
+inline auto Reader::string() -> std::string {
+	std::string result;
+
+	auto n   = varuint32();
+	auto buf = new char[n + 1];
+	in_.read(buf, n);
+	buf[n] = '\0';
+
+	result.reserve(n);
+	result = buf;
+
+	delete[] buf;
+	return result;
+}
+
+/// Table Section
+inline auto Reader::tableSection(const Section& section) -> void {
+}
+
+/// Memory Section
+inline auto Reader::memorySection(const Section& section) -> void {
+}
+
+/// Global Section
+inline auto Reader::globalSection(const Section& section) -> void {
+	auto count = varuint32();
+	for (std::size_t i = 0; i < count; i++) {
+		globalEntry();
+	}
+}
+
+inline auto Reader::globalEntry() -> void {
+	GlobalType type;
+	globalType(type);
+	auto expr = initExpression();
+
+	visitor_.globalEntry(type, expr);
+};
+
+inline auto Reader::initExpression() -> Expression {
+	Expression expr = expression();
+	switch (expr.op) {
+	case OpCode::I32_CONST:
+	case OpCode::I64_CONST:
+	case OpCode::F32_CONST:
+	case OpCode::F64_CONST:
+	case OpCode::GET_GLOBAL:
+		break;
+	default:
+		throw ReaderError{"Illegal epression in init_expr"};
+		break;
+	}
+
+	Expression end = expression();
+	if (end.op != OpCode::END) {
+		throw ReaderError{"init_expr must be 1 expression and the end bytecode."};
+	}
+
+	return expr;
+};
+
+inline auto Reader::expression() -> Expression {
+	Expression expr;
+	expr.op = opCode();
+
+	switch (expr.op) {
+	case OpCode::I32_CONST:
+		expr.immediate.int32 = varint32();
+		break;
+	case OpCode::I64_CONST:
+		expr.immediate.int64 = varint64();
+		break;
+	case OpCode::F32_CONST:
+		expr.immediate.float32 = (float)uint32();
+		break;
+	case OpCode::F64_CONST:
+		expr.immediate.float64 = (double)uint64();
+		break;
+	case OpCode::GET_GLOBAL:
+		expr.immediate.uint32 = varuint32();
+		break;
+	case OpCode::END:
+		/// No operand
+		break;
+	default:
+		throw ReaderError{std::string{"unhandled opcode: "} + toString(expr.op)};
+		break;
+	}
+	return expr;
+}
+
+inline auto Reader::opCode() -> OpCode {
+	return (OpCode)uint8();
+}
+
+/// Export Section
+inline auto Reader::exportSection(const Section& section) -> void {
+	std::size_t count = varuint32();
+	for (std::size_t i = 0; i < count; i++) {
+		exportEntry();
+	}
+}
+
+inline auto Reader::exportEntry() -> void {
+	ExportEntry entry;
+	entry.field = string();
+	entry.kind  = externalKind();
+	entry.index = varuint32();
+	visitor_.exportEntry(entry);
+}
+
+/// Start Section
+inline auto Reader::startSection(const Section& section) -> void {
+}
+
+/// Element Section
+
+inline auto Reader::elementSection(const Section& section) -> void {
+	std::size_t count = varuint32();
+	for (std::size_t i = 0; i < count; i++) {
+		elementEntry();
+	}
+}
+
+inline auto Reader::elementEntry() -> void {
+	ElementEntry entry;
+	entry.index        = varuint32();
+	entry.offset       = initExpression();
+	entry.elementCount = varuint32();
+	visitor_.elementEntry(entry);
+	for (std::size_t i = 0; i < entry.elementCount; i++) {
+		auto index = varuint32();
+		visitor_.element(entry, index);
+	}
+	visitor_.elementEntryEnd(entry);
+}
+
+/// Code Section
+inline auto Reader::codeSection(const Section& section) -> void {
+	std::size_t count = varuint32();
+	for (std::size_t i = 0; i < count; i++) {
+		functionBody(i);
+	}
+}
+
+inline auto Reader::functionBody(std::size_t index) -> void {
+	FunctionBody body;
+	body.bodySize   = varuint32();
+	auto localCount = varuint32();
+	body.locals.resize(localCount);
+	for (std::size_t i = 0; i < localCount; i++) {
+		body.locals[i] = localEntry();
+	}
+
+	// TODO: Use body size.
+	visitor_.functionBody(index, body);
+
+	Expression expr;
+	do {
+		expr = expression();
+		visitor_.functionBodyExpression(body, expr);
+	} while (expr.op != OpCode::END);
+
+	visitor_.functionBodyEnd(body);
+}
+
+inline auto Reader::localEntry() -> LocalEntry {
+	LocalEntry entry;
+	entry.count = varuint32();
+	entry.type  = valueType();
+	return entry;
+}
+
+/// Data Section
+
+inline auto Reader::dataSection(const Section& section) -> void {
+}
+
+/// Common Values
+
+inline auto Reader::resizableLimits(ResizableLimits& out) -> void {
+	out.hasMax  = varuint1();
+	out.initial = varuint32();
+	if (out.hasMax) {
+		out.max = varuint32();
+	} else {
+		out.max = 0;
+	}
+}
+
+inline auto Reader::globalType(GlobalType& out) -> void {
+	out.contentType = valueType();
+	out.isMutable   = varuint1();
+}
+
+inline auto Reader::tableType(TableType& out) -> void {
+	out.elementType = elementType();
+	resizableLimits(out.limits);
+}
+
+inline auto Reader::memoryType(MemoryType& out) -> void {
+	resizableLimits(out.limits);
 }
 
 inline auto Reader::valueType() -> TypeCode {
-	auto n = varint7();
-	return (TypeCode)n;
+	return typeCode();
 }
 
 inline auto Reader::blockType() -> TypeCode {
-	auto n = varint7();
-	return (TypeCode)n;
+	return typeCode();
 }
 
 inline auto Reader::elementType() -> TypeCode {
-	auto n = varint7();
-	return (TypeCode)n;
+	return typeCode();
 }
 
-inline auto Reader::functionType() -> void {
+inline auto Reader::typeCode() -> TypeCode {
+	// Note that while typecodes are actually leb128 encoded, we don't convert the constant to
+	// it's proper value. We leave the typecodes encoded.
+	auto n = uint8();
+	return (TypeCode)n;
 }
 
 template <typename Integer, std::size_t bytes>
@@ -133,7 +436,7 @@ inline auto Reader::uint() -> Integer {
 
 	Integer result = 0;
 	auto buffer    = (char*)&result;
-	in_.read((char*)&buffer, bytes);
+	in_.read(buffer, bytes);
 	return result;
 }
 
@@ -169,7 +472,7 @@ inline auto Reader::leb128() -> std::int64_t {
 		result |= std::uint64_t(byte & MASK) << shift;
 		shift += 7;
 
-	} while (byte & FLAG);
+	} while (byte & FLAG && (shift < 64) && !in_.eof());
 
 	if (byte & SIGN) {
 		result |= ~0 << shift;
@@ -195,16 +498,14 @@ inline auto Reader::uleb128() -> std::uint64_t {
 	constexpr std::uint8_t MASK = 0b0111'1111;
 
 	std::uint64_t result = 0;
-	std::uint64_t byte   = 0;
 	std::size_t shift    = 0;
+	std::uint8_t byte    = 0;
 
 	do {
-		if (shift > 63)
-			throw BadNumber{};
-		const std::uint8_t byte = in_.get();
+		byte = in_.get();
 		result |= std::uint64_t(byte & MASK) << shift;
 		shift += 7;
-	} while (byte & FLAG);
+	} while ((byte & FLAG) != 0 && shift < 64 && !in_.eof());
 
 	return result;
 }

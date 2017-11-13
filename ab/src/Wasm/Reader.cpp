@@ -10,25 +10,31 @@ auto NoOpVisitor::moduleStart() -> void {
 auto NoOpVisitor::moduleEnd() -> void {
 }
 
-auto NoOpVisitor::header() -> void {
+auto NoOpVisitor::header(std::uint32_t magic, std::uint32_t version) -> void {
 }
 
-auto NoOpVisitor::sectionStart(SectionCode code) -> void {
+auto NoOpVisitor::sectionStart(const Section& section) -> void {
 }
 
-auto NoOpVisitor::sectionEnd(SectionCode code) -> void {
+auto NoOpVisitor::sectionEnd(const Section& section) -> void {
 }
 
 auto NoOpVisitor::typeSection(std::size_t count) -> void {
 }
 
-auto NoOpVisitor::typeEntry() -> void {
+auto NoOpVisitor::functionType(const FunctionType& type) -> void {
 }
 
 auto NoOpVisitor::importSection(std::size_t count) -> void {
 }
 
-auto NoOpVisitor::importEntry() -> void {
+auto NoOpVisitor::importEntry(const ImportEntry& entry) -> void {
+}
+
+auto NoOpVisitor::functionSection(std::size_t count) -> void {
+}
+
+auto NoOpVisitor::functionEntry(std::size_t i, std::uint32_t type) -> void {
 }
 
 }  // namespace Binary
