@@ -12,18 +12,6 @@ addons:
       - cmake
       - libclang-3.4-dev
       - libnuma-dev
-before_install:
-  - export CC=gcc-6 CXX=g++-6
-env:
-  global:
-   # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
-   #   via the "travis encrypt" command using the project repo's public key
-   - secure: "fSnEX2nbYGKLm0IbmtByurdBZz8PTLXJPHyzx+VXEFYOExS0qAKlqlOIXtRVAQ5NkgDR0OiU6H4urqPXrOBHPpax63+mVSu2klB7jKGnJjiYtkNRCLW9hjpUZ4vStUUihQ3oA+WzkWdPiqyS5Trp+bNkfcng+lcugA3OeCc9E+6oH6OSBN0cZ6/zIzTEL36s648mzMBD1Ntj1eghRt7/GHW8ZdR4FmC75Ka0XN4dc3KRot6uFcaw0QDmTjnlVKFEU2ooFT0QBnPjX/ld92FGPVS0oxdzmO0w3yTXXaA9zj6LYOobABkRfx9FfbTGswrsyhVpD4OqazRHg1nIRZ3aKpvmX+KMimF9GuQisf1AvwoXu1l+y+X16JoSm8BLb3pvZp8UeGmfcX5CucP98mOnkgJ1i5URcQnay+Jx90qKR3sXBjX5bwB18iwTusj8l1NA29LLbMNHe7HJhl1w6NBKFAtN5vXF6ltP/oItz6PI9WB3PU33Z4aevtvTdQvOtCTS7g5E5SIpJM630MdBo4GAzMEcfaVazNaJxadVLEY/GkAW71JAlHusoRDTzYGkneaY/1zdXRr8KwR6eIRqtAzOuACSwgH/HPkkL1QrMlHxdbVjtjr4Ks7w1nI4O5wlB5Vn+j57OIp+vGWIVfo52OMMjlfBtJuBWP86Q7DdEoUbWQc="
-
-before_install:
-      - echo -n | openssl s_client -connect scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-
-
-addons:
   coverity_scan:
     project:
       name: "ab-vm/ab"
@@ -32,3 +20,11 @@ addons:
     build_command_prepend: "./configure; make clean"
     build_command:   "make -j 4"
     branch_pattern: coverity_scan
+before_install:
+  - export CC=gcc-6 CXX=g++-6
+  - echo -n | openssl s_client -connect scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-
+env:
+  global:
+   # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
+   #   via the "travis encrypt" command using the project repo's public key
+   - secure: "fSnEX2nbYGKLm0IbmtByurdBZz8PTLXJPHyzx+VXEFYOExS0qAKlqlOIXtRVAQ5NkgDR0OiU6H4urqPXrOBHPpax63+mVSu2klB7jKGnJjiYtkNRCLW9hjpUZ4vStUUihQ3oA+WzkWdPiqyS5Trp+bNkfcng+lcugA3OeCc9E+6oH6OSBN0cZ6/zIzTEL36s648mzMBD1Ntj1eghRt7/GHW8ZdR4FmC75Ka0XN4dc3KRot6uFcaw0QDmTjnlVKFEU2ooFT0QBnPjX/ld92FGPVS0oxdzmO0w3yTXXaA9zj6LYOobABkRfx9FfbTGswrsyhVpD4OqazRHg1nIRZ3aKpvmX+KMimF9GuQisf1AvwoXu1l+y+X16JoSm8BLb3pvZp8UeGmfcX5CucP98mOnkgJ1i5URcQnay+Jx90qKR3sXBjX5bwB18iwTusj8l1NA29LLbMNHe7HJhl1w6NBKFAtN5vXF6ltP/oItz6PI9WB3PU33Z4aevtvTdQvOtCTS7g5E5SIpJM630MdBo4GAzMEcfaVazNaJxadVLEY/GkAW71JAlHusoRDTzYGkneaY/1zdXRr8KwR6eIRqtAzOuACSwgH/HPkkL1QrMlHxdbVjtjr4Ks7w1nI4O5wlB5Vn+j57OIp+vGWIVfo52OMMjlfBtJuBWP86Q7DdEoUbWQc="
