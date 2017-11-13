@@ -1,7 +1,7 @@
 #ifndef PITH_SEXPRPRINTER_HPP_
 #define PITH_SEXPRPRINTER_HPP_
 
-#include <iostream>
+#include <Pith/Config.hpp>
 #include <ostream>
 
 namespace Pith {
@@ -33,169 +33,123 @@ private:
 	std::size_t depth_{0};
 };
 
-inline Indent::Indent(std::size_t depth) : depth_{depth} {}
+/// A formatted printer.
+/// Prints S-Expressions, ie (output (style lisp)).
+class SexprPrinter {
+public:
+	SexprPrinter(std::ostream& out);
 
-inline auto Indent::operator++() -> Indent& {
-	if (depth_ < MAX_DEPTH) {
-		++depth_;
-	}
-	return *this;
-}
+	/// Obtain the underlying stream object for unformatted output.
+	inline auto stream() const -> std::ostream&;
 
-inline auto Indent::operator++(int) -> Indent {
-	Indent copy = *this;
-	if (depth_ < MAX_DEPTH) {
-		depth_++;
-	}
-	return copy;
-}
+	/// Obtain the indentation state.
+	/// To increase the indentation, try:
+	/// printer.indent()++;
+	inline auto indent() -> Indent&;
 
-inline auto Indent::operator--() -> Indent& {
-	if (depth_ > 0) {
-		--depth_;
-	}
-	return *this;
-}
+	inline auto indent() const -> const Indent&;
 
-inline auto Indent::operator--(int) -> Indent {
-	Indent copy = *this;
-	if (depth_ > 0) {
-		depth_--;
-	}
-	return copy;
-}
+	/// Prints a newline, if the current line is dirty.
+	inline auto freshen() -> SexprPrinter&;
 
-inline auto Indent::depth() const -> std::size_t {
-	return depth_;
-}
+	/// Prints spacing between elements, or indentation if the line is fresh.
+	inline auto spacing() -> SexprPrinter&;
 
-inline auto Indent::depth(std::size_t depth) -> Indent& {
-	if (depth > MAX_DEPTH) {
-		depth = MAX_DEPTH;
-	}
-	depth_ = depth;
-	return *this;
-}
+	/// True if the line is dirty
+	inline auto needsSpacing() const -> bool;
 
-inline auto operator<<(std::ostream& out, const Indent& indent) -> std::ostream& {
-	for (std::size_t i = 0; i < indent.depth(); i++) {
-		out << "  ";
-	}
-	return out;
-}
+	/// Manually set the needs spacing flag.
+	inline auto needsSpacing(bool p) -> SexprPrinter&;
 
-struct SexprPrinter {
-	std::ostream& stream;
-	bool fresh        = true;   // line is new
-	bool needsSpacing = false;  // needs space between elements.
-	Indent indent{0};
+	/// True if output is currently at the beginning of a line.
+	inline auto fresh() const -> bool;
 
-	// operator std::ostream&() { return stream; }
+	/// Manually set the freshness, if you've been doing raw output.
+	inline auto fresh(bool p) -> SexprPrinter&;
 
-	inline auto freshenLine() -> void {
-		if (!fresh) {
-			fresh        = true;
-			needsSpacing = false;
-			stream << std::endl;
-		}
-	}
+	/// Manually mark the line as dirty, needsSpacing.
+	inline auto dirty() -> SexprPrinter&;
 
-	inline auto spacing() -> void {
-		if (fresh) {
-			stream << indent;
-			needsSpacing = false;
-			fresh = false;
-		}
-		if (needsSpacing) {
-			needsSpacing = false;
-			fresh        = false;
-			stream << " ";
-		}
-	}
+protected:
+	std::ostream& stream_;
+	Indent indent_{0};
+	bool fresh_        = true;   // line is new
+	bool needsSpacing_ = false;  // needs space between elements.
 };
 
-extern SexprPrinter debug;
+/// A debug s-expression printer.
+extern SexprPrinter debug_out;
 
+/// Print anything to the s-expression stream.
+/// The type T must be streamable to std::ostream.
 template <typename T>
-inline auto operator<<(SexprPrinter& out, T&& x) -> SexprPrinter& {
-	out.spacing();
-	out.stream << std::forward<T>(x);
-	out.needsSpacing = true;
-	out.fresh        = false;
-	return out;
-}
+inline auto operator<<(SexprPrinter& out, T&& x) -> SexprPrinter&;
 
 inline auto operator<<(SexprPrinter& out, std::ostream& (*manipulator)(std::ostream&))
-	-> SexprPrinter& {
-	out.stream << manipulator;
-	return out;
-}
+	-> SexprPrinter&;
 
-inline auto operator<<(Pith::SexprPrinter& out, const Pith::Indent& indent) -> Pith::SexprPrinter& {
-	out.stream << indent;
-	out.needsSpacing = false;
-	out.fresh        = false;
-	return out;
-}
-
+/// Fresh line manipulator.
 struct FreshLine {};
 
 extern const FreshLine freshLine;
 
+/// Begin a fresh line. If the current line is already fresh, do nothing.
 inline auto operator<<(SexprPrinter& out, Pith::FreshLine) -> Pith::SexprPrinter& {
-	out.freshenLine();
+	out.freshen();
 	return out;
 }
 
+/// S-Expression start manipulator.
 struct SexprStart {};
 
 extern const SexprStart sexprStart;
 
-inline auto operator<<(SexprPrinter& out, SexprStart) -> SexprPrinter& {
-	out.spacing();
-	out.stream << "(";
-	out.fresh        = false;
-	out.needsSpacing = false;
+/// Begin an s-expression. Prints "(".
+inline auto operator<<(SexprPrinter& out, SexprStart) -> SexprPrinter&;
 
-	out.indent++;
-
-	return out;
-}
-
+/// S-Expression end manipulator.
 struct SexprEnd {};
 
 extern const SexprEnd sexprEnd;
 
-inline auto operator<<(SexprPrinter& out, SexprEnd) -> SexprPrinter& {
-	out.stream << ")";
-	out.stream.flush();
-	out.fresh        = false;
-	out.needsSpacing = true;
-	out.indent--;
+/// End an s-expression. Prints ")".
+inline auto operator<<(SexprPrinter& out, SexprEnd) -> SexprPrinter&;
 
-	return out;
-}
-
+/// A manipulator that will wrap the text of the next object. This manipulator only affects the one
+/// next object. Usage:
+///   sexpr << stringify << "abcd";
+/// output:
+///   "abcd"
 struct Stringify {};
 
 extern const Stringify stringify;
 
+/// A printer that stringifies one thing, then reverts back to a SexprPrinter.
+struct StringifyPrinter {
+	SexprPrinter& sexpr;
+};
+
+/// Convert the SexprPrinter to a Stringify printer.
+inline auto operator<<(SexprPrinter& out, Stringify) -> StringifyPrinter;
+
+/// Print the stringified version of x. Returns the SexprPrinter, so all following operations will
+/// operate as normal.
+template <typename T>
+inline auto operator<<(const StringifyPrinter& out, T&& x) -> SexprPrinter&;
+
+/// A printer that bypasses the SexprPrinter's formatting. To start raw output, stream rawStart to
+/// an SexprPrinter. To end raw output, stream rawEnd;
 struct RawPrinter {
 	SexprPrinter& sexpr;
 };
 
+/// Print x without any SexprPrinter-based formatting.
 template <typename T>
-inline auto operator<<(const RawPrinter& out, T&& x) -> const RawPrinter& {
-	out.sexpr.stream << std::forward<T>(x);
-	return out;
-}
-
+inline auto operator<<(const RawPrinter& out, T&& x) -> const RawPrinter&;
 struct RawStart {};
 
-inline auto operator<<(SexprPrinter& out, const RawStart&) -> RawPrinter {
-	out.spacing();
-	return RawPrinter{out};
-};
+/// Convert an SexprPrinter to a RawPrinter.
+inline auto operator<<(SexprPrinter& out, const RawStart&) -> RawPrinter;
 
 extern const RawStart rawStart;
 
@@ -203,25 +157,12 @@ struct RawEnd {};
 
 extern const RawEnd rawEnd;
 
-inline auto operator<<(const RawPrinter& out, const RawEnd&) -> SexprPrinter& {
-	out.sexpr.fresh = false;
-	out.sexpr.needsSpacing = true;
-	return out.sexpr;
-}
-
-struct StringifyPrinter {
-	SexprPrinter& sexpr;
-};
-
-template <typename T>
-inline auto operator<<(const StringifyPrinter& out, T&& x) -> SexprPrinter& {
-	return out.sexpr << rawStart << "\"" << x << "\"" << rawEnd;
-}
-
-inline auto operator<<(SexprPrinter& out, Stringify) -> StringifyPrinter {
-	return StringifyPrinter{out};
-}
+/// convert a RawPrinter to a SexprPrinter.
+/// The SexprPrinter is dirtied.
+inline auto operator<<(const RawPrinter& out, const RawEnd&) -> SexprPrinter&;
 
 }  // namespace Pith
+
+#include <Pith/SexprPrinter.inl.hpp>
 
 #endif  // PITH_SEXPRPRINTERHPP_

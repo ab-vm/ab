@@ -11,7 +11,7 @@ namespace Binary {
 
 const bool DEBUG = false;
 
-/// A Binary::Visitor that dumps human readable results to an ostream.
+/// A Binary::Visitor that dumps humand readable results to an ostream.
 class WastPrinter : public NoOpVisitor {
 public:
 	WastPrinter(Pith::SexprPrinter& out) : out_{out} {
@@ -28,11 +28,11 @@ public:
 
 	virtual auto sectionStart(const Section& section) -> void override {
 		out_ << Pith::freshLine << ";;;;;;;;;;;;;;" << section;
-		out_.indent++;
+		++(out_.indent());
 	}
 
 	virtual auto sectionEnd(const Section& section) -> void override {
-		out_.indent--;
+		--(out_.indent());
 	}
 
 	virtual auto typeSection(std::size_t count) -> void override {
@@ -110,8 +110,8 @@ public:
 
 	virtual auto codeSection(std::size_t count) -> void override {
 		out_ << Pith::freshLine;
-		out_.stream << ";; count:" << count;
-		out_.fresh = false;
+		out_.stream() << ";; count:" << count;
+		out_.fresh(false);
 	}
 
 	virtual auto functionBody(std::size_t index, const FunctionBody& body) -> void override {
