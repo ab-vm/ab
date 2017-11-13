@@ -224,9 +224,9 @@ private:
 };
 
 /// A value constructor for maybe objects.
-template <typename Type>
-auto just(Type&& value) -> Maybe<Type> {
-	return Maybe<Type>{std::forward<Type>(value)};
+template <typename Value, typename Type = typename std::decay<Value>::type>
+auto just(Value&& value) -> Maybe<Type> {
+	return Maybe<Type>{std::forward<Value>(value)};
 }
 
 namespace TypeTrait {
