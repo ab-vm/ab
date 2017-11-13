@@ -28,17 +28,17 @@ public:
 
 	virtual auto sectionStart(const Section& section) -> void override {
 		out_ << Pith::freshLine << ";;;;;;;;;;;;;;" << section;
-		out_.indent.depth += 1;
+		out_.indent++;
 	}
 
 	virtual auto sectionEnd(const Section& section) -> void override {
-		out_.indent.depth -= 1;
+		out_.indent--;
 	}
 
 	virtual auto typeSection(std::size_t count) -> void override {
 		out_ << Pith::freshLine;
-		out_.stream << ";; count: " << count;
-		out_.fresh = false;
+		out_ << Pith::rawStart << ";; count: " << count << Pith::rawEnd;
+		out_ << Pith::freshLine;
 	}
 
 	virtual auto functionType(const FunctionType& type) -> void override {
@@ -47,8 +47,8 @@ public:
 
 	virtual auto importSection(std::size_t count) -> void override {
 		out_ << Pith::freshLine;
-		out_.stream << ";; count:" << count;
-		out_.fresh = false;
+		out_ << Pith::rawStart << ";; count: " << count << Pith::rawEnd;
+		out_ << Pith::freshLine;
 	}
 
 	virtual auto importEntry(const ImportEntry& entry) -> void override {
@@ -57,8 +57,8 @@ public:
 
 	virtual auto functionSection(std::size_t count) -> void override {
 		out_ << Pith::freshLine;
-		out_.stream << ";; count:" << count;
-		out_.fresh = false;
+		out_ << Pith::rawStart << ";; count: " << count << Pith::rawEnd;
+		out_ << Pith::freshLine;
 		types_.reserve(count);
 	}
 
@@ -72,8 +72,8 @@ public:
 
 	virtual auto globalSection(std::size_t count) -> void override {
 		out_ << Pith::freshLine;
-		out_.stream << ";; count:" << count;
-		out_.fresh = false;
+		out_ << Pith::rawStart << ";; count: " << count << Pith::rawEnd;
+		out_ << Pith::freshLine;
 	}
 
 	virtual auto globalEntry(const GlobalType& type, const Expression& expr) -> void override {
