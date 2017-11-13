@@ -29,7 +29,7 @@ public:
 	friend auto operator<<(std::ostream& out, const Indent& indent) -> std::ostream&;
 
 private:
-	const std::size_t MAX_DEPTH = 10;
+	static const constexpr std::size_t MAX_DEPTH = 10;
 	std::size_t depth_{0};
 };
 
@@ -85,6 +85,7 @@ extern SexprPrinter debug_out;
 template <typename T>
 inline auto operator<<(SexprPrinter& out, T&& x) -> SexprPrinter&;
 
+/// Forward a manipulator to the underlying ostream.
 inline auto operator<<(SexprPrinter& out, std::ostream& (*manipulator)(std::ostream&))
 	-> SexprPrinter&;
 
@@ -115,11 +116,12 @@ extern const SexprEnd sexprEnd;
 /// End an s-expression. Prints ")".
 inline auto operator<<(SexprPrinter& out, SexprEnd) -> SexprPrinter&;
 
-/// A manipulator that will wrap the text of the next object. This manipulator only affects the one
-/// next object. Usage:
+/// Stringify the next thing. A manipulator that will wrap the text of the next object in quotes.
+/// This manipulator only affects the one next object. Usage:
 ///   sexpr << stringify << "abcd";
 /// output:
 ///   "abcd"
+/// When you output a Stringify object to an SexprPrinter, the printer becomes a StringifyPrinter. The stringify printer will stream
 struct Stringify {};
 
 extern const Stringify stringify;
