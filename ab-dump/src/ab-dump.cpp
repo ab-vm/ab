@@ -1,7 +1,9 @@
 #include <Ab/Config.hpp>
 #include <Ab/Wasm/Binary/Reader.hpp>
 #include <Ab/Wasm/Binary/Visitor.hpp>
-#include <Pith/OStream.hpp>
+#include <Pith/SexprPrinter.hpp>
+#include <Pith/StringSpan.hpp>
+#include <Pith/Maybe.hpp>
 #include <fstream>
 #include <iostream>
 
@@ -139,10 +141,10 @@ private:
 }  // namespace Wasm
 }  // namespace Ab
 
-auto dump(std::istream& in) -> void {
-	Pith::SexprPrinter out{std::cout};
+auto dump(std::istream& is, std::ostream& os) -> void {
+	Pith::SexprPrinter out{os};
 	Ab::Wasm::Binary::WastPrinter printer{out};
-	Ab::Wasm::Binary::Reader reader{printer, in};
+	Ab::Wasm::Binary::Reader reader{printer, is};
 
 	try {
 		reader();
@@ -152,17 +154,71 @@ auto dump(std::istream& in) -> void {
 	}
 }
 
-auto dump(const char* file) -> void {
-	std::ifstream in{file, std::ios::in | std::ios::binary};
-	dump(in);
-}
+struct Config {
+	Pith::Maybe<std::string> in;
+	Pith::Maybe<std::string> out;
+};
 
-extern "C" auto main(int argc, char** argv) -> int {
-	if (argc > 1) {
-		dump(argv[1]);
-	} else {
-		dump(std::cin);
+const char* const VERSION_STRING =
+	"ab-dump version 0.0.1-danger";
+
+const char* const USAGE =
+	"Disassemble a WASM binary module.\n"
+	"Usage: ab-dump [-o <output>] [--] <input>\n"
+	"   Or: ab-dump --help";
+
+auto parseArguments(Config& cfg, int argc, char** argv) -> void {
+	int i = 0;
+	while (i < argc) {
+		Pith::StringSpan arg{argv[i]};
+		if (arg == "-o" || arg == "--ouput") {
+			i++;
+			cfg.out = Pith::Maybe<std::string>(argv[i]);
+		}
+		else if (arg == "-h" || arg == "--help") {
+			std::cout << USAGE << std::endl;
+			exit(EXIT_SUCCESS);
+		}
+		else if (arg == "--version") {
+			std::cout << VERSION_STRING << std::endl;
+			exit(EXIT_SUCCESS);
+		}
+		else if (arg == "--") {
+			i++;
+			break;
+		}
+		i++;
 	}
 
+	if (i < argc) {
+		cfg.in = Pith::just(std::string{argv[i]});
+	}
+	for (int i = 1; i < argc; i++) {
+		std::cout << "arg: " << argv[i] << std::endl;
+	}
+};
+
+extern "C" auto main(int argc, char** argv) -> int {
+	Config cfg;
+
+	parseArguments(cfg, argc, argv);
+
+	std::ifstream infile;
+	std::streambuf* inbuffer = std::cin.rdbuf();
+	if (cfg.in) {
+		infile.open(*cfg.in, std::ios::in | std::ios::binary);
+		inbuffer = infile.rdbuf();
+	}
+	std::istream in(inbuffer);
+
+	std::ofstream outfile;
+	std::streambuf* outbuffer = std::cout.rdbuf();
+	if (cfg.out) {
+		outfile.open(*cfg.out, std::ios::out| std::ios::binary);
+		outbuffer = outfile.rdbuf();
+	}
+	std::ostream out(outbuffer);
+
+	dump(in, out);
 	return EXIT_SUCCESS;
 }
