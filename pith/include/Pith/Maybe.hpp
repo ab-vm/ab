@@ -82,6 +82,30 @@ public:
 		}
 	}
 
+	template <typename Other>
+	inline auto operator=(Maybe<Other>& other) -> Maybe<Type> {
+		if (other) {
+			storage_.set(inPlace, *other);
+		}
+		return *this;
+	}
+
+	template <typename Other>
+	inline auto operator=(const Maybe<Other>& other) -> Maybe<Type> {
+		if (other) {
+			storage_.set(inPlace, *other);
+		}
+		return *this;
+	}
+
+	template <typename Other>
+	inline auto operator=(Maybe<Other>&& other) -> Maybe<Type> {
+		if (other) {
+			storage_.set(inPlace, std::move(*other));
+		}
+		return *this;
+	}
+
 	/// @name Value checking
 	/// @{
 
