@@ -105,7 +105,7 @@ bool MM_VerboseManagerImpl::reconfigureVerboseGC(OMR_VM* omrVM) {
 		} else {
 			size_t len = strlen(filename);
 			strncpy(newLog, filename, len);
-			newLog[len] = '\0'; /* strncpy does NOT NULL terminate */
+			newLog[len] = '\0';              /* strncpy does NOT NULL terminate */
 			strncat(newLog, pidStr, pidLen); /* strncat does NULL terminate */
 		}
 		omrmem_free_memory(this->filename);

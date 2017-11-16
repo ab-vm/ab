@@ -155,23 +155,25 @@ struct LocalEntry {
 };
 
 inline auto operator<<(Pith::SexprPrinter& out, const LocalEntry& entry) -> Pith::SexprPrinter& {
-	for (std::size_t i = 0; i < entry.count; i++) {
-		out << entry.type;
-	}
+	// for (std::size_t i = 0; i < entry.count; i++) {
+	// 	out << entry.type;
+	// }
+	out << Pith::sexprStart << entry.type << entry.count << Pith::sexprEnd;
 	return out;
 }
 
 struct FunctionBody {
-	std::uint32_t bodySize;
+	std::shared_ptr<std::vector<char>> ops;
 	std::vector<LocalEntry> locals;
+	std::uint32_t size;
 };
 
 inline auto operator<<(Pith::SexprPrinter& out, const FunctionBody& body) -> Pith::SexprPrinter& {
-	out << Pith::sexprStart << "local";
+	out << Pith::sexprStart << "local" << body.locals.size();
 	for (const auto& local : body.locals) {
 		out << local;
 	}
-	out  << Pith::sexprEnd;
+	out << Pith::sexprEnd;
 	return out;
 }
 

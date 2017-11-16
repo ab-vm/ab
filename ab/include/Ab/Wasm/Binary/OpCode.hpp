@@ -189,158 +189,272 @@ enum class OpCode : RawOpCode {
 	/// TODO: Conversions
 };
 
-inline auto toString(OpCode code) -> const char* {
-	switch (code) {
+template <template <OpCode> class Function, typename... Args>
+inline auto opDispatch(OpCode op, Args&&... args)
+	-> decltype(std::declval<Function<OpCode::UNREACHABLE>>()(std::forward<Args>(args)...)) {
+	switch (op) {
 	case OpCode::UNREACHABLE:
-		return "unreachable";
-		break;
+		return Function<OpCode::UNREACHABLE>()(std::forward<Args>(args)...);
 	case OpCode::NOP:
-		return "nop";
-		break;
+		return Function<OpCode::NOP>()(std::forward<Args>(args)...);
 	case OpCode::BLOCK:
-		return "block";
-		break;
+		return Function<OpCode::BLOCK>()(std::forward<Args>(args)...);
 	case OpCode::LOOP:
-		return "loop";
-		break;
+		return Function<OpCode::LOOP>()(std::forward<Args>(args)...);
 	case OpCode::IF:
-		return "if";
-		break;
+		return Function<OpCode::IF>()(std::forward<Args>(args)...);
 	case OpCode::ELSE:
-		return "else";
-		break;
+		return Function<OpCode::ELSE>()(std::forward<Args>(args)...);
 	case OpCode::END:
-		return "end";
-		break;
+		return Function<OpCode::END>()(std::forward<Args>(args)...);
 	case OpCode::BR:
-		return "br";
-		break;
+		return Function<OpCode::BR>()(std::forward<Args>(args)...);
 	case OpCode::BR_IF:
-		return "br_if";
-		break;
+		return Function<OpCode::BR_IF>()(std::forward<Args>(args)...);
 	case OpCode::BR_TABLE:
-		return "br_table";
-		break;
+		return Function<OpCode::BR_TABLE>()(std::forward<Args>(args)...);
 	case OpCode::RETURN:
-		return "return";
-		break;
+		return Function<OpCode::RETURN>()(std::forward<Args>(args)...);
 	case OpCode::CALL:
-		return "call";
-		break;
+		return Function<OpCode::CALL>()(std::forward<Args>(args)...);
 	case OpCode::CALL_INDIRECT:
-		return "call_indirect";
-		break;
+		return Function<OpCode::CALL_INDIRECT>()(std::forward<Args>(args)...);
 	case OpCode::DROP:
-		return "drop";
-		break;
+		return Function<OpCode::DROP>()(std::forward<Args>(args)...);
 	case OpCode::SELECT:
-		return "select";
-		break;
+		return Function<OpCode::SELECT>()(std::forward<Args>(args)...);
 	case OpCode::GET_LOCAL:
-		return "get_local";
-		break;
+		return Function<OpCode::GET_LOCAL>()(std::forward<Args>(args)...);
 	case OpCode::SET_LOCAL:
-		return "set_local";
-		break;
+		return Function<OpCode::SET_LOCAL>()(std::forward<Args>(args)...);
 	case OpCode::TEE_LOCAL:
-		return "tee_local";
-		break;
+		return Function<OpCode::TEE_LOCAL>()(std::forward<Args>(args)...);
 	case OpCode::GET_GLOBAL:
-		return "get_global";
-		break;
+		return Function<OpCode::GET_GLOBAL>()(std::forward<Args>(args)...);
 	case OpCode::SET_GLOBAL:
-		return "set_global";
-		break;
+		return Function<OpCode::SET_GLOBAL>()(std::forward<Args>(args)...);
 	case OpCode::I32_LOAD:
-		return "i32.load";
-		break;
+		return Function<OpCode::I32_LOAD>()(std::forward<Args>(args)...);
 	case OpCode::I64_LOAD:
-		return "i64.load";
-		break;
+		return Function<OpCode::I64_LOAD>()(std::forward<Args>(args)...);
 	case OpCode::F32_LOAD:
-		return "f32.load";
-		break;
+		return Function<OpCode::F32_LOAD>()(std::forward<Args>(args)...);
 	case OpCode::F64_LOAD:
-		return "f64.load";
-		break;
+		return Function<OpCode::F64_LOAD>()(std::forward<Args>(args)...);
 	case OpCode::I32_LOAD8_S:
-		return "i32.load8_s";
-		break;
+		return Function<OpCode::I32_LOAD8_S>()(std::forward<Args>(args)...);
 	case OpCode::I32_LOAD8_U:
-		return "i32.load8_u";
-		break;
+		return Function<OpCode::I32_LOAD8_U>()(std::forward<Args>(args)...);
 	case OpCode::I32_LOAD16_S:
-		return "i32.load16_s";
-		break;
+		return Function<OpCode::I32_LOAD16_S>()(std::forward<Args>(args)...);
 	case OpCode::I32_LOAD16_U:
-		return "i32.load16_u";
-		break;
+		return Function<OpCode::I32_LOAD16_U>()(std::forward<Args>(args)...);
 	case OpCode::I64_LOAD8_S:
-		return "i64.load8_s";
-		break;
+		return Function<OpCode::I64_LOAD8_S>()(std::forward<Args>(args)...);
 	case OpCode::I64_LOAD8_U:
-		return "i64.load8_u";
-		break;
+		return Function<OpCode::I64_LOAD8_U>()(std::forward<Args>(args)...);
 	case OpCode::I64_LOAD16_S:
-		return "i64.load16_s";
-		break;
+		return Function<OpCode::I64_LOAD16_S>()(std::forward<Args>(args)...);
 	case OpCode::I64_LOAD16_U:
-		return "i64.load16_u";
-		break;
+		return Function<OpCode::I64_LOAD16_U>()(std::forward<Args>(args)...);
 	case OpCode::I64_LOAD32_S:
-		return "i64.load32_s";
-		break;
+		return Function<OpCode::I64_LOAD32_S>()(std::forward<Args>(args)...);
 	case OpCode::I64_LOAD32_U:
-		return "i64.load32_u";
-		break;
+		return Function<OpCode::I64_LOAD32_U>()(std::forward<Args>(args)...);
 	case OpCode::I32_STORE:
-		return "i32.store";
-		break;
+		return Function<OpCode::I32_STORE>()(std::forward<Args>(args)...);
 	case OpCode::I64_STORE:
-		return "i64.store";
-		break;
+		return Function<OpCode::I64_STORE>()(std::forward<Args>(args)...);
 	case OpCode::F32_STORE:
-		return "f32.store";
-		break;
+		return Function<OpCode::F32_STORE>()(std::forward<Args>(args)...);
 	case OpCode::F64_STORE:
-		return "f64.store";
-		break;
+		return Function<OpCode::F64_STORE>()(std::forward<Args>(args)...);
 	case OpCode::I32_STORE8:
-		return "i32.store8";
-		break;
+		return Function<OpCode::I32_STORE8>()(std::forward<Args>(args)...);
 	case OpCode::I32_STORE16:
-		return "i32.store16";
-		break;
+		return Function<OpCode::I32_STORE16>()(std::forward<Args>(args)...);
 	case OpCode::I64_STORE8:
-		return "i64.store8";
-		break;
+		return Function<OpCode::I64_STORE8>()(std::forward<Args>(args)...);
 	case OpCode::I64_STORE16:
-		return "i64.store16";
-		break;
+		return Function<OpCode::I64_STORE16>()(std::forward<Args>(args)...);
 	case OpCode::I64_STORE32:
-		return "i64.store32";
-		break;
+		return Function<OpCode::I64_STORE32>()(std::forward<Args>(args)...);
 	case OpCode::CURRENT_MEMORY:
-		return "current_memory";
-		break;
+		return Function<OpCode::CURRENT_MEMORY>()(std::forward<Args>(args)...);
 	case OpCode::GROW_MEMORY:
-		return "grow_memory";
-		break;
+		return Function<OpCode::GROW_MEMORY>()(std::forward<Args>(args)...);
 	case OpCode::I32_CONST:
-		return "i32.const";
-		break;
+		return Function<OpCode::I32_CONST>()(std::forward<Args>(args)...);
 	case OpCode::I64_CONST:
-		return "i64.const";
-		break;
+		return Function<OpCode::I64_CONST>()(std::forward<Args>(args)...);
 	case OpCode::F32_CONST:
-		return "f32.const";
-		break;
+		return Function<OpCode::F32_CONST>()(std::forward<Args>(args)...);
 	case OpCode::F64_CONST:
-		return "f64.const";
-		break;
-	default:
-		return "UNKNOWN_OPCODE";
+		return Function<OpCode::F64_CONST>()(std::forward<Args>(args)...);
 	}
+}
+
+template <OpCode op>
+constexpr const char* OP_NAME = "UNKNOWN_OP";
+
+template <>
+constexpr const char* OP_NAME<OpCode::UNREACHABLE> = "unreachable";
+
+template <>
+constexpr const char* OP_NAME<OpCode::NOP> = "nop";
+
+template <>
+constexpr const char* OP_NAME<OpCode::BLOCK> = "block";
+
+template <>
+constexpr const char* OP_NAME<OpCode::LOOP> = "loop";
+
+template <>
+constexpr const char* OP_NAME<OpCode::IF> = "if";
+
+template <>
+constexpr const char* OP_NAME<OpCode::ELSE> = "else";
+
+template <>
+constexpr const char* OP_NAME<OpCode::END> = "end";
+
+template <>
+constexpr const char* OP_NAME<OpCode::BR> = "br";
+
+template <>
+constexpr const char* OP_NAME<OpCode::BR_IF> = "br_if";
+
+template <>
+constexpr const char* OP_NAME<OpCode::BR_TABLE> = "br_table";
+
+template <>
+constexpr const char* OP_NAME<OpCode::RETURN> = "return";
+
+template <>
+constexpr const char* OP_NAME<OpCode::CALL> = "call";
+
+template <>
+constexpr const char* OP_NAME<OpCode::CALL_INDIRECT> = "call_indirect";
+
+template <>
+constexpr const char* OP_NAME<OpCode::DROP> = "drop";
+
+template <>
+constexpr const char* OP_NAME<OpCode::SELECT> = "select";
+
+template <>
+constexpr const char* OP_NAME<OpCode::GET_LOCAL> = "get_local";
+
+template <>
+constexpr const char* OP_NAME<OpCode::SET_LOCAL> = "set_local";
+
+template <>
+constexpr const char* OP_NAME<OpCode::TEE_LOCAL> = "tee_local";
+
+template <>
+constexpr const char* OP_NAME<OpCode::GET_GLOBAL> = "get_global";
+
+template <>
+constexpr const char* OP_NAME<OpCode::SET_GLOBAL> = "set_global";
+
+template <>
+constexpr const char* OP_NAME<OpCode::I32_LOAD> = "i32.load";
+
+template <>
+constexpr const char* OP_NAME<OpCode::I64_LOAD> = "i64.load";
+
+template <>
+constexpr const char* OP_NAME<OpCode::F32_LOAD> = "f32.load";
+
+template <>
+constexpr const char* OP_NAME<OpCode::F64_LOAD> = "f64.load";
+
+template <>
+constexpr const char* OP_NAME<OpCode::I32_LOAD8_S> = "i32.load8_s";
+
+template <>
+constexpr const char* OP_NAME<OpCode::I32_LOAD8_U> = "i32.load8_u";
+
+template <>
+constexpr const char* OP_NAME<OpCode::I32_LOAD16_S> = "i32.load16_s";
+
+template <>
+constexpr const char* OP_NAME<OpCode::I32_LOAD16_U> = "i32.load16_u";
+
+template <>
+constexpr const char* OP_NAME<OpCode::I64_LOAD8_S> = "i64.load8_s";
+
+template <>
+constexpr const char* OP_NAME<OpCode::I64_LOAD8_U> = "i64.load8_u";
+
+template <>
+constexpr const char* OP_NAME<OpCode::I64_LOAD16_S> = "i64.load16_s";
+
+template <>
+constexpr const char* OP_NAME<OpCode::I64_LOAD16_U> = "i64.load16_u";
+
+template <>
+constexpr const char* OP_NAME<OpCode::I64_LOAD32_S> = "i64.load32_s";
+
+template <>
+constexpr const char* OP_NAME<OpCode::I64_LOAD32_U> = "i64.load32_u";
+
+template <>
+constexpr const char* OP_NAME<OpCode::I32_STORE> = "i32.store";
+
+template <>
+constexpr const char* OP_NAME<OpCode::I64_STORE> = "i64.store";
+
+template <>
+constexpr const char* OP_NAME<OpCode::F32_STORE> = "f32.store";
+
+template <>
+constexpr const char* OP_NAME<OpCode::F64_STORE> = "f64.store";
+
+template <>
+constexpr const char* OP_NAME<OpCode::I32_STORE8> = "i32.store8";
+
+template <>
+constexpr const char* OP_NAME<OpCode::I32_STORE16> = "i32.store16";
+
+template <>
+constexpr const char* OP_NAME<OpCode::I64_STORE8> = "i64.store8";
+
+template <>
+constexpr const char* OP_NAME<OpCode::I64_STORE16> = "i64.store16";
+
+template <>
+constexpr const char* OP_NAME<OpCode::I64_STORE32> = "i64.store32";
+
+template <>
+constexpr const char* OP_NAME<OpCode::CURRENT_MEMORY> = "current_memory";
+
+template <>
+constexpr const char* OP_NAME<OpCode::GROW_MEMORY> = "grow_memory";
+
+template <>
+constexpr const char* OP_NAME<OpCode::I32_CONST> = "i32.const";
+
+template <>
+constexpr const char* OP_NAME<OpCode::I64_CONST> = "i64.const";
+
+template <>
+constexpr const char* OP_NAME<OpCode::F32_CONST> = "f32.const";
+
+template <>
+constexpr const char* OP_NAME<OpCode::F64_CONST> = "f64.const";
+
+/// Instantiates FunctionTemplate as
+///   FunctionTemplate<OpCode>
+template <OpCode op>
+struct NameOfOp {
+	auto operator()() -> const char* {
+		return OP_NAME<op>;
+	}
+};
+
+inline auto toString(OpCode op) -> const char* {
+	return opDispatch<NameOfOp>(op);
 }
 
 inline auto operator<<(std::ostream& out, OpCode code) -> std::ostream& {

@@ -67,7 +67,8 @@ inline auto operator<<(Pith::SexprPrinter& out, const ImportEntry& entry) -> Pit
 	out << "import";
 	out << Pith::stringify << entry.module;
 	out << Pith::stringify << entry.field;
-	out << "(;" << "kind" << (std::uint32_t)entry.kind << ";)";
+	out << "(;"
+	    << "kind" << (std::uint32_t)entry.kind << ";)";
 
 	switch (entry.kind) {
 	case ExternalKindCode::FUNCTION:

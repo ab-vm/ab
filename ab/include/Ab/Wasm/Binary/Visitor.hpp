@@ -3,6 +3,8 @@
 
 #include <Ab/Wasm/Binary/Ir.hpp>
 #include <Ab/Wasm/Binary/Section.hpp>
+#include <Pith/SexprPrinter.hpp>
+#include <cstddef>
 #include <cstdint>
 
 namespace Ab {
@@ -22,7 +24,7 @@ public:
 
 	virtual auto moduleEnd() -> void = 0;
 
-	virtual auto header(std::uint32_t magic, std::uint32_t version) -> void = 0;
+	virtual auto header(::std::uint32_t magic, ::std::uint32_t version) -> void = 0;
 
 	/// The beginning of any section
 	virtual auto sectionStart(const Section& section) -> void = 0;
@@ -64,7 +66,7 @@ public:
 	virtual auto elementSection(std::size_t count) -> void = 0;
 
 	virtual auto elementEntry(const ElementEntry& entry) -> void = 0;
-	
+
 	virtual auto element(const ElementEntry& entry, std::uint32_t index) -> void = 0;
 
 	virtual auto elementEntryEnd(const ElementEntry& entry) -> void = 0;
@@ -72,9 +74,15 @@ public:
 	/// Code Section
 	virtual auto codeSection(std::size_t count) -> void = 0;
 
-	virtual auto functionBody(std::size_t index, const FunctionBody& entry) -> void = 0;
+	/// This is a weird part of the code. The function body parsing works very differently from
+	/// the main parser. For now, we hand off the input to the visitor. The visitor can bring up
+	/// it's own function parser and do whatever. The visitor must read to the end of the
+	/// function. This is a temporary way of life.
+	virtual auto functionBody(std::size_t index, const FunctionBody& entry, std::istream& in)
+		-> void = 0;
 
-	virtual auto functionBodyExpression(const FunctionBody& entry, const Expression& expression) -> void = 0;
+	virtual auto functionBodyExpression(const FunctionBody& entry, const Expression& expression)
+		-> void = 0;
 
 	virtual auto functionBodyEnd(const FunctionBody& entry) -> void = 0;
 };
@@ -116,35 +124,49 @@ public:
 
 	/// Global Section
 
-	virtual auto globalSection(std::size_t count) -> void override {}
+	virtual auto globalSection(std::size_t count) -> void override {
+	}
 
-	virtual auto globalEntry(const GlobalType& type, const Expression& expr) -> void override {}
+	virtual auto globalEntry(const GlobalType& type, const Expression& expr) -> void override {
+	}
 
 	/// Export Section
 
-	virtual auto exportSection(std::size_t count) -> void override {}
+	virtual auto exportSection(std::size_t count) -> void override {
+	}
 
-	virtual auto exportEntry(const ExportEntry& entry) -> void override {}
+	virtual auto exportEntry(const ExportEntry& entry) -> void override {
+	}
 
 	/// Element Section
 
-	virtual auto elementSection(std::size_t count) -> void override {}
+	virtual auto elementSection(std::size_t count) -> void override {
+	}
 
-	virtual auto elementEntry(const ElementEntry& entry) -> void override {}
+	virtual auto elementEntry(const ElementEntry& entry) -> void override {
+	}
 
-	virtual auto element(const ElementEntry& entry, std::uint32_t index) -> void override {}
+	virtual auto element(const ElementEntry& entry, std::uint32_t index) -> void override {
+	}
 
-	virtual auto elementEntryEnd(const ElementEntry& entry) -> void override {}
+	virtual auto elementEntryEnd(const ElementEntry& entry) -> void override {
+	}
 
 	/// Code Section
 
-	virtual auto codeSection(std::size_t count) -> void override {}
+	virtual auto codeSection(std::size_t count) -> void override {
+	}
 
-	virtual auto functionBody(std::size_t index, const FunctionBody& entry) -> void override {}
+	virtual auto functionBody(std::size_t index, const FunctionBody& entry, std::istream& in)
+		-> void override {
+	}
 
-	virtual auto functionBodyExpression(const FunctionBody& entry, const Expression& expression) -> void override {}
+	virtual auto functionBodyExpression(const FunctionBody& entry, const Expression& expression)
+		-> void override {
+	}
 
-	virtual auto functionBodyEnd(const FunctionBody& entry) -> void override {}
+	virtual auto functionBodyEnd(const FunctionBody& entry) -> void override {
+	}
 
 	/// Custom Section
 

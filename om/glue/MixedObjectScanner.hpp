@@ -27,7 +27,7 @@ class GC_MixedObjectScanner : public GC_ObjectScanner {
 	/* Data Members */
 private:
 	fomrobject_t* const _endPtr; /**< end scan pointer */
-	fomrobject_t* _mapPtr; /**< pointer to first slot in current scan segment */
+	fomrobject_t* _mapPtr;       /**< pointer to first slot in current scan segment */
 
 protected:
 public:

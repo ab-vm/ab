@@ -34,8 +34,8 @@ class GC_ObjectIterator {
 private:
 protected:
 	GC_SlotObject _slotObject; /**< Create own SlotObject class to provide output */
-	fomrobject_t* _scanPtr; /**< current scan pointer */
-	fomrobject_t* _endPtr; /**< end scan pointer */
+	fomrobject_t* _scanPtr;    /**< current scan pointer */
+	fomrobject_t* _endPtr;     /**< end scan pointer */
 public:
 	/* Member Functions */
 private:

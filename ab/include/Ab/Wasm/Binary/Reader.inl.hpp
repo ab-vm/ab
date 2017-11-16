@@ -352,22 +352,19 @@ inline auto Reader::codeSection(const Section& section) -> void {
 }
 
 inline auto Reader::functionBody(std::size_t index) -> void {
+	if (index > 3)
+		throw std::runtime_error{"crashy crashy"};
+
 	FunctionBody body;
-	body.bodySize   = varuint32();
+	body.size       = varuint32();
 	auto localCount = varuint32();
+
 	body.locals.resize(localCount);
 	for (std::size_t i = 0; i < localCount; i++) {
 		body.locals[i] = localEntry();
 	}
 
-	// TODO: Use body size.
-	visitor_.functionBody(index, body);
-
-	Expression expr;
-	do {
-		expr = expression();
-		visitor_.functionBodyExpression(body, expr);
-	} while (expr.op != OpCode::END);
+	visitor_.functionBody(index, body, in_);
 
 	visitor_.functionBodyEnd(body);
 }

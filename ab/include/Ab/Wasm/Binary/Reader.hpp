@@ -3,6 +3,7 @@
 
 #include <Ab/Config.hpp>
 
+#include <Ab/Wasm/Binary/Expression.hpp>
 #include <Ab/Wasm/Binary/Ir.hpp>
 #include <Ab/Wasm/Binary/OpCode.hpp>
 #include <Ab/Wasm/Binary/Section.hpp>

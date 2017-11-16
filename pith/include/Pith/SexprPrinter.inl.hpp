@@ -112,7 +112,7 @@ inline auto SexprPrinter::fresh(bool p) -> SexprPrinter& {
 }
 
 inline auto SexprPrinter::dirty() -> SexprPrinter& {
-	fresh_ = false;
+	fresh_        = false;
 	needsSpacing_ = true;
 	return *this;
 }

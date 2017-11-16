@@ -87,7 +87,7 @@ OmrSystem::~OmrSystem() noexcept {
 		if (OMR_ERROR_NONE != rc) {
 			omrtty_printf("Failed to shutdown Heap Mememory Management, rc=%d.\n", rc);
 		}
-#endif /* OMR_GC */
+#endif  /* OMR_GC */
 
 		OMR_Runtime *omrRuntime = omrVM->_runtime;
 		if (NULL != omrRuntime) {

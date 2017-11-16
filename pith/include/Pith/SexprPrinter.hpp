@@ -8,6 +8,7 @@ namespace Pith {
 
 /// An object for printing indentation.
 /// Output the indent object to print indentation levels.
+/// Use ++indent or --indent to manipulate the depth.
 struct Indent {
 public:
 	Indent(std::size_t depth = 0);
@@ -121,7 +122,8 @@ inline auto operator<<(SexprPrinter& out, SexprEnd) -> SexprPrinter&;
 ///   sexpr << stringify << "abcd";
 /// output:
 ///   "abcd"
-/// When you output a Stringify object to an SexprPrinter, the printer becomes a StringifyPrinter. The stringify printer will stream
+/// When you output a Stringify object to an SexprPrinter, the printer becomes a StringifyPrinter.
+/// The stringify printer will stream
 struct Stringify {};
 
 extern const Stringify stringify;
@@ -167,4 +169,4 @@ inline auto operator<<(const RawPrinter& out, const RawEnd&) -> SexprPrinter&;
 
 #include <Pith/SexprPrinter.inl.hpp>
 
-#endif  // PITH_SEXPRPRINTERHPP_
+#endif  // PITH_SEXPRPRINTER_HPP_

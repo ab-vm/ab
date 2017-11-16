@@ -1,9 +1,10 @@
 #include <Ab/Config.hpp>
+#include <Ab/Wasm/Binary/Expression.hpp>
 #include <Ab/Wasm/Binary/Reader.hpp>
 #include <Ab/Wasm/Binary/Visitor.hpp>
+#include <Pith/Maybe.hpp>
 #include <Pith/SexprPrinter.hpp>
 #include <Pith/StringSpan.hpp>
-#include <Pith/Maybe.hpp>
 #include <fstream>
 #include <iostream>
 
@@ -116,12 +117,20 @@ public:
 		out_.fresh(false);
 	}
 
-	virtual auto functionBody(std::size_t index, const FunctionBody& body) -> void override {
+	virtual auto functionBody(std::size_t index, const FunctionBody& body, std::istream& in)
+		-> void override {
 		out_ << Pith::freshLine;
 		out_ << Pith::sexprStart << "func";
 		out_ << Pith::sexprStart << "type" << types_[index] << Pith::sexprEnd;
 		out_ << Pith::freshLine;
 		out_ << body;
+
+		ExprReader read;
+		ExprPrinter print(out_);
+		read(in, print);
+		// auto& ops = *body.ops;
+
+		out_ << Pith::sexprEnd;
 	}
 
 	virtual auto functionBodyExpression(const FunctionBody& entry, const Expression& expression)
@@ -136,6 +145,16 @@ private:
 	std::vector<std::uint32_t> types_;
 	Pith::SexprPrinter out_;
 };
+
+#if 0
+inline auto disassemble(std::uint8_t* code, std::size_t n, std::ostream& out) -> void {
+};
+
+/// Disassemble WASM expressions up to (and including) the END op code.
+inline auto disassemble(std::istream& in, std::ostream& out) -> void {
+	// Ab::Wasm::Binary::Expr::apply
+};
+#endif  //
 
 }  // namespace Binary
 }  // namespace Wasm
@@ -159,32 +178,34 @@ struct Config {
 	Pith::Maybe<std::string> out;
 };
 
-const char* const VERSION_STRING =
-	"ab-dump version 0.0.1-danger";
+const char* name = "";
+
+const char* const VERSION_STRING = "ab-dump version 0.0.1-danger";
 
 const char* const USAGE =
 	"Disassemble a WASM binary module.\n"
 	"Usage: ab-dump [-o <output>] [--] <input>\n"
 	"   Or: ab-dump --help";
 
-auto parseArguments(Config& cfg, int argc, char** argv) -> void {
-	int i = 0;
+auto parseArguments(Config& cfg, int argc, const char* const* argv) -> void {
+	name = argv[0];
+
+	int i = 1;
 	while (i < argc) {
 		Pith::StringSpan arg{argv[i]};
 		if (arg == "-o" || arg == "--ouput") {
 			i++;
 			cfg.out = Pith::Maybe<std::string>(argv[i]);
-		}
-		else if (arg == "-h" || arg == "--help") {
+		} else if (arg == "-h" || arg == "--help") {
 			std::cout << USAGE << std::endl;
 			exit(EXIT_SUCCESS);
-		}
-		else if (arg == "--version") {
+		} else if (arg == "--version") {
 			std::cout << VERSION_STRING << std::endl;
 			exit(EXIT_SUCCESS);
-		}
-		else if (arg == "--") {
+		} else if (arg == "--") {
 			i++;
+			break;
+		} else {
 			break;
 		}
 		i++;
@@ -193,6 +214,7 @@ auto parseArguments(Config& cfg, int argc, char** argv) -> void {
 	if (i < argc) {
 		cfg.in = Pith::just(std::string{argv[i]});
 	}
+
 	for (int i = 1; i < argc; i++) {
 		std::cout << "arg: " << argv[i] << std::endl;
 	}
@@ -214,10 +236,14 @@ extern "C" auto main(int argc, char** argv) -> int {
 	std::ofstream outfile;
 	std::streambuf* outbuffer = std::cout.rdbuf();
 	if (cfg.out) {
-		outfile.open(*cfg.out, std::ios::out| std::ios::binary);
+		outfile.open(*cfg.out, std::ios::out | std::ios::binary);
 		outbuffer = outfile.rdbuf();
 	}
 	std::ostream out(outbuffer);
+
+	Ab::Wasm::Binary::UnreachableExpr e;
+	Ab::Wasm::Binary::AnyExpr& any = e;
+	Pith::debug_out << any;
 
 	dump(in, out);
 	return EXIT_SUCCESS;

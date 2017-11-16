@@ -5,9 +5,7 @@
 
 namespace Ab {
 namespace Wasm {
-namespace Binary {
-
-}  // namespace Binary
+namespace Binary {}  // namespace Binary
 }  // namespace Wasm
 }  // namespace Ab
 

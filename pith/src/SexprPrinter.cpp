@@ -3,7 +3,7 @@
 
 namespace Pith {
 
-SexprPrinter debug{std::cerr};
+SexprPrinter debug_out{std::cerr};
 
 const RawStart rawStart;
 const RawEnd rawEnd;
