@@ -124,11 +124,9 @@ public:
 	}
 
 	virtual auto elementEntry(const ElementEntry& entry) -> void override {
-		if (cfg_.verbose) {
-			out_ << Pith::freshLine;
-			out_ << Pith::sexprStart << "elem";
-			out_ << Pith::sexprStart << entry.offset << Pith::sexprEnd;
-		}
+		out_ << Pith::freshLine;
+		out_ << Pith::sexprStart << "elem";
+		out_ << Pith::sexprStart << entry.offset << Pith::sexprEnd;
 	}
 
 	virtual auto element(const ElementEntry& entry, std::uint32_t index) -> void override {
