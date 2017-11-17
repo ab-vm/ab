@@ -149,7 +149,7 @@ public:
 		}
 	}
 
-	virtual auto functionBody(std::size_t index, const FunctionBody& body, std::istream& in)
+	virtual auto functionBody(std::size_t index, const FunctionBody& body, ReaderInput& in)
 		-> void override {
 		out_ << Pith::freshLine;
 		out_ << Pith::sexprStart << "func";
@@ -159,7 +159,7 @@ public:
 
 		ExprReader read;
 		ExprPrinter print(out_);
-		read(in, print);
+		read(in, body.size, print);
 		// auto& ops = *body.ops;
 
 		out_ << Pith::sexprEnd;

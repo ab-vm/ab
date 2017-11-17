@@ -15,10 +15,6 @@ namespace Ab {
 namespace Wasm {
 namespace Binary {
 
-inline auto typeCode(std::istream& in) -> TypeCode {
-	return (TypeCode)in.get();
-}
-
 /// Any expression.
 struct AnyExpr {
 public:
@@ -45,7 +41,7 @@ class Immediate {};
 
 struct UnhandledImmediate : public Immediate {
 	using Value = std::uintptr_t;
-	static auto read(std::istream& in, std::uintptr_t& out) -> void {
+	static auto read(ReaderInput& in, std::uintptr_t& out) -> void {
 		out = ~std::uintptr_t(0);
 		throw std::runtime_error("Unhandled immediate");
 	}
@@ -53,14 +49,14 @@ struct UnhandledImmediate : public Immediate {
 
 struct Varuint32Immediate : public Immediate {
 	using Value = std::uint64_t;
-	static auto read(std::istream& in, uint64_t& out) -> void {
+	static auto read(ReaderInput& in, uint64_t& out) -> void {
 		out = varuint32(in);
 	}
 };
 
 struct TypeCodeImmediate : public Immediate {
 	using Value = TypeCode;
-	static auto read(std::istream& in, TypeCode& out) -> void {
+	static auto read(ReaderInput& in, TypeCode& out) -> void {
 		out = typeCode(in);
 	}
 };
@@ -71,7 +67,7 @@ struct MemoryImmediate : public Immediate {
 		std::uint64_t offset;
 	};
 
-	static auto read(std::istream& in, Value& out) -> void {
+	static auto read(ReaderInput& in, Value& out) -> void {
 		out.flags  = varuint32(in);
 		out.offset = varuint32(in);
 	}
@@ -105,7 +101,7 @@ struct NullaryExpr : public Expr<op> {};
 
 template <OpCode op>
 struct ReadImmediates<NullaryExpr<op>> {
-	auto operator()(std::istream& in, NullaryExpr<op>& out) -> void {
+	auto operator()(ReaderInput& in, NullaryExpr<op>& out) -> void {
 		// Nullary expressions have no immediates, so there is no decoding work here.
 	}
 };
@@ -140,7 +136,7 @@ private:
 
 template <OpCode op, typename Immediate>
 struct ReadImmediates<UnaryExpr<op, Immediate>> {
-	auto operator()(std::istream& in, UnaryExpr<op, Immediate>& out) -> void {
+	auto operator()(ReaderInput& in, UnaryExpr<op, Immediate>& out) -> void {
 		Immediate::read(in, out.immediate());
 	}
 };
@@ -537,7 +533,7 @@ template <OpCode op>
 struct ReadExpr {
 	/// Decode an expression and call function on the result.
 	template <typename Function>
-	auto operator()(std::istream& in, Function& function) -> void {
+	auto operator()(ReaderInput& in, Function& function) -> void {
 		using E = typename OpTraits<op>::ExprType;
 		ReadImmediates<E> read;
 		E expr;
@@ -548,9 +544,9 @@ struct ReadExpr {
 
 /// The WASM expression decoder.
 struct ExprReader {
-	/// Decode a sequence of expressions and call function on each element.
+	/// Decode a sequence of expressions and call function on each expression.
 	template <typename Function>
-	auto operator()(std::istream& in, Function& function) -> void;
+	auto operator()(ReaderInput& in, std::size_t size, Function& function) -> void;
 };
 
 /// A WASM expression printer.
@@ -564,6 +560,7 @@ public:
 
 private:
 	Pith::SexprPrinter& out_;
+	std::size_t blockDepth_;
 };
 
 }  // namespace Binary

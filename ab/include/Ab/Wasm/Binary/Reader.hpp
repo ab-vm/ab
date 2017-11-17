@@ -20,6 +20,7 @@ namespace Ab {
 namespace Wasm {
 namespace Binary {
 
+
 /// Binary file reader.
 /// https://github.com/WebAssembly/design/blob/master/BinaryEncoding.md
 /// https://github.com/WebAssembly/design/blob/master/Modules.md
@@ -112,7 +113,7 @@ private:
 
 	inline auto functionBody(std::size_t index) -> void;
 
-	inline auto localEntry() -> LocalEntry;
+	inline auto localEntry(ReaderInput& in) -> LocalEntry;
 
 	/// Data Section
 

@@ -163,7 +163,6 @@ inline auto operator<<(Pith::SexprPrinter& out, const LocalEntry& entry) -> Pith
 }
 
 struct FunctionBody {
-	std::shared_ptr<std::vector<char>> ops;
 	std::vector<LocalEntry> locals;
 	std::uint32_t size;
 };

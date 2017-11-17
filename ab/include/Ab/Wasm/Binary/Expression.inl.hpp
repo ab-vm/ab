@@ -20,15 +20,16 @@ inline auto AnyExpr::op(OpCode op) -> AnyExpr& {
 }
 
 template <typename Function>
-inline auto ExprReader::operator()(std::istream& in, Function& function) -> void {
+inline auto ExprReader::operator()(ReaderInput& in, std::size_t size, Function& function) -> void {
+
 	OpCode op = OpCode::END;
 	do {
 		op = (OpCode)in.get();
 		opDispatch<ReadExpr>(op, in, function);
-	} while (op != OpCode::END);
+	} while (in.offset() < size);
 }
 
-inline ExprPrinter::ExprPrinter(Pith::SexprPrinter& out) : out_(out) {
+inline ExprPrinter::ExprPrinter(Pith::SexprPrinter& out) : out_(out), blockDepth_(0) {
 }
 
 template <typename Expr>
@@ -39,12 +40,16 @@ inline auto ExprPrinter::operator()(const Expr& e) -> void {
 template <>
 inline auto ExprPrinter::operator()(const IfExpr& e) -> void {
 	out_ << Pith::freshLine << e;
+	blockDepth_++;
 	out_.indent()++;
 }
 
 template <>
 inline auto ExprPrinter::operator()(const EndExpr& e) -> void {
-	// out_.indent()--;
+	if (blockDepth_ > 0) {
+		--out_.indent();
+		--blockDepth_;
+	}
 	out_ << Pith::freshLine << e;
 }
 

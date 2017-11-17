@@ -354,22 +354,24 @@ inline auto Reader::codeSection(const Section& section) -> void {
 inline auto Reader::functionBody(std::size_t index) -> void {
 	FunctionBody body;
 	body.size       = varuint32();
-	auto localCount = varuint32();
+
+	ReaderInput in{in_};
+	auto localCount = ::Ab::varuint32(in);
 
 	body.locals.resize(localCount);
 	for (std::size_t i = 0; i < localCount; i++) {
-		body.locals[i] = localEntry();
+		body.locals[i] = localEntry(in);
 	}
 
-	visitor_.functionBody(index, body, in_);
+	visitor_.functionBody(index, body, in);
 
 	visitor_.functionBodyEnd(body);
 }
 
-inline auto Reader::localEntry() -> LocalEntry {
+inline auto Reader::localEntry(ReaderInput& in) -> LocalEntry {
 	LocalEntry entry;
-	entry.count = varuint32();
-	entry.type  = valueType();
+	entry.count = ::Ab::varuint32(in);
+	entry.type  = ::Ab::typeCode(in); // TODO: Wrong type should be valueType
 	return entry;
 }
 

@@ -1,6 +1,7 @@
 #ifndef AB_WASM_BINARY_VISITOR_HPP_
 #define AB_WASM_BINARY_VISITOR_HPP_
 
+#include <Ab/leb128.hpp>
 #include <Ab/Wasm/Binary/Ir.hpp>
 #include <Ab/Wasm/Binary/Section.hpp>
 #include <Pith/SexprPrinter.hpp>
@@ -78,7 +79,7 @@ public:
 	/// the main parser. For now, we hand off the input to the visitor. The visitor can bring up
 	/// it's own function parser and do whatever. The visitor must read to the end of the
 	/// function. This is a temporary way of life.
-	virtual auto functionBody(std::size_t index, const FunctionBody& entry, std::istream& in)
+	virtual auto functionBody(std::size_t index, const FunctionBody& entry, ReaderInput& in)
 		-> void = 0;
 
 	virtual auto functionBodyExpression(const FunctionBody& entry, const Expression& expression)
@@ -157,7 +158,7 @@ public:
 	virtual auto codeSection(std::size_t count) -> void override {
 	}
 
-	virtual auto functionBody(std::size_t index, const FunctionBody& entry, std::istream& in)
+	virtual auto functionBody(std::size_t index, const FunctionBody& entry, ReaderInput& in)
 		-> void override {
 	}
 
