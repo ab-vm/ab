@@ -352,9 +352,6 @@ inline auto Reader::codeSection(const Section& section) -> void {
 }
 
 inline auto Reader::functionBody(std::size_t index) -> void {
-	if (index > 3)
-		throw std::runtime_error{"crashy crashy"};
-
 	FunctionBody body;
 	body.size       = varuint32();
 	auto localCount = varuint32();
@@ -454,28 +451,7 @@ inline auto Reader::uint64() -> std::uint64_t {
 }
 
 inline auto Reader::leb128() -> std::int64_t {
-	const std::uint8_t FLAG = 0b1000'0000;
-	const std::uint8_t MASK = 0b0111'1111;
-	const std::uint8_t SIGN = 0b0100'0000;
-
-	std::uint64_t result = 0;
-	std::size_t shift    = 0;
-	std::uint8_t byte    = 0;
-
-	do {
-		if (shift > 63)
-			throw BadNumber{};
-		byte = in_.get();
-		result |= std::uint64_t(byte & MASK) << shift;
-		shift += 7;
-
-	} while (byte & FLAG && (shift < 64) && !in_.eof());
-
-	if (byte & SIGN) {
-		result |= ~0 << shift;
-	}
-
-	return result;
+	return ::Ab::leb128(in_);
 }
 
 inline auto Reader::varint7() -> std::int64_t {
@@ -491,20 +467,7 @@ inline auto Reader::varint64() -> std::int64_t {
 }
 
 inline auto Reader::uleb128() -> std::uint64_t {
-	constexpr std::uint8_t FLAG = 0b1000'0000;
-	constexpr std::uint8_t MASK = 0b0111'1111;
-
-	std::uint64_t result = 0;
-	std::size_t shift    = 0;
-	std::uint8_t byte    = 0;
-
-	do {
-		byte = in_.get();
-		result |= std::uint64_t(byte & MASK) << shift;
-		shift += 7;
-	} while ((byte & FLAG) != 0 && shift < 64 && !in_.eof());
-
-	return result;
+	return ::Ab::uleb128(in_);
 }
 
 inline auto Reader::varuint1() -> std::uint64_t {

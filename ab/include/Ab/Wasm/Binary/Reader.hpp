@@ -178,20 +178,9 @@ private:
 	std::istream& in_;
 };
 
-class ReaderError : public std::runtime_error {
-public:
-	using std::runtime_error::runtime_error;
-};
-
 class InvalidHeader : public ReaderError {
 public:
 	InvalidHeader() : ReaderError{"Invalid Header"} {};
-};
-
-class BadNumber : public ReaderError {
-public:
-	BadNumber() : ReaderError{"Number too large or badly encoded"} {
-	}
 };
 
 class InvalidSection : public ReaderError {

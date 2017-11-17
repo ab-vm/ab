@@ -3,15 +3,21 @@
 
 #include <Ab/Config.hpp>
 #include <Ab/Wasm/Binary/OpCode.hpp>
+#include <Ab/Wasm/Binary/TypeCode.hpp>
 #include <Ab/leb128.hpp>
 #include <Pith/SexprPrinter.hpp>
 #include <cstddef>
 #include <cstdint>
-#// include <tuple>
+
+// include <tuple>
 
 namespace Ab {
 namespace Wasm {
 namespace Binary {
+
+inline auto typeCode(std::istream& in) -> TypeCode {
+	return (TypeCode)in.get();
+}
 
 /// Any expression.
 struct AnyExpr {
@@ -37,12 +43,45 @@ inline auto operator<<(Pith::SexprPrinter& out, const AnyExpr& any) -> Pith::Sex
 ///   void read(std::istream& in, ValueType& out);
 class Immediate {};
 
-struct Varuint32Immediate : Immediate {
-	using Value = uint64_t;
+struct UnhandledImmediate : public Immediate {
+	using Value = std::uintptr_t;
+	static auto read(std::istream& in, std::uintptr_t& out) -> void {
+		out = ~std::uintptr_t(0);
+		throw std::runtime_error("Unhandled immediate");
+	}
+};
+
+struct Varuint32Immediate : public Immediate {
+	using Value = std::uint64_t;
 	static auto read(std::istream& in, uint64_t& out) -> void {
 		out = varuint32(in);
 	}
 };
+
+struct TypeCodeImmediate : public Immediate {
+	using Value = TypeCode;
+	static auto read(std::istream& in, TypeCode& out) -> void {
+		out = typeCode(in);
+	}
+};
+
+struct MemoryImmediate : public Immediate {
+	struct Value {
+		std::uint64_t flags;
+		std::uint64_t offset;
+	};
+
+	static auto read(std::istream& in, Value& out) -> void {
+		out.flags  = varuint32(in);
+		out.offset = varuint32(in);
+	}
+};
+
+inline auto operator<<(Pith::SexprPrinter& out, const MemoryImmediate::Value& immediate)
+	-> Pith::SexprPrinter& {
+	out << immediate.flags << immediate.offset;
+	return out;
+}
 
 /// An expression type with a known opcode value.
 template <OpCode op_v>
@@ -106,16 +145,24 @@ struct ReadImmediates<UnaryExpr<op, Immediate>> {
 	}
 };
 
-template<OpCode op, typename Immediate>
-inline auto operator<<(Pith::SexprPrinter& out, const UnaryExpr<op, Immediate>& expr) -> Pith::SexprPrinter& {
+template <OpCode op, typename Immediate>
+inline auto operator<<(Pith::SexprPrinter& out, const UnaryExpr<op, Immediate>& expr)
+	-> Pith::SexprPrinter& {
 	return out << OP_NAME<op> << expr.immediate();
 }
+
+template <typename E>
+struct ExprMap {
+	using ExprType = E;
+};
 
 template <OpCode op>
 struct OpTraits {
 	/// UnknownExpr is the default expression type for all op codes.
 	using ExprType = NullaryExpr<op>;
 };
+
+/// unreachable
 
 using UnreachableExpr = NullaryExpr<OpCode::UNREACHABLE>;
 
@@ -124,6 +171,8 @@ struct OpTraits<OpCode::UNREACHABLE> {
 	using ExprType = UnreachableExpr;
 };
 
+/// nop
+
 using NopExpr = NullaryExpr<OpCode::NOP>;
 
 template <>
@@ -131,27 +180,70 @@ struct OpTraits<OpCode::NOP> {
 	using ExprType = NopExpr;
 };
 
-///TODO: 
-using BlockExpr = NullaryExpr<OpCode::BLOCK>;
+/// block
+
+using BlockExpr = UnaryExpr<OpCode::BLOCK, TypeCodeImmediate>;
 
 template <>
 struct OpTraits<OpCode::BLOCK> {
 	using ExprType = BlockExpr;
 };
 
-using GetLocalExpr = UnaryExpr<OpCode::GET_LOCAL, Varuint32Immediate>;
+/// if
+
+using IfExpr = UnaryExpr<OpCode::IF, TypeCodeImmediate>;
 
 template <>
-struct OpTraits<OpCode::GET_LOCAL> {
-	using ExprType = GetLocalExpr;
+struct OpTraits<OpCode::IF> {
+	using ExprType = IfExpr;
 };
 
-using SetLocalExpr = UnaryExpr<OpCode::SET_LOCAL, Varuint32Immediate>;
+/// else
+
+using ElseExpr = NullaryExpr<OpCode::ELSE>;
 
 template <>
-struct OpTraits<OpCode::SET_LOCAL> {
-	using ExprType = SetLocalExpr;
+struct OpTraits<OpCode::ELSE> {
+	using ExprType = ElseExpr;
 };
+
+/// end
+
+using EndExpr = NullaryExpr<OpCode::END>;
+
+template <>
+struct OpTraits<OpCode::END> {
+	using ExprType = EndExpr;
+};
+
+/// br
+
+using BrExpr = UnaryExpr<OpCode::BR, Varuint32Immediate>;
+
+template <>
+struct OpTraits<OpCode::BR> {
+	using ExprType = BrExpr;
+};
+
+/// br_if
+
+using BrIfExpr = UnaryExpr<OpCode::BR_IF, Varuint32Immediate>;
+
+template <>
+struct OpTraits<OpCode::BR_IF> {
+	using ExprType = BrIfExpr;
+};
+
+/// br_table
+
+using BrTableExpr = UnaryExpr<OpCode::BR_TABLE, UnhandledImmediate>;
+
+template <>
+struct OpTraits<OpCode::BR_TABLE> {
+	using ExprType = BrTableExpr;
+};
+
+/// return
 
 using ReturnExpr = NullaryExpr<OpCode::RETURN>;
 
@@ -160,13 +252,199 @@ struct OpTraits<OpCode::RETURN> {
 	using ExprType = ReturnExpr;
 };
 
+/// call
 
-using EndExpr = NullaryExpr<OpCode::END>;
+using CallExpr = UnaryExpr<OpCode::CALL, Varuint32Immediate>;
 
 template <>
-struct OpTraits<OpCode::END> {
-	using ExprType = EndExpr;
+struct OpTraits<OpCode::CALL> {
+	using ExprType = CallExpr;
 };
+
+/// call_indirect
+
+using CallIndirectExpr = UnaryExpr<OpCode::CALL, UnhandledImmediate>;
+
+template <>
+struct OpTraits<OpCode::CALL_INDIRECT> {
+	using ExprType = CallIndirectExpr;
+};
+
+/// drop
+
+using DropExpr = NullaryExpr<OpCode::DROP>;
+
+template <>
+struct OpTraits<OpCode::DROP> {
+	using ExprType = DropExpr;
+};
+
+/// select
+
+using SelectExpr = NullaryExpr<OpCode::SELECT>;
+
+template <>
+struct OpTraits<OpCode::SELECT> {
+	using ExprType = SelectExpr;
+};
+
+/// get_local
+
+using GetLocalExpr = UnaryExpr<OpCode::GET_LOCAL, Varuint32Immediate>;
+
+template <>
+struct OpTraits<OpCode::GET_LOCAL> {
+	using ExprType = GetLocalExpr;
+};
+
+/// set_local
+
+using SetLocalExpr = UnaryExpr<OpCode::SET_LOCAL, Varuint32Immediate>;
+
+template <>
+struct OpTraits<OpCode::SET_LOCAL> {
+	using ExprType = SetLocalExpr;
+};
+
+/// tee_local
+
+using TeeLocalExpr = UnaryExpr<OpCode::TEE_LOCAL, Varuint32Immediate>;
+
+template <>
+struct OpTraits<OpCode::TEE_LOCAL> {
+	using ExprType = TeeLocalExpr;
+};
+
+/// get_local
+
+using GetGlobalExpr = UnaryExpr<OpCode::GET_GLOBAL, Varuint32Immediate>;
+
+template <>
+struct OpTraits<OpCode::GET_GLOBAL> {
+	using ExprType = GetGlobalExpr;
+};
+
+/// set_local
+
+using SetGlobalExpr = UnaryExpr<OpCode::SET_GLOBAL, Varuint32Immediate>;
+
+template <>
+struct OpTraits<OpCode::SET_GLOBAL> {
+	using ExprType = SetGlobalExpr;
+};
+
+/// load
+
+using I32LoadExpr = UnaryExpr<OpCode::I32_LOAD, MemoryImmediate>;
+
+template <>
+struct OpTraits<OpCode::I32_LOAD> {
+	using ExprType = I32LoadExpr;
+};
+
+using I64LoadExpr = UnaryExpr<OpCode::I64_LOAD, MemoryImmediate>;
+
+template <>
+struct OpTraits<OpCode::I64_LOAD> {
+	using ExprType = I64LoadExpr;
+};
+
+using F32LoadExpr = UnaryExpr<OpCode::F32_LOAD, MemoryImmediate>;
+
+template <>
+struct OpTraits<OpCode::F32_LOAD> {
+	using ExprType = F32LoadExpr;
+};
+
+using F64LoadExpr = UnaryExpr<OpCode::F64_LOAD, MemoryImmediate>;
+
+template <>
+struct OpTraits<OpCode::F64_LOAD> {
+	using ExprType = F64LoadExpr;
+};
+
+using I32Load8sExpr = UnaryExpr<OpCode::I32_LOAD8_S, MemoryImmediate>;
+
+template <>
+struct OpTraits<OpCode::I32_LOAD8_S> {
+	using ExprType = I32Load8sExpr;
+};
+
+using I32Load8uExpr = UnaryExpr<OpCode::I32_LOAD8_U, MemoryImmediate>;
+
+template <>
+struct OpTraits<OpCode::I32_LOAD8_U> {
+	using ExprType = I32Load8uExpr;
+};
+
+using I32Load16sExpr = UnaryExpr<OpCode::I32_LOAD16_S, MemoryImmediate>;
+
+template <>
+struct OpTraits<OpCode::I32_LOAD16_S> {
+	using ExprType = I32Load16sExpr;
+};
+
+using I32Load16uExpr = UnaryExpr<OpCode::I32_LOAD16_U, MemoryImmediate>;
+
+template <>
+struct OpTraits<OpCode::I32_LOAD16_U> {
+	using ExprType = I32Load16uExpr;
+};
+
+using I64Load8sExpr = UnaryExpr<OpCode::I64_LOAD8_S, MemoryImmediate>;
+
+template <>
+struct OpTraits<OpCode::I64_LOAD8_S> {
+	using ExprType = I64Load8sExpr;
+};
+
+using I64Load8uExpr = UnaryExpr<OpCode::I64_LOAD8_U, MemoryImmediate>;
+
+template <>
+struct OpTraits<OpCode::I64_LOAD8_U> {
+	using ExprType = I64Load8uExpr;
+};
+
+using I64Load16sExpr = UnaryExpr<OpCode::I64_LOAD16_S, MemoryImmediate>;
+
+template <>
+struct OpTraits<OpCode::I64_LOAD16_S> {
+	using ExprType = I64Load16sExpr;
+};
+
+using I64Load16uExpr = UnaryExpr<OpCode::I64_LOAD16_U, MemoryImmediate>;
+
+template <>
+struct OpTraits<OpCode::I64_LOAD16_U> {
+	using ExprType = I64Load16uExpr;
+};
+
+using I64Load32sExpr = UnaryExpr<OpCode::I64_LOAD32_S, MemoryImmediate>;
+
+template <>
+struct OpTraits<OpCode::I64_LOAD32_S> {
+	using ExprType = I64Load32sExpr;
+};
+
+using I64Load32uExpr = UnaryExpr<OpCode::I64_LOAD32_U, MemoryImmediate>;
+
+template <>
+struct OpTraits<OpCode::I64_LOAD32_U> {
+	using ExprType = I64Load32uExpr;
+};
+
+/// loop
+
+using LoopExpr = UnaryExpr<OpCode::LOOP, TypeCodeImmediate>;
+
+template <>
+struct OpTraits<OpCode::LOOP> {
+	using ExprType = LoopExpr;
+};
+
+/// if
+
+// using IfExpr = UnaryExpr<OpCode::
 
 #if 0
 

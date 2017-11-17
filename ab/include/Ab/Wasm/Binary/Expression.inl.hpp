@@ -28,8 +28,7 @@ inline auto ExprReader::operator()(std::istream& in, Function& function) -> void
 	} while (op != OpCode::END);
 }
 
-inline ExprPrinter::ExprPrinter(Pith::SexprPrinter& out)
-	: out_(out) {
+inline ExprPrinter::ExprPrinter(Pith::SexprPrinter& out) : out_(out) {
 }
 
 template <typename Expr>
@@ -37,8 +36,27 @@ inline auto ExprPrinter::operator()(const Expr& e) -> void {
 	out_ << Pith::freshLine << e;
 }
 
+template <>
+inline auto ExprPrinter::operator()(const IfExpr& e) -> void {
+	out_ << Pith::freshLine << e;
+	out_.indent()++;
+}
+
+template <>
+inline auto ExprPrinter::operator()(const EndExpr& e) -> void {
+	// out_.indent()--;
+	out_ << Pith::freshLine << e;
+}
+
+template <>
+inline auto ExprPrinter::operator()(const ElseExpr& e) -> void {
+	out_.indent()--;
+	out_ << Pith::freshLine << e;
+	out_.indent()++;
+}
+
 }  // namespace Binary
 }  // namespace Wasm
 }  // namespace Ab
 
-#endif // AB_WASM_BINARY_EXPRESSION_INL_HPP_
+#endif  // AB_WASM_BINARY_EXPRESSION_INL_HPP_
