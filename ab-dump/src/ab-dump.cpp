@@ -8,16 +8,32 @@
 #include <fstream>
 #include <iostream>
 
+const char* name = "";
+
+const char* const VERSION_STRING = "ab-dump version 0.0.1-danger";
+
+const char* const USAGE =
+	"Disassemble a WASM binary module.\n"
+	"Usage: ab-dump [-o <output>] [--] <input>\n"
+	"   Or: ab-dump --help";
+
+struct Config {
+	Pith::Maybe<std::string> in  = Pith::nothing;
+	Pith::Maybe<std::string> out = Pith::nothing;
+	bool debug                   = false;
+	bool verbose                 = false;
+};
+
 namespace Ab {
 namespace Wasm {
 namespace Binary {
 
 const bool DEBUG = false;
 
-/// A Binary::Visitor that dumps humand readable results to an ostream.
+/// A Binary::Visitor that dumps human readable results to an ostream.
 class WastPrinter : public NoOpVisitor {
 public:
-	WastPrinter(Pith::SexprPrinter& out) : out_{out} {
+	WastPrinter(const Config& cfg, Pith::SexprPrinter& out) : cfg_{cfg}, out_{out} {
 	}
 
 	virtual auto moduleStart() -> void override {
@@ -30,18 +46,24 @@ public:
 	}
 
 	virtual auto sectionStart(const Section& section) -> void override {
-		out_ << Pith::freshLine << ";;;;;;;;;;;;;;" << section;
-		++(out_.indent());
+		if (cfg_.verbose) {
+			out_ << Pith::freshLine << ";;;;;;;;;;;;;;" << section;
+			++(out_.indent());
+		}
 	}
 
 	virtual auto sectionEnd(const Section& section) -> void override {
-		--(out_.indent());
+		if (cfg_.verbose) {
+			--out_.indent();
+		}
 	}
 
 	virtual auto typeSection(std::size_t count) -> void override {
-		out_ << Pith::freshLine;
-		out_ << Pith::rawStart << ";; count: " << count << Pith::rawEnd;
-		out_ << Pith::freshLine;
+		if (cfg_.verbose) {
+			out_ << Pith::freshLine;
+			out_ << Pith::rawStart << ";; count: " << count << Pith::rawEnd;
+			out_ << Pith::freshLine;
+		}
 	}
 
 	virtual auto functionType(const FunctionType& type) -> void override {
@@ -49,9 +71,11 @@ public:
 	}
 
 	virtual auto importSection(std::size_t count) -> void override {
-		out_ << Pith::freshLine;
-		out_ << Pith::rawStart << ";; count: " << count << Pith::rawEnd;
-		out_ << Pith::freshLine;
+		if (cfg_.verbose) {
+			out_ << Pith::freshLine;
+			out_ << Pith::rawStart << ";; count: " << count << Pith::rawEnd;
+			out_ << Pith::freshLine;
+		}
 	}
 
 	virtual auto importEntry(const ImportEntry& entry) -> void override {
@@ -59,9 +83,11 @@ public:
 	}
 
 	virtual auto functionSection(std::size_t count) -> void override {
-		out_ << Pith::freshLine;
-		out_ << Pith::rawStart << ";; count: " << count << Pith::rawEnd;
-		out_ << Pith::freshLine;
+		if (cfg_.verbose) {
+			out_ << Pith::freshLine;
+			out_ << Pith::rawStart << ";; count: " << count << Pith::rawEnd;
+			out_ << Pith::freshLine;
+		}
 		types_.reserve(count);
 	}
 
@@ -74,9 +100,11 @@ public:
 	}
 
 	virtual auto globalSection(std::size_t count) -> void override {
-		out_ << Pith::freshLine;
-		out_ << Pith::rawStart << ";; count: " << count << Pith::rawEnd;
-		out_ << Pith::freshLine;
+		if (cfg_.verbose) {
+			out_ << Pith::freshLine;
+			out_ << Pith::rawStart << ";; count: " << count << Pith::rawEnd;
+			out_ << Pith::freshLine;
+		}
 	}
 
 	virtual auto globalEntry(const GlobalType& type, const Expression& expr) -> void override {
@@ -96,9 +124,11 @@ public:
 	}
 
 	virtual auto elementEntry(const ElementEntry& entry) -> void override {
-		out_ << Pith::freshLine;
-		out_ << Pith::sexprStart << "elem";
-		out_ << Pith::sexprStart << entry.offset << Pith::sexprEnd;
+		if (cfg_.verbose) {
+			out_ << Pith::freshLine;
+			out_ << Pith::sexprStart << "elem";
+			out_ << Pith::sexprStart << entry.offset << Pith::sexprEnd;
+		}
 	}
 
 	virtual auto element(const ElementEntry& entry, std::uint32_t index) -> void override {
@@ -112,9 +142,11 @@ public:
 	/// Code Section
 
 	virtual auto codeSection(std::size_t count) -> void override {
-		out_ << Pith::freshLine;
-		out_.stream() << ";; count:" << count;
-		out_.fresh(false);
+		if (cfg_.verbose) {
+			out_ << Pith::freshLine;
+			out_.stream() << ";; count:" << count;
+			out_.fresh(false);
+		}
 	}
 
 	virtual auto functionBody(std::size_t index, const FunctionBody& body, std::istream& in)
@@ -142,27 +174,18 @@ public:
 	}
 
 private:
+	const Config& cfg_;
 	std::vector<std::uint32_t> types_;
 	Pith::SexprPrinter out_;
 };
-
-#if 0
-inline auto disassemble(std::uint8_t* code, std::size_t n, std::ostream& out) -> void {
-};
-
-/// Disassemble WASM expressions up to (and including) the END op code.
-inline auto disassemble(std::istream& in, std::ostream& out) -> void {
-	// Ab::Wasm::Binary::Expr::apply
-};
-#endif  //
 
 }  // namespace Binary
 }  // namespace Wasm
 }  // namespace Ab
 
-auto dump(std::istream& is, std::ostream& os) -> void {
+auto dump(Config& cfg, std::istream& is, std::ostream& os) -> void {
 	Pith::SexprPrinter out{os};
-	Ab::Wasm::Binary::WastPrinter printer{out};
+	Ab::Wasm::Binary::WastPrinter printer{cfg, out};
 	Ab::Wasm::Binary::Reader reader{printer, is};
 
 	try {
@@ -173,24 +196,12 @@ auto dump(std::istream& is, std::ostream& os) -> void {
 	}
 }
 
-struct Config {
-	Pith::Maybe<std::string> in;
-	Pith::Maybe<std::string> out;
-};
-
-const char* name = "";
-
-const char* const VERSION_STRING = "ab-dump version 0.0.1-danger";
-
-const char* const USAGE =
-	"Disassemble a WASM binary module.\n"
-	"Usage: ab-dump [-o <output>] [--] <input>\n"
-	"   Or: ab-dump --help";
-
 auto parseArguments(Config& cfg, int argc, const char* const* argv) -> void {
-	name = argv[0];
-
+	name  = argv[0];
 	int i = 1;
+
+	// Flags and non-positional arguments
+
 	while (i < argc) {
 		Pith::StringSpan arg{argv[i]};
 		if (arg == "-o" || arg == "--ouput") {
@@ -202,6 +213,10 @@ auto parseArguments(Config& cfg, int argc, const char* const* argv) -> void {
 		} else if (arg == "--version") {
 			std::cout << VERSION_STRING << std::endl;
 			exit(EXIT_SUCCESS);
+		} else if (arg == "--debug" || arg == "-d") {
+			cfg.debug = true;
+		} else if (arg == "--verbose" || arg == "-v") {
+			cfg.verbose = true;
 		} else if (arg == "--") {
 			i++;
 			break;
@@ -211,12 +226,11 @@ auto parseArguments(Config& cfg, int argc, const char* const* argv) -> void {
 		i++;
 	}
 
+	// Positional arguments
+
 	if (i < argc) {
 		cfg.in = Pith::just(std::string{argv[i]});
-	}
-
-	for (int i = 1; i < argc; i++) {
-		std::cout << "arg: " << argv[i] << std::endl;
+		i++;
 	}
 };
 
@@ -241,10 +255,6 @@ extern "C" auto main(int argc, char** argv) -> int {
 	}
 	std::ostream out(outbuffer);
 
-	Ab::Wasm::Binary::UnreachableExpr e;
-	Ab::Wasm::Binary::AnyExpr& any = e;
-	Pith::debug_out << any;
-
-	dump(in, out);
+	dump(cfg, in, out);
 	return EXIT_SUCCESS;
 }
