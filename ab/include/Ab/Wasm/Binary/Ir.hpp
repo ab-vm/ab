@@ -162,9 +162,11 @@ struct DataSegment {
 };
 
 inline auto operator<<(Pith::SexprPrinter& out, const DataSegment& segment) -> Pith::SexprPrinter& {
-	out << Pith::sexprStart << "data" << initExpr;
-	for (a)
-		return out;
+	out << Pith::sexprStart << "data" << segment.initExpr;
+	auto raw = out << Pith::rawStart << '\"';
+	for (auto c : segment.data)
+		raw << c;
+	return raw << Pith::rawEnd;
 }
 
 }  // namespace Binary

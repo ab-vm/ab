@@ -242,10 +242,16 @@ struct ExprMap {
 	using ExprType = E;
 };
 
+#define AB_DEBUG
+
 template <OpCode op>
 struct OpTraits {
 	/// UnknownExpr is the default expression type for all op codes.
+#ifdef AB_DEBUG
+	using ExprType = UnaryExpr<op, UnhandledImmediate>;
+#else
 	using ExprType = NullaryExpr<op>;
+#endif
 };
 
 /// unreachable
@@ -401,7 +407,7 @@ struct OpTraits<OpCode::TEE_LOCAL> {
 	using ExprType = TeeLocalExpr;
 };
 
-/// get_local
+/// get_global
 
 using GetGlobalExpr = UnaryExpr<OpCode::GET_GLOBAL, Varuint32Immediate>;
 
@@ -410,7 +416,7 @@ struct OpTraits<OpCode::GET_GLOBAL> {
 	using ExprType = GetGlobalExpr;
 };
 
-/// set_local
+/// set_global
 
 using SetGlobalExpr = UnaryExpr<OpCode::SET_GLOBAL, Varuint32Immediate>;
 
@@ -436,6 +442,7 @@ struct OpTraits<OpCode::I64_LOAD> {
 };
 
 using F32LoadExpr = UnaryExpr<OpCode::F32_LOAD, MemoryImmediate>;
+
 
 template <>
 struct OpTraits<OpCode::F32_LOAD> {
@@ -521,6 +528,69 @@ struct OpTraits<OpCode::I64_LOAD32_U> {
 
 /// TODO: Store Expressions
 
+using I32StoreExpr = UnaryExpr<OpCode::I32_STORE, MemoryImmediate>;
+
+template <>
+struct OpTraits<OpCode::I32_STORE> {
+	using ExprType = I32StoreExpr;
+};
+
+using I64StoreExpr = UnaryExpr<OpCode::I64_STORE, MemoryImmediate>;
+
+template <>
+struct OpTraits<OpCode::I64_STORE> {
+	using ExprType = I64StoreExpr;
+};
+
+using F32StoreExpr = UnaryExpr<OpCode::F32_STORE, MemoryImmediate>;
+
+template <>
+struct OpTraits<OpCode::F32_STORE> {
+	using ExprType = F32StoreExpr;
+};
+
+using F64StoreExpr = UnaryExpr<OpCode::F64_STORE, MemoryImmediate>;
+
+template <>
+struct OpTraits<OpCode::F64_STORE> {
+	using ExprType = F64StoreExpr;
+};
+
+using I32Store8Expr = UnaryExpr<OpCode::I32_STORE8, MemoryImmediate>;
+
+template <>
+struct OpTraits<OpCode::I32_STORE8> {
+	using ExprType = I32Store8Expr;
+};
+
+using I32Store16Expr = UnaryExpr<OpCode::I32_STORE16, MemoryImmediate>;
+
+template <>
+struct OpTraits<OpCode::I32_STORE16> {
+	using ExprType = I32Store16Expr;
+};
+
+using I64Store8Expr = UnaryExpr<OpCode::I64_STORE8, MemoryImmediate>;
+
+template <>
+struct OpTraits<OpCode::I64_STORE8> {
+	using ExprType = I64Store8Expr;
+};
+
+using I64Store16Expr = UnaryExpr<OpCode::I64_STORE16, MemoryImmediate>;
+
+template <>
+struct OpTraits<OpCode::I64_STORE16> {
+	using ExprType = I64Store16Expr;
+};
+
+using I64Store32Expr = UnaryExpr<OpCode::I64_STORE32, MemoryImmediate>;
+
+template <>
+struct OpTraits<OpCode::I64_STORE32> {
+	using ExprType = I64Store32Expr;
+};
+
 /// TODO: Memory Expressions
 
 /// Constants
@@ -562,42 +632,697 @@ struct OpTraits<OpCode::LOOP> {
 	using ExprType = LoopExpr;
 };
 
-/// if
 
-// using IfExpr = UnaryExpr<OpCode::
 
-#if 0
+	/// Comparison Operators
+	/// No Immediates
 
-/// Map OpCodes to Expression types.
-template <OpCode op>
-using ExprType = UnknownExpr;
+
+using I32EqzExpr = NullaryExpr<OpCode::I32_EQZ>;
 
 template <>
-using ExprType<OpCode::UNREACHABLE> = Unreachable;
-
-inline auto operator<<(Pith::SexprPrinter& out, Unreachable& expr) -> Pith::SexprPrinter& {
-	return out << "unreachable";
-}
-
-struct Nop : public Nullary {
-	Nop() : Nullary(OpCode::NOP) {
-	}
+struct OpTraits<OpCode::I32_EQZ> {
+	using ExprType = I32EqzExpr;
 };
 
-inline auto operator<<(Pith::SexprPrinter& out, Unreachable& expr) -> Pith::SexprPrinter& {
-	return out << "unreachable";
-}
+using I32EqExpr = NullaryExpr<OpCode::I32_EQ>;
 
-struct Loop : public Unary {
-	Loop() : Unary(OpCode::LOOP) {
-	}
+template <>
+struct OpTraits<OpCode::I32_EQ> {
+	using ExprType = I32EqExpr;
 };
 
-struct GetLocal : public Unary {
-	GetLocal(std::uint32_t index) : Base
+using I32NeExpr = NullaryExpr<OpCode::I32_NE>;
+
+template <>
+struct OpTraits<OpCode::I32_NE> {
+	using ExprType = I32NeExpr;
 };
 
-#endif
+using I32LtSExpr = NullaryExpr<OpCode::I32_LT_S>;
+
+template <>
+struct OpTraits<OpCode::I32_LT_S> {
+	using ExprType = I32LtSExpr;
+};
+
+using I32LtUExpr = NullaryExpr<OpCode::I32_LT_U>;
+
+template <>
+struct OpTraits<OpCode::I32_LT_U> {
+	using ExprType = I32LtUExpr;
+};
+
+using I32GtSExpr = NullaryExpr<OpCode::I32_GT_S>;
+
+template <>
+struct OpTraits<OpCode::I32_GT_S> {
+	using ExprType = I32GtSExpr;
+};
+
+using I32GtUExpr = NullaryExpr<OpCode::I32_GT_U>;
+
+template <>
+struct OpTraits<OpCode::I32_GT_U> {
+	using ExprType = I32GtUExpr;
+};
+
+using I32LeSExpr = NullaryExpr<OpCode::I32_LE_S>;
+
+template <>
+struct OpTraits<OpCode::I32_LE_S> {
+	using ExprType = I32LeSExpr;
+};
+
+using I32LeUExpr = NullaryExpr<OpCode::I32_LE_U>;
+
+template <>
+struct OpTraits<OpCode::I32_LE_U> {
+	using ExprType = I32LeUExpr;
+};
+
+using I32GeSExpr = NullaryExpr<OpCode::I32_GE_S>;
+
+template <>
+struct OpTraits<OpCode::I32_GE_S> {
+	using ExprType = I32GeSExpr;
+};
+
+using I32GeUExpr = NullaryExpr<OpCode::I32_GE_U>;
+
+template <>
+struct OpTraits<OpCode::I32_GE_U> {
+	using ExprType = I32GeUExpr;
+};
+
+using I64EqzExpr = NullaryExpr<OpCode::I64_EQZ>;
+
+template <>
+struct OpTraits<OpCode::I64_EQZ> {
+	using ExprType = I64EqzExpr;
+};
+
+using I64EqExpr = NullaryExpr<OpCode::I64_EQ>;
+
+template <>
+struct OpTraits<OpCode::I64_EQ> {
+	using ExprType = I64EqExpr;
+};
+
+using I64NeExpr = NullaryExpr<OpCode::I64_NE>;
+
+template <>
+struct OpTraits<OpCode::I64_NE> {
+	using ExprType = I64NeExpr;
+};
+
+using I64LtSExpr = NullaryExpr<OpCode::I64_LT_S>;
+
+template <>
+struct OpTraits<OpCode::I64_LT_S> {
+	using ExprType = I64LtSExpr;
+};
+
+using I64LtUExpr = NullaryExpr<OpCode::I64_LT_U>;
+
+template <>
+struct OpTraits<OpCode::I64_LT_U> {
+	using ExprType = I64LtUExpr;
+};
+
+using I64GtSExpr = NullaryExpr<OpCode::I64_GT_S>;
+
+template <>
+struct OpTraits<OpCode::I64_GT_S> {
+	using ExprType = I64GtSExpr;
+};
+
+using I64GtUExpr = NullaryExpr<OpCode::I64_GT_U>;
+
+template <>
+struct OpTraits<OpCode::I64_GT_U> {
+	using ExprType = I64GtUExpr;
+};
+
+using I64LeSExpr = NullaryExpr<OpCode::I64_LE_S>;
+
+template <>
+struct OpTraits<OpCode::I64_LE_S> {
+	using ExprType = I64LeSExpr;
+};
+
+using I64LeUExpr = NullaryExpr<OpCode::I64_LE_U>;
+
+template <>
+struct OpTraits<OpCode::I64_LE_U> {
+	using ExprType = I64LeUExpr;
+};
+
+using I64GeSExpr = NullaryExpr<OpCode::I64_GE_S>;
+
+template <>
+struct OpTraits<OpCode::I64_GE_S> {
+	using ExprType = I64GeSExpr;
+};
+
+using I64GeUExpr = NullaryExpr<OpCode::I64_GE_U>;
+
+template <>
+struct OpTraits<OpCode::I64_GE_U> {
+	using ExprType = I64GeUExpr;
+};;
+
+using F32EqExpr = NullaryExpr<OpCode::F32_EQ>;
+
+template <>
+struct OpTraits<OpCode::F32_EQ> {
+	using ExprType = F32EqExpr;
+};
+
+using F32NeExpr = NullaryExpr<OpCode::F32_NE>;
+
+template <>
+struct OpTraits<OpCode::F32_NE> {
+	using ExprType = F32NeExpr;
+};
+
+using F32LtExpr = NullaryExpr<OpCode::F32_LT>;
+
+template <>
+struct OpTraits<OpCode::F32_LT> {
+	using ExprType = F32LtExpr;
+};
+
+using F32GtExpr = NullaryExpr<OpCode::F32_GT>;
+
+template <>
+struct OpTraits<OpCode::F32_GT> {
+	using ExprType = F32GtExpr;
+};
+
+using F32LeExpr = NullaryExpr<OpCode::F32_LE>;
+
+template <>
+struct OpTraits<OpCode::F32_LE> {
+	using ExprType = F32LeExpr;
+};
+
+using F32GeExpr = NullaryExpr<OpCode::F32_GE>;
+
+template <>
+struct OpTraits<OpCode::F32_GE> {
+	using ExprType = F32GeExpr;
+};
+
+using F64EqExpr = NullaryExpr<OpCode::F64_EQ>;
+
+template <>
+struct OpTraits<OpCode::F64_EQ> {
+	using ExprType = F64EqExpr;
+};
+
+using F64NeExpr = NullaryExpr<OpCode::F64_NE>;
+
+template <>
+struct OpTraits<OpCode::F64_NE> {
+	using ExprType = F64NeExpr;
+};
+
+using F64LtExpr = NullaryExpr<OpCode::F64_LT>;
+
+template <>
+struct OpTraits<OpCode::F64_LT> {
+	using ExprType = F64LtExpr;
+};
+
+using F64GtExpr = NullaryExpr<OpCode::F64_GT>;
+
+template <>
+struct OpTraits<OpCode::F64_GT> {
+	using ExprType = F64GtExpr;
+};
+
+using F64LeExpr = NullaryExpr<OpCode::F64_LE>;
+
+template <>
+struct OpTraits<OpCode::F64_LE> {
+	using ExprType = F64LeExpr;
+};
+
+using F64GeExpr = NullaryExpr<OpCode::F64_GE>;
+
+template <>
+struct OpTraits<OpCode::F64_GE> {
+	using ExprType = F64GeExpr;
+};
+
+using I32ClzExpr = NullaryExpr<OpCode::I32_CLZ>;
+
+template <>
+struct OpTraits<OpCode::I32_CLZ> {
+	using ExprType = I32ClzExpr;
+};
+
+using I32CtzExpr = NullaryExpr<OpCode::I32_CTZ>;
+
+template <>
+struct OpTraits<OpCode::I32_CTZ> {
+	using ExprType = I32CtzExpr;
+};
+
+using I32PopcntExpr = NullaryExpr<OpCode::I32_POPCNT>;
+
+template <>
+struct OpTraits<OpCode::I32_POPCNT> {
+	using ExprType = I32PopcntExpr;
+};
+
+using I32AddExpr = NullaryExpr<OpCode::I32_ADD>;
+
+template <>
+struct OpTraits<OpCode::I32_ADD> {
+	using ExprType = I32AddExpr;
+};
+
+using I32SubExpr = NullaryExpr<OpCode::I32_SUB>;
+
+template <>
+struct OpTraits<OpCode::I32_SUB> {
+	using ExprType = I32SubExpr;
+};
+
+using I32MulExpr = NullaryExpr<OpCode::I32_MUL>;
+
+template <>
+struct OpTraits<OpCode::I32_MUL> {
+	using ExprType = I32MulExpr;
+};
+
+using I32DivSExpr = NullaryExpr<OpCode::I32_DIV_S>;
+
+template <>
+struct OpTraits<OpCode::I32_DIV_S> {
+	using ExprType = I32DivSExpr;
+};
+
+using I32DivUExpr = NullaryExpr<OpCode::I32_DIV_U>;
+
+template <>
+struct OpTraits<OpCode::I32_DIV_U> {
+	using ExprType = I32DivUExpr;
+};
+
+using I32RemSExpr = NullaryExpr<OpCode::I32_REM_S>;
+
+template <>
+struct OpTraits<OpCode::I32_REM_S> {
+	using ExprType = I32RemSExpr;
+};
+
+using I32RemUExpr = NullaryExpr<OpCode::I32_REM_U>;
+
+template <>
+struct OpTraits<OpCode::I32_REM_U> {
+	using ExprType = I32RemUExpr;
+};
+
+using I32AndExpr = NullaryExpr<OpCode::I32_AND>;
+
+template <>
+struct OpTraits<OpCode::I32_AND> {
+	using ExprType = I32AndExpr;
+};
+
+using I32OrExpr = NullaryExpr<OpCode::I32_OR>;
+
+template <>
+struct OpTraits<OpCode::I32_OR> {
+	using ExprType = I32OrExpr;
+};
+
+using I32XorExpr = NullaryExpr<OpCode::I32_XOR>;
+
+template <>
+struct OpTraits<OpCode::I32_XOR> {
+	using ExprType = I32XorExpr;
+};
+
+using I32ShlExpr = NullaryExpr<OpCode::I32_SHL>;
+
+template <>
+struct OpTraits<OpCode::I32_SHL> {
+	using ExprType = I32ShlExpr;
+};
+
+using I32ShrSExpr = NullaryExpr<OpCode::I32_SHR_S>;
+
+template <>
+struct OpTraits<OpCode::I32_SHR_S> {
+	using ExprType = I32ShrSExpr;
+};
+
+using I32ShrUExpr = NullaryExpr<OpCode::I32_SHR_U>;
+
+template <>
+struct OpTraits<OpCode::I32_SHR_U> {
+	using ExprType = I32ShrUExpr;
+};
+
+using I32RotlExpr = NullaryExpr<OpCode::I32_ROTL>;
+
+template <>
+struct OpTraits<OpCode::I32_ROTL> {
+	using ExprType = I32RotlExpr;
+};
+
+using I32RotrExpr = NullaryExpr<OpCode::I32_ROTR>;
+
+template <>
+struct OpTraits<OpCode::I32_ROTR> {
+	using ExprType = I32RotrExpr;
+};
+
+using I64ClzExpr = NullaryExpr<OpCode::I64_CLZ>;
+
+template <>
+struct OpTraits<OpCode::I64_CLZ> {
+	using ExprType = I64ClzExpr;
+};
+
+using I64CtzExpr = NullaryExpr<OpCode::I64_CTZ>;
+
+template <>
+struct OpTraits<OpCode::I64_CTZ> {
+	using ExprType = I64CtzExpr;
+};
+
+using I64PopcntExpr = NullaryExpr<OpCode::I64_POPCNT>;
+
+template <>
+struct OpTraits<OpCode::I64_POPCNT> {
+	using ExprType = I64PopcntExpr;
+};
+
+using I64AddExpr = NullaryExpr<OpCode::I64_ADD>;
+
+template <>
+struct OpTraits<OpCode::I64_ADD> {
+	using ExprType = I64AddExpr;
+};
+
+using I64SubExpr = NullaryExpr<OpCode::I64_SUB>;
+
+template <>
+struct OpTraits<OpCode::I64_SUB> {
+	using ExprType = I64SubExpr;
+};
+
+using I64MulExpr = NullaryExpr<OpCode::I64_MUL>;
+
+template <>
+struct OpTraits<OpCode::I64_MUL> {
+	using ExprType = I64MulExpr;
+};
+
+using I64DivSExpr = NullaryExpr<OpCode::I64_DIV_S>;
+
+template <>
+struct OpTraits<OpCode::I64_DIV_S> {
+	using ExprType = I64DivSExpr;
+};
+
+using I64DivUExpr = NullaryExpr<OpCode::I64_DIV_U>;
+
+template <>
+struct OpTraits<OpCode::I64_DIV_U> {
+	using ExprType = I64DivUExpr;
+};
+
+using I64RemSExpr = NullaryExpr<OpCode::I64_REM_S>;
+
+template <>
+struct OpTraits<OpCode::I64_REM_S> {
+	using ExprType = I64RemSExpr;
+};
+
+using I64RemUExpr = NullaryExpr<OpCode::I64_REM_U>;
+
+template <>
+struct OpTraits<OpCode::I64_REM_U> {
+	using ExprType = I64RemUExpr;
+};
+
+using I64AndExpr = NullaryExpr<OpCode::I64_AND>;
+
+template <>
+struct OpTraits<OpCode::I64_AND> {
+	using ExprType = I64AndExpr;
+};
+
+using I64OrExpr = NullaryExpr<OpCode::I64_OR>;
+
+template <>
+struct OpTraits<OpCode::I64_OR> {
+	using ExprType = I64OrExpr;
+};
+
+using I64XorExpr = NullaryExpr<OpCode::I64_XOR>;
+
+template <>
+struct OpTraits<OpCode::I64_XOR> {
+	using ExprType = I64XorExpr;
+};
+
+using I64ShlExpr = NullaryExpr<OpCode::I64_SHL>;
+
+template <>
+struct OpTraits<OpCode::I64_SHL> {
+	using ExprType = I64ShlExpr;
+};
+
+using I64ShrSExpr = NullaryExpr<OpCode::I64_SHR_S>;
+
+template <>
+struct OpTraits<OpCode::I64_SHR_S> {
+	using ExprType = I64ShrSExpr;
+};
+
+using I64ShrUExpr = NullaryExpr<OpCode::I64_SHR_U>;
+
+template <>
+struct OpTraits<OpCode::I64_SHR_U> {
+	using ExprType = I64ShrUExpr;
+};
+
+using I64RotlExpr = NullaryExpr<OpCode::I64_ROTL>;
+
+template <>
+struct OpTraits<OpCode::I64_ROTL> {
+	using ExprType = I64RotlExpr;
+};
+
+using I64RotrExpr = NullaryExpr<OpCode::I64_ROTR>;
+
+template <>
+struct OpTraits<OpCode::I64_ROTR> {
+	using ExprType = I64RotrExpr;
+};
+
+using F32AbsExpr = NullaryExpr<OpCode::F32_ABS>;
+
+template <>
+struct OpTraits<OpCode::F32_ABS> {
+	using ExprType = F32AbsExpr;
+};
+
+using F32NegExpr = NullaryExpr<OpCode::F32_NEG>;
+
+template <>
+struct OpTraits<OpCode::F32_NEG> {
+	using ExprType = F32NegExpr;
+};
+
+using F32CeilExpr = NullaryExpr<OpCode::F32_CEIL>;
+
+template <>
+struct OpTraits<OpCode::F32_CEIL> {
+	using ExprType = F32CeilExpr;
+};
+
+using F32FloorExpr = NullaryExpr<OpCode::F32_FLOOR>;
+
+template <>
+struct OpTraits<OpCode::F32_FLOOR> {
+	using ExprType = F32FloorExpr;
+};
+
+using F32TruncExpr = NullaryExpr<OpCode::F32_TRUNC>;
+
+template <>
+struct OpTraits<OpCode::F32_TRUNC> {
+	using ExprType = F32TruncExpr;
+};
+
+using F32NearestExpr = NullaryExpr<OpCode::F32_NEAREST>;
+
+template <>
+struct OpTraits<OpCode::F32_NEAREST> {
+	using ExprType = F32NearestExpr;
+};
+
+using F32SqrtExpr = NullaryExpr<OpCode::F32_SQRT>;
+
+template <>
+struct OpTraits<OpCode::F32_SQRT> {
+	using ExprType = F32SqrtExpr;
+};
+
+using F32AddExpr = NullaryExpr<OpCode::F32_ADD>;
+
+template <>
+struct OpTraits<OpCode::F32_ADD> {
+	using ExprType = F32AddExpr;
+};
+
+using F32SubExpr = NullaryExpr<OpCode::F32_SUB>;
+
+template <>
+struct OpTraits<OpCode::F32_SUB> {
+	using ExprType = F32SubExpr;
+};
+
+using F32MulExpr = NullaryExpr<OpCode::F32_MUL>;
+
+template <>
+struct OpTraits<OpCode::F32_MUL> {
+	using ExprType = F32MulExpr;
+};
+
+using F32DivExpr = NullaryExpr<OpCode::F32_DIV>;
+
+template <>
+struct OpTraits<OpCode::F32_DIV> {
+	using ExprType = F32DivExpr;
+};
+
+using F32MinExpr = NullaryExpr<OpCode::F32_MIN>;
+
+template <>
+struct OpTraits<OpCode::F32_MIN> {
+	using ExprType = F32MinExpr;
+};
+
+using F32MaxExpr = NullaryExpr<OpCode::F32_MAX>;
+
+template <>
+struct OpTraits<OpCode::F32_MAX> {
+	using ExprType = F32MaxExpr;
+};
+
+using F32CopysignExpr = NullaryExpr<OpCode::F32_COPYSIGN>;
+
+template <>
+struct OpTraits<OpCode::F32_COPYSIGN> {
+	using ExprType = F32CopysignExpr;
+};
+
+using F64AbsExpr = NullaryExpr<OpCode::F64_ABS>;
+
+template <>
+struct OpTraits<OpCode::F64_ABS> {
+	using ExprType = F64AbsExpr;
+};
+
+using F64NegExpr = NullaryExpr<OpCode::F64_NEG>;
+
+template <>
+struct OpTraits<OpCode::F64_NEG> {
+	using ExprType = F64NegExpr;
+};
+
+using F64CeilExpr = NullaryExpr<OpCode::F64_CEIL>;
+
+template <>
+struct OpTraits<OpCode::F64_CEIL> {
+	using ExprType = F64CeilExpr;
+};
+
+using F64FloorExpr = NullaryExpr<OpCode::F64_FLOOR>;
+
+template <>
+struct OpTraits<OpCode::F64_FLOOR> {
+	using ExprType = F64FloorExpr;
+};
+
+using F64TruncExpr = NullaryExpr<OpCode::F64_TRUNC>;
+
+template <>
+struct OpTraits<OpCode::F64_TRUNC> {
+	using ExprType = F64TruncExpr;
+};
+
+using F64NearestExpr = NullaryExpr<OpCode::F64_NEAREST>;
+
+template <>
+struct OpTraits<OpCode::F64_NEAREST> {
+	using ExprType = F64NearestExpr;
+};
+
+using F64SqrtExpr = NullaryExpr<OpCode::F64_SQRT>;
+
+template <>
+struct OpTraits<OpCode::F64_SQRT> {
+	using ExprType = F64SqrtExpr;
+};
+
+using F64AddExpr = NullaryExpr<OpCode::F64_ADD>;
+
+template <>
+struct OpTraits<OpCode::F64_ADD> {
+	using ExprType = F64AddExpr;
+};
+
+using F64SubExpr = NullaryExpr<OpCode::F64_SUB>;
+
+template <>
+struct OpTraits<OpCode::F64_SUB> {
+	using ExprType = F64SubExpr;
+};
+
+using F64MulExpr = NullaryExpr<OpCode::F64_MUL>;
+
+template <>
+struct OpTraits<OpCode::F64_MUL> {
+	using ExprType = F64MulExpr;
+};
+
+using F64DivExpr = NullaryExpr<OpCode::F64_DIV>;
+
+template <>
+struct OpTraits<OpCode::F64_DIV> {
+	using ExprType = F64DivExpr;
+};
+
+using F64MinExpr = NullaryExpr<OpCode::F64_MIN>;
+
+template <>
+struct OpTraits<OpCode::F64_MIN> {
+	using ExprType = F64MinExpr;
+};
+
+using F64MaxExpr = NullaryExpr<OpCode::F64_MAX>;
+
+template <>
+struct OpTraits<OpCode::F64_MAX> {
+	using ExprType = F64MaxExpr;
+};
+
+using F64CopysignExpr = NullaryExpr<OpCode::F64_COPYSIGN>;
+
+template <>
+struct OpTraits<OpCode::F64_COPYSIGN> {
+	using ExprType = F64CopysignExpr;
+};
 
 /// A functor that will cast the AnyExpr to a concrete expression type, and call function(expr,
 /// args...);

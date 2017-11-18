@@ -40,8 +40,36 @@ inline auto ExprPrinter::operator()(const Expr& e) -> void {
 template <>
 inline auto ExprPrinter::operator()(const IfExpr& e) -> void {
 	out_ << Pith::freshLine << e;
-	blockDepth_++;
-	out_.indent()++;
+	++out_.indent();
+	++blockDepth_;
+}
+
+template <>
+inline auto ExprPrinter::operator()(const BlockExpr& e) -> void {
+
+	/// Crappy inline validator.
+	switch(e.immediate()) {
+	case TypeCode::I32:
+	case TypeCode::I64:
+	case TypeCode::F32:
+	case TypeCode::F64:
+	case TypeCode::ANYFUNC:
+	case TypeCode::FUNC:
+	case TypeCode::EMPTY:
+		break;
+	default:
+		throw std::runtime_error{"Bad typecode"};
+	}
+	out_ << Pith::freshLine << e;
+	++out_.indent();
+	++blockDepth_;
+}
+
+template <>
+inline auto ExprPrinter::operator()(const LoopExpr& e) -> void {
+	out_ << Pith::freshLine << e;
+	++out_.indent();
+	++blockDepth_;
 }
 
 template <>
@@ -58,12 +86,6 @@ inline auto ExprPrinter::operator()(const ElseExpr& e) -> void {
 	--out_.indent();
 	out_ << Pith::freshLine << e;
 	++out_.indent();
-}
-
-template <>
-inline auto ExprPrinter::operator()(const BlockExpr& e) -> void {
-	out_ << Pith::freshLine << e;
-	++out_.indent()++;
 }
 
 }  // namespace Binary

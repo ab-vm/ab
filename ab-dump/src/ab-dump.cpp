@@ -166,6 +166,10 @@ public:
 	virtual auto functionBodyEnd(const FunctionBody& entry) -> void override {
 	}
 
+	virtual auto dataSegment(const DataSegment& segment) -> void override {
+		out_ << segment;
+	}
+
 private:
 	const Config& cfg_;
 	std::vector<std::uint32_t> types_;
