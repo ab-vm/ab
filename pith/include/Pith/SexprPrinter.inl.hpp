@@ -9,17 +9,13 @@ inline Indent::Indent(std::size_t depth) : depth_{depth} {
 }
 
 inline auto Indent::operator++() -> Indent& {
-	if (depth_ < MAX_DEPTH) {
-		++depth_;
-	}
+	++depth_;
 	return *this;
 }
 
 inline auto Indent::operator++(int) -> Indent {
 	Indent copy = *this;
-	if (depth_ < MAX_DEPTH) {
-		depth_++;
-	}
+	depth_++;
 	return copy;
 }
 
@@ -43,9 +39,6 @@ inline auto Indent::depth() const -> std::size_t {
 }
 
 inline auto Indent::depth(std::size_t depth) -> Indent& {
-	if (depth > MAX_DEPTH) {
-		depth = MAX_DEPTH;
-	}
 	depth_ = depth;
 	return *this;
 }

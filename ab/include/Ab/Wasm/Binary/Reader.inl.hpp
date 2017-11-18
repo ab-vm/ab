@@ -381,7 +381,7 @@ inline auto Reader::dataSegment() -> void {
 	auto size = varuint32();
 	segment.data.resize(size);
 	in_.read(segment.data.data(), size);
-	// visitor_.dataSegment();
+	visitor_.dataSegment(segment);
 }
 
 /// Common Values

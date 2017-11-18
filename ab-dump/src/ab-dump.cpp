@@ -167,7 +167,7 @@ public:
 	}
 
 	virtual auto dataSegment(const DataSegment& segment) -> void override {
-		out_ << segment;
+		out_ << Pith::freshLine << segment;
 	}
 
 private:
