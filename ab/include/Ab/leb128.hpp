@@ -31,6 +31,16 @@ struct ReaderInput {
 		return x;
 	}
 
+	auto read(char* buffer, std::size_t bytes) -> void {
+		in_.read(buffer, bytes);
+
+		if (in_.gcount() != bytes)
+			throw ReaderError("didn't read all the bytes like we were hoping");
+		// TODO:
+
+		offset_ += bytes;
+	}
+
 	auto offset() const -> std::size_t {
 		return offset_;
 	}
@@ -43,6 +53,14 @@ private:
 	std::istream& in_;
 	std::size_t offset_;
 };
+
+template <typename Integer, std::size_t bytes = sizeof(Integer)>
+inline auto readNumber(ReaderInput& in) -> Integer {
+	Integer result = 0;
+	auto buffer    = (char*)&result;
+	in.read(buffer, bytes);
+	return result;
+}
 
 inline auto leb128(ReaderInput& in) -> std::int64_t {
 	const std::uint8_t FLAG = 0b1000'0000;

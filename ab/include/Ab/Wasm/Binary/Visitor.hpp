@@ -1,12 +1,14 @@
 #ifndef AB_WASM_BINARY_VISITOR_HPP_
 #define AB_WASM_BINARY_VISITOR_HPP_
 
-#include <Ab/leb128.hpp>
+#include <Ab/Wasm/Binary/Expression.hpp>
 #include <Ab/Wasm/Binary/Ir.hpp>
 #include <Ab/Wasm/Binary/Section.hpp>
+#include <Ab/leb128.hpp>
 #include <Pith/SexprPrinter.hpp>
 #include <cstddef>
 #include <cstdint>
+#include <memory>
 
 namespace Ab {
 namespace Wasm {
@@ -54,7 +56,7 @@ public:
 
 	virtual auto globalSection(std::size_t count) -> void = 0;
 
-	virtual auto globalEntry(const GlobalType& type, const Expression& expr) -> void = 0;
+	virtual auto globalEntry(const GlobalType& type, const InitExpr& expr) -> void = 0;
 
 	/// Export Section
 
@@ -73,6 +75,7 @@ public:
 	virtual auto elementEntryEnd(const ElementEntry& entry) -> void = 0;
 
 	/// Code Section
+
 	virtual auto codeSection(std::size_t count) -> void = 0;
 
 	/// This is a weird part of the code. The function body parsing works very differently from
@@ -82,10 +85,11 @@ public:
 	virtual auto functionBody(std::size_t index, const FunctionBody& entry, ReaderInput& in)
 		-> void = 0;
 
-	virtual auto functionBodyExpression(const FunctionBody& entry, const Expression& expression)
-		-> void = 0;
-
 	virtual auto functionBodyEnd(const FunctionBody& entry) -> void = 0;
+
+	/// Data Section
+
+	virtual auto dataSegment(const DataSegment& segment) -> void = 0;
 };
 
 ///  The Pure-virtual base class. See also: the No-Op base visitor.
@@ -128,7 +132,7 @@ public:
 	virtual auto globalSection(std::size_t count) -> void override {
 	}
 
-	virtual auto globalEntry(const GlobalType& type, const Expression& expr) -> void override {
+	virtual auto globalEntry(const GlobalType& type, const InitExpr& expr) -> void override {
 	}
 
 	/// Export Section
@@ -162,14 +166,15 @@ public:
 		-> void override {
 	}
 
-	virtual auto functionBodyExpression(const FunctionBody& entry, const Expression& expression)
-		-> void override {
-	}
-
 	virtual auto functionBodyEnd(const FunctionBody& entry) -> void override {
 	}
 
 	/// Custom Section
+
+	/// Data Section
+
+	virtual auto dataSegment(const DataSegment& segment) -> void override {
+	}
 
 	// virtual auto customSection(const Section& section) -> void override;
 };

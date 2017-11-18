@@ -19,13 +19,13 @@ inline auto AnyExpr::op(OpCode op) -> AnyExpr& {
 	return *this;
 }
 
-template <typename Function>
-inline auto ExprReader::operator()(ReaderInput& in, std::size_t size, Function& function) -> void {
-
+template <typename Function, typename... Args>
+inline auto ExprReader::
+operator()(ReaderInput& in, std::size_t size, Function&& function, Args&&... args) -> void {
 	OpCode op = OpCode::END;
 	do {
 		op = (OpCode)in.get();
-		opDispatch<ReadExpr>(op, in, function);
+		opDispatch<ReadExpr>(op, in, function, std::forward<Args>(args)...);
 	} while (in.offset() < size);
 }
 
@@ -55,9 +55,15 @@ inline auto ExprPrinter::operator()(const EndExpr& e) -> void {
 
 template <>
 inline auto ExprPrinter::operator()(const ElseExpr& e) -> void {
-	out_.indent()--;
+	--out_.indent();
 	out_ << Pith::freshLine << e;
-	out_.indent()++;
+	++out_.indent();
+}
+
+template <>
+inline auto ExprPrinter::operator()(const BlockExpr& e) -> void {
+	out_ << Pith::freshLine << e;
+	++out_.indent()++;
 }
 
 }  // namespace Binary

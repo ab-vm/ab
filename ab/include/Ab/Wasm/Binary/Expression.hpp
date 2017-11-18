@@ -8,8 +8,7 @@
 #include <Pith/SexprPrinter.hpp>
 #include <cstddef>
 #include <cstdint>
-
-// include <tuple>
+#include <vector>
 
 namespace Ab {
 namespace Wasm {
@@ -49,8 +48,73 @@ struct UnhandledImmediate : public Immediate {
 
 struct Varuint32Immediate : public Immediate {
 	using Value = std::uint64_t;
-	static auto read(ReaderInput& in, uint64_t& out) -> void {
-		out = varuint32(in);
+	static auto read(ReaderInput& in, std::uint64_t& out) -> void {
+		out = uleb128(in);
+	}
+};
+
+struct SignatureImmediate : public Immediate {
+	struct Value {
+		std::uint32_t index;
+		std::uint8_t reserved;
+	};
+	static auto read(ReaderInput& in, Value& out) -> void {
+		out.index    = uleb128(in);  // varuint32
+		out.reserved = uleb128(in);  // varuint1
+	}
+};
+
+inline auto operator<<(Pith::SexprPrinter& out, const SignatureImmediate::Value& imm)
+	-> Pith::SexprPrinter& {
+	return out << imm.index << imm.reserved;
+}
+
+struct Varuint64Immediate : public Immediate {
+	using Value = std::uint64_t;
+	static auto read(ReaderInput& in, std::uint64_t& out) -> void {
+		out = uleb128(in);
+	}
+};
+
+struct Varint32Immediate : public Immediate {
+	using Value = std::int64_t;
+	static auto read(ReaderInput& in, std::int64_t& out) -> void {
+		out = leb128(in);
+	}
+};
+
+struct Varint64Immediate : public Immediate {
+	using Value = std::int64_t;
+	static auto read(ReaderInput& in, std::int64_t& out) -> void {
+		out = leb128(in);
+	}
+};
+
+struct Uint32Immediate : public Immediate {
+	using Value = std::uint32_t;
+	static auto read(ReaderInput& in, std::uint32_t& out) -> void {
+		out = readNumber<std::uint32_t>(in);
+	}
+};
+
+struct Uint64Immediate : public Immediate {
+	using Value = std::uint64_t;
+	static auto read(ReaderInput& in, std::uint64_t& out) -> void {
+		out = readNumber<std::uint64_t>(in);
+	}
+};
+
+struct Int32Immediate : public Immediate {
+	using Value = std::int32_t;
+	static auto read(ReaderInput& in, std::int32_t& out) -> void {
+		out = readNumber<std::int32_t>(in);
+	}
+};
+
+struct Int64Immediate : public Immediate {
+	using Value = std::int64_t;
+	static auto read(ReaderInput& in, std::int64_t& out) -> void {
+		out = readNumber<std::int64_t>(in);
 	}
 };
 
@@ -60,6 +124,32 @@ struct TypeCodeImmediate : public Immediate {
 		out = typeCode(in);
 	}
 };
+
+struct BranchTableImmediate : public Immediate {
+	struct Value {
+		std::vector<std::uint32_t> targetTable;
+		std::uint32_t defaultTarget;
+	};
+
+	static auto read(ReaderInput& in, Value& out) -> void {
+		auto count = varuint32(in);
+		out.targetTable.reserve(count);
+		for (std::size_t i = 0; i < count; i++) {
+			auto target = varuint32(in);
+			out.targetTable.push_back(target);
+		}
+		out.defaultTarget = varuint32(in);
+	}
+};
+
+inline auto operator<<(Pith::SexprPrinter& out, const BranchTableImmediate::Value& imm)
+	-> Pith::SexprPrinter& {
+	out << "default" << imm.defaultTarget;
+	for (const auto& target : imm.targetTable) {
+		return out << target;
+	}
+	return out;
+}
 
 struct MemoryImmediate : public Immediate {
 	struct Value {
@@ -232,7 +322,7 @@ struct OpTraits<OpCode::BR_IF> {
 
 /// br_table
 
-using BrTableExpr = UnaryExpr<OpCode::BR_TABLE, UnhandledImmediate>;
+using BrTableExpr = UnaryExpr<OpCode::BR_TABLE, BranchTableImmediate>;
 
 template <>
 struct OpTraits<OpCode::BR_TABLE> {
@@ -259,7 +349,7 @@ struct OpTraits<OpCode::CALL> {
 
 /// call_indirect
 
-using CallIndirectExpr = UnaryExpr<OpCode::CALL, UnhandledImmediate>;
+using CallIndirectExpr = UnaryExpr<OpCode::CALL_INDIRECT, SignatureImmediate>;
 
 template <>
 struct OpTraits<OpCode::CALL_INDIRECT> {
@@ -429,6 +519,40 @@ struct OpTraits<OpCode::I64_LOAD32_U> {
 	using ExprType = I64Load32uExpr;
 };
 
+/// TODO: Store Expressions
+
+/// TODO: Memory Expressions
+
+/// Constants
+
+using I32ConstExpr = UnaryExpr<OpCode::I32_CONST, Varint32Immediate>;
+
+template <>
+struct OpTraits<OpCode::I32_CONST> {
+	using ExprType = I32ConstExpr;
+};
+
+using I64ConstExpr = UnaryExpr<OpCode::I64_CONST, Varint64Immediate>;
+
+template <>
+struct OpTraits<OpCode::I64_CONST> {
+	using ExprType = I64ConstExpr;
+};
+
+using F32ConstExpr = UnaryExpr<OpCode::F32_CONST, Uint32Immediate>;
+
+template <>
+struct OpTraits<OpCode::F32_CONST> {
+	using ExprType = F32ConstExpr;
+};
+
+using F64ConstExpr = UnaryExpr<OpCode::F64_CONST, Uint64Immediate>;
+
+template <>
+struct OpTraits<OpCode::F64_CONST> {
+	using ExprType = F64ConstExpr;
+};
+
 /// loop
 
 using LoopExpr = UnaryExpr<OpCode::LOOP, TypeCodeImmediate>;
@@ -487,6 +611,13 @@ struct ExprCastDispatch {
 		using Expr = typename OpTraits<op>::ExprType;
 		return function(static_cast<Expr&>(expr), std::forward<Args>(args)...);
 	}
+
+	template <typename Function, typename... Args>
+	auto operator()(Function&& function, const AnyExpr& expr, Args&&... args)
+		-> decltype(function(expr, std::forward<Args>(args)...)) {
+		using Expr = typename OpTraits<op>::ExprType;
+		return function(static_cast<const Expr&>(expr), std::forward<Args>(args)...);
+	}
 };
 
 /// Apply a function to an expression.
@@ -496,6 +627,12 @@ struct ExprCastDispatch {
 /// own runtime dispatch, see opDispatch.
 template <typename Function, typename... Args>
 inline auto exprDispatch(AnyExpr& expr, Function&& function, Args&&... args)
+	-> decltype(function(std::declval<AnyExpr>(), args...)) {
+	return opDispatch<ExprCastDispatch>(expr.op(), function, expr, std::forward<Args>(args)...);
+}
+
+template <typename Function, typename... Args>
+inline auto exprDispatch(const AnyExpr& expr, Function&& function, Args&&... args)
 	-> decltype(function(std::declval<AnyExpr>(), args...)) {
 	return opDispatch<ExprCastDispatch>(expr.op(), function, expr, std::forward<Args>(args)...);
 }
@@ -524,7 +661,7 @@ struct SexprPrint {
 	}
 };
 
-inline auto operator<<(Pith::SexprPrinter& out, AnyExpr& any) -> Pith::SexprPrinter& {
+inline auto operator<<(Pith::SexprPrinter& out, const AnyExpr& any) -> Pith::SexprPrinter& {
 	return exprDispatch(any, SexprPrint(), out);
 }
 
@@ -532,21 +669,22 @@ inline auto operator<<(Pith::SexprPrinter& out, AnyExpr& any) -> Pith::SexprPrin
 template <OpCode op>
 struct ReadExpr {
 	/// Decode an expression and call function on the result.
-	template <typename Function>
-	auto operator()(ReaderInput& in, Function& function) -> void {
+	template <typename Function, typename... Args>
+	auto operator()(ReaderInput& in, Function&& function, Args&&... args) -> void {
 		using E = typename OpTraits<op>::ExprType;
 		ReadImmediates<E> read;
 		E expr;
 		read(in, expr);
-		function(expr);
+		function(expr, std::forward<Args>(args)...);
 	}
 };
 
 /// The WASM expression decoder.
 struct ExprReader {
 	/// Decode a sequence of expressions and call function on each expression.
-	template <typename Function>
-	auto operator()(ReaderInput& in, std::size_t size, Function& function) -> void;
+	template <typename Function, typename... Args>
+	auto operator()(ReaderInput& in, std::size_t size, Function&& function, Args&&... args)
+		-> void;
 };
 
 /// A WASM expression printer.

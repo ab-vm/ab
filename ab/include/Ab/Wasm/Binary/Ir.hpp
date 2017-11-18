@@ -98,43 +98,6 @@ struct ImportEntry {
 
 inline auto operator<<(Pith::SexprPrinter& out, const ImportEntry& entry) -> Pith::SexprPrinter&;
 
-struct Expression {
-	OpCode op;
-	union {
-		std::uint32_t uint32;
-		std::uint64_t uint64;
-		std::int32_t int32;
-		std::int64_t int64;
-		float float32;
-		double float64;
-	} immediate;
-};
-
-inline auto operator<<(Pith::SexprPrinter& out, const Expression& expr) -> Pith::SexprPrinter& {
-	out << expr.op;
-	switch (expr.op) {
-	case OpCode::GET_GLOBAL:
-		out << expr.immediate.uint32;
-		break;
-	case OpCode::F32_CONST:
-		out << expr.immediate.float32;
-		break;
-	case OpCode::F64_CONST:
-		out << expr.immediate.float64;
-		break;
-	case OpCode::I64_CONST:
-		out << expr.immediate.int64;
-		break;
-	case OpCode::I32_CONST:
-		out << expr.immediate.int32;
-		break;
-	case OpCode::END:
-	default:
-		break;
-	}
-	return out;
-}
-
 struct ExportEntry {
 	std::string field;
 	ExternalKindCode kind;
@@ -143,9 +106,26 @@ struct ExportEntry {
 
 inline auto operator<<(Pith::SexprPrinter& out, const ExportEntry& entry) -> Pith::SexprPrinter&;
 
+union InitExpr {
+	InitExpr() : any(OpCode::UNREACHABLE) {
+	}
+	union {
+		AnyExpr any;
+		GetGlobalExpr getGlobal;
+		I32ConstExpr i32Const;
+		I64ConstExpr i64Const;
+		F32ConstExpr f32Const;
+		F64ConstExpr f64Const;
+	};
+};
+
+inline auto operator<<(Pith::SexprPrinter& out, const InitExpr& expr) -> Pith::SexprPrinter& {
+	return out << expr.any;
+}
+
 struct ElementEntry {
 	std::uint32_t index;
-	Expression offset;
+	InitExpr offset;
 	std::uint32_t elementCount;
 };
 
@@ -155,10 +135,9 @@ struct LocalEntry {
 };
 
 inline auto operator<<(Pith::SexprPrinter& out, const LocalEntry& entry) -> Pith::SexprPrinter& {
-	// for (std::size_t i = 0; i < entry.count; i++) {
-	// 	out << entry.type;
-	// }
-	out << Pith::sexprStart << entry.type << entry.count << Pith::sexprEnd;
+	for (std::size_t i = 0; i < entry.count; i++) {
+		out << entry.type;
+	}
 	return out;
 }
 
@@ -174,6 +153,18 @@ inline auto operator<<(Pith::SexprPrinter& out, const FunctionBody& body) -> Pit
 	}
 	out << Pith::sexprEnd;
 	return out;
+}
+
+struct DataSegment {
+	std::uint32_t index;
+	InitExpr initExpr;
+	std::vector<char> data;
+};
+
+inline auto operator<<(Pith::SexprPrinter& out, const DataSegment& segment) -> Pith::SexprPrinter& {
+	out << Pith::sexprStart << "data" << initExpr;
+	for (a)
+		return out;
 }
 
 }  // namespace Binary

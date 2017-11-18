@@ -107,7 +107,7 @@ public:
 		}
 	}
 
-	virtual auto globalEntry(const GlobalType& type, const Expression& expr) -> void override {
+	virtual auto globalEntry(const GlobalType& type, const InitExpr& expr) -> void override {
 		out_ << Pith::freshLine;
 		out_ << Pith::sexprStart << "global" << type;
 		out_ << Pith::sexprStart << expr << Pith::sexprEnd;
@@ -163,11 +163,6 @@ public:
 		out_ << Pith::sexprEnd;
 	}
 
-	virtual auto functionBodyExpression(const FunctionBody& entry, const Expression& expression)
-		-> void override {
-		out_ << Pith::freshLine << expression;
-	}
-
 	virtual auto functionBodyEnd(const FunctionBody& entry) -> void override {
 	}
 
@@ -186,12 +181,7 @@ auto dump(Config& cfg, std::istream& is, std::ostream& os) -> void {
 	Ab::Wasm::Binary::WastPrinter printer{cfg, out};
 	Ab::Wasm::Binary::Reader reader{printer, is};
 
-	try {
-		reader();
-	} catch (std::exception& e) {
-		out << std::endl;
-		throw;
-	}
+	reader();
 }
 
 auto parseArguments(Config& cfg, int argc, const char* const* argv) -> void {
@@ -223,6 +213,14 @@ auto parseArguments(Config& cfg, int argc, const char* const* argv) -> void {
 		}
 		i++;
 	}
+
+#if 0
+	for (option : OPTION_TABLE) {
+		if (option.matches(argv[index])) {
+			option.handle(argc, argv, index);
+		}
+	}
+#endif  //
 
 	// Positional arguments
 

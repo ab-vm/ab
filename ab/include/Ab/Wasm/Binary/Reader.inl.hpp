@@ -203,21 +203,22 @@ inline auto Reader::functionSection(const Section& section) -> void {
 }
 
 inline auto Reader::customSection(const Section& section) -> void {
-	// We don't do anything :)
+	std::cerr << "Warning: Skipping custom section: " << section.name;
+	in_.seekg(section.length, std::ios::cur);
 }
 
 inline auto Reader::string() -> std::string {
 	std::string result;
 
-	auto n   = varuint32();
-	auto buf = new char[n + 1];
-	in_.read(buf, n);
-	buf[n] = '\0';
+	auto n = varuint32();
+	std::vector<char> buffer;
+	buffer.resize(n + 1);
+	in_.read(buffer.data(), n);
+	buffer[n] = '\0';
 
 	result.reserve(n);
-	result = buf;
+	result = buffer.data();
 
-	delete[] buf;
 	return result;
 }
 
@@ -239,66 +240,55 @@ inline auto Reader::globalSection(const Section& section) -> void {
 
 inline auto Reader::globalEntry() -> void {
 	GlobalType type;
+	InitExpr expr;
+
 	globalType(type);
-	auto expr = initExpression();
+	// Pith::debug_out << Pith::freshLine << type;
+
+	initExpr(expr);
+	// Pith::debug_out << Pith::freshLine << type;
 
 	visitor_.globalEntry(type, expr);
 };
 
-inline auto Reader::initExpression() -> Expression {
-	Expression expr = expression();
-	switch (expr.op) {
-	case OpCode::I32_CONST:
-	case OpCode::I64_CONST:
-	case OpCode::F32_CONST:
-	case OpCode::F64_CONST:
-	case OpCode::GET_GLOBAL:
-		break;
-	default:
-		throw ReaderError{"Illegal epression in init_expr"};
-		break;
+struct SetInitExpr {
+	template <typename E>
+	auto operator()(const E& e, InitExpr&) const -> void {
+		std::string m =
+			std::string{"Unexpected expression in initialization expression: "} +
+			OP_NAME<E::OP>;
+		throw ReaderError{m};
 	}
 
-	Expression end = expression();
-	if (end.op != OpCode::END) {
-		throw ReaderError{"init_expr must be 1 expression and the end bytecode."};
+	auto operator()(GetGlobalExpr& e, InitExpr& out) const -> void {
+		out.getGlobal = e;
 	}
 
-	return expr;
+	auto operator()(I32ConstExpr& e, InitExpr& out) const -> void {
+		out.i32Const = e;
+	}
+
+	auto operator()(I64ConstExpr& e, InitExpr& out) const -> void {
+		out.i64Const = e;
+	}
+
+	auto operator()(F32ConstExpr& e, InitExpr& out) const -> void {
+		out.f32Const = e;
+	}
+
+	auto operator()(F64ConstExpr& e, InitExpr& out) const -> void {
+		out.f64Const = e;
+	}
 };
 
-inline auto Reader::expression() -> Expression {
-	Expression expr;
-	expr.op = opCode();
+inline auto Reader::initExpr(InitExpr& expr) -> void {
+	ExprReader reader;
+	SetInitExpr setInitExpr;
 
-	switch (expr.op) {
-	case OpCode::I32_CONST:
-		expr.immediate.int32 = varint32();
-		break;
-	case OpCode::I64_CONST:
-		expr.immediate.int64 = varint64();
-		break;
-	case OpCode::F32_CONST:
-		expr.immediate.float32 = (float)uint32();
-		break;
-	case OpCode::F64_CONST:
-		expr.immediate.float64 = (double)uint64();
-		break;
-	case OpCode::GET_GLOBAL:
-		expr.immediate.uint32 = varuint32();
-		break;
-	case OpCode::END:
-		/// No operand
-		break;
-	default:
-		throw ReaderError{std::string{"unhandled opcode: "} + toString(expr.op)};
-		break;
-	}
-	return expr;
-}
-
-inline auto Reader::opCode() -> OpCode {
-	return (OpCode)uint8();
+	ReaderInput input(in_);
+	reader(input, std::size_t(0), setInitExpr, expr);  // Read one expression
+	reader(input, std::size_t(0),
+	       [](AnyExpr&) -> void {});  // Read the end expression, and do nothing with it.
 }
 
 /// Export Section
@@ -332,8 +322,8 @@ inline auto Reader::elementSection(const Section& section) -> void {
 
 inline auto Reader::elementEntry() -> void {
 	ElementEntry entry;
-	entry.index        = varuint32();
-	entry.offset       = initExpression();
+	entry.index = varuint32();
+	initExpr(entry.offset);
 	entry.elementCount = varuint32();
 	visitor_.elementEntry(entry);
 	for (std::size_t i = 0; i < entry.elementCount; i++) {
@@ -353,7 +343,7 @@ inline auto Reader::codeSection(const Section& section) -> void {
 
 inline auto Reader::functionBody(std::size_t index) -> void {
 	FunctionBody body;
-	body.size       = varuint32();
+	body.size = varuint32();
 
 	ReaderInput in{in_};
 	auto localCount = ::Ab::varuint32(in);
@@ -371,13 +361,27 @@ inline auto Reader::functionBody(std::size_t index) -> void {
 inline auto Reader::localEntry(ReaderInput& in) -> LocalEntry {
 	LocalEntry entry;
 	entry.count = ::Ab::varuint32(in);
-	entry.type  = ::Ab::typeCode(in); // TODO: Wrong type should be valueType
+	entry.type  = ::Ab::typeCode(in);  // TODO: Wrong type should be valueType
 	return entry;
 }
 
 /// Data Section
 
 inline auto Reader::dataSection(const Section& section) -> void {
+	auto count = varuint32();
+	for (std::size_t i = 0; i < count; i++) {
+		dataSegment();
+	}
+}
+
+inline auto Reader::dataSegment() -> void {
+	DataSegment segment;
+	segment.index = varuint32();
+	initExpr(segment.initExpr);
+	auto size = varuint32();
+	segment.data.resize(size);
+	in_.read(segment.data.data(), size);
+	// visitor_.dataSegment();
 }
 
 /// Common Values

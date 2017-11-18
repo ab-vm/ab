@@ -13,13 +13,13 @@
 #include <cstddef>
 #include <cstdint>
 #include <istream>
+#include <memory>
 #include <stdexcept>
 #include <vector>
 
 namespace Ab {
 namespace Wasm {
 namespace Binary {
-
 
 /// Binary file reader.
 /// https://github.com/WebAssembly/design/blob/master/BinaryEncoding.md
@@ -88,7 +88,7 @@ private:
 
 	inline auto globalEntry() -> void;
 
-	inline auto initExpression() -> Expression;
+	inline auto initExpr(InitExpr& expr) -> void;
 
 	inline auto globalType(GlobalType& globalType) -> void;
 
@@ -119,11 +119,7 @@ private:
 
 	inline auto dataSection(const Section& section) -> void;
 
-	/// Code
-
-	inline auto expression() -> Expression;
-
-	inline auto opCode() -> OpCode;
+	inline auto dataSegment() -> void;
 
 	/// Common Values
 
