@@ -295,6 +295,27 @@ enum class OpCode : RawOpCode {
 	F64_COPYSIGN = 0xa6,
 
 	/// TODO: Conversions
+	I32_WRAP_I64      = 0xa7,
+	I32_TRUNC_S_F32   = 0xa8,
+	I32_TRUNC_U_F32   = 0xa9,
+	I32_TRUNC_S_F64   = 0xaa,
+	I32_TRUNC_U_F64   = 0xab,
+	I64_EXTEND_S_I32  = 0xac,
+	I64_EXTEND_U_I32  = 0xad,
+	I64_TRUNC_S_F32   = 0xae,
+	I64_TRUNC_U_F32   = 0xaf,
+	I64_TRUNC_S_F64   = 0xb0,
+	I64_TRUNC_U_F64   = 0xb1,
+	F32_CONVERT_S_I32 = 0xb2,
+	F32_CONVERT_U_I32 = 0xb3,
+	F32_CONVERT_S_I64 = 0xb4,
+	F32_CONVERT_U_I64 = 0xb5,
+	F32_DEMOTE_F64    = 0xb6,
+	F64_CONVERT_S_I32 = 0xb7,
+	F64_CONVERT_U_I32 = 0xb8,
+	F64_CONVERT_S_I64 = 0xb9,
+	F64_CONVERT_U_I64 = 0xba,
+	F64_PROMOTE_F32   = 0xbb,
 
 	/// TODO: Reinterpretations
 	I32_REINTERPRET_F32 = 0xbc,
@@ -601,7 +622,48 @@ inline auto opDispatch(OpCode op, Args&&... args)
 		return Function<OpCode::F64_MAX>()(std::forward<Args>(args)...);
 	case OpCode::F64_COPYSIGN:
 		return Function<OpCode::F64_COPYSIGN>()(std::forward<Args>(args)...);
-	/// TODO: Conversions
+	case OpCode::I32_WRAP_I64:
+		return Function<OpCode::I32_WRAP_I64>()(std::forward<Args>(args)...);
+	case OpCode::I32_TRUNC_S_F32:
+		return Function<OpCode::I32_TRUNC_S_F32>()(std::forward<Args>(args)...);
+	case OpCode::I32_TRUNC_U_F32:
+		return Function<OpCode::I32_TRUNC_U_F32>()(std::forward<Args>(args)...);
+	case OpCode::I32_TRUNC_S_F64:
+		return Function<OpCode::I32_TRUNC_S_F64>()(std::forward<Args>(args)...);
+	case OpCode::I32_TRUNC_U_F64:
+		return Function<OpCode::I32_TRUNC_U_F64>()(std::forward<Args>(args)...);
+	case OpCode::I64_EXTEND_S_I32:
+		return Function<OpCode::I64_EXTEND_S_I32>()(std::forward<Args>(args)...);
+	case OpCode::I64_EXTEND_U_I32:
+		return Function<OpCode::I64_EXTEND_U_I32>()(std::forward<Args>(args)...);
+	case OpCode::I64_TRUNC_S_F32:
+		return Function<OpCode::I64_TRUNC_S_F32>()(std::forward<Args>(args)...);
+	case OpCode::I64_TRUNC_U_F32:
+		return Function<OpCode::I64_TRUNC_U_F32>()(std::forward<Args>(args)...);
+	case OpCode::I64_TRUNC_S_F64:
+		return Function<OpCode::I64_TRUNC_S_F64>()(std::forward<Args>(args)...);
+	case OpCode::I64_TRUNC_U_F64:
+		return Function<OpCode::I64_TRUNC_U_F64>()(std::forward<Args>(args)...);
+	case OpCode::F32_CONVERT_S_I32:
+		return Function<OpCode::F32_CONVERT_S_I32>()(std::forward<Args>(args)...);
+	case OpCode::F32_CONVERT_U_I32:
+		return Function<OpCode::F32_CONVERT_U_I32>()(std::forward<Args>(args)...);
+	case OpCode::F32_CONVERT_S_I64:
+		return Function<OpCode::F32_CONVERT_S_I64>()(std::forward<Args>(args)...);
+	case OpCode::F32_CONVERT_U_I64:
+		return Function<OpCode::F32_CONVERT_U_I64>()(std::forward<Args>(args)...);
+	case OpCode::F32_DEMOTE_F64:
+		return Function<OpCode::F32_DEMOTE_F64>()(std::forward<Args>(args)...);
+	case OpCode::F64_CONVERT_S_I32:
+		return Function<OpCode::F64_CONVERT_S_I32>()(std::forward<Args>(args)...);
+	case OpCode::F64_CONVERT_U_I32:
+		return Function<OpCode::F64_CONVERT_U_I32>()(std::forward<Args>(args)...);
+	case OpCode::F64_CONVERT_S_I64:
+		return Function<OpCode::F64_CONVERT_S_I64>()(std::forward<Args>(args)...);
+	case OpCode::F64_CONVERT_U_I64:
+		return Function<OpCode::F64_CONVERT_U_I64>()(std::forward<Args>(args)...);
+	case OpCode::F64_PROMOTE_F32:
+		return Function<OpCode::F64_PROMOTE_F32>()(std::forward<Args>(args)...);
 	case OpCode::I32_REINTERPRET_F32:
 		return Function<OpCode::I32_REINTERPRET_F32>()(std::forward<Args>(args)...);
 	case OpCode::I64_REINTERPRET_F64:
@@ -1058,6 +1120,69 @@ constexpr const char* OP_NAME<OpCode::F64_MAX> = "f64.max";
 
 template <>
 constexpr const char* OP_NAME<OpCode::F64_COPYSIGN> = "f64.copysign";
+
+template <>
+constexpr const char* OP_NAME<OpCode::I32_WRAP_I64> = "i32.wrap/i64";
+
+template <>
+constexpr const char* OP_NAME<OpCode::I32_TRUNC_S_F32> = "i32.trunc_s/f32";
+
+template <>
+constexpr const char* OP_NAME<OpCode::I32_TRUNC_U_F32> = "i32.trunc_u/f32";
+
+template <>
+constexpr const char* OP_NAME<OpCode::I32_TRUNC_S_F64> = "i32.trunc_s/f64";
+
+template <>
+constexpr const char* OP_NAME<OpCode::I32_TRUNC_U_F64> = "i32.trunc_u/f64";
+
+template <>
+constexpr const char* OP_NAME<OpCode::I64_EXTEND_S_I32> = "i64.extend_s/i32";
+
+template <>
+constexpr const char* OP_NAME<OpCode::I64_EXTEND_U_I32> = "i64.extend_u/i32";
+
+template <>
+constexpr const char* OP_NAME<OpCode::I64_TRUNC_S_F32> = "i64.trunc_s/f32";
+
+template <>
+constexpr const char* OP_NAME<OpCode::I64_TRUNC_U_F32> = "i64.trunc_u/f32";
+
+template <>
+constexpr const char* OP_NAME<OpCode::I64_TRUNC_S_F64> = "i64.trunc_s/f64";
+
+template <>
+constexpr const char* OP_NAME<OpCode::I64_TRUNC_U_F64> = "i64.trunc_u/f64";
+
+template <>
+constexpr const char* OP_NAME<OpCode::F32_CONVERT_S_I32> = "f32.convert_s/i32";
+
+template <>
+constexpr const char* OP_NAME<OpCode::F32_CONVERT_U_I32> = "f32.convert_u/i32";
+
+template <>
+constexpr const char* OP_NAME<OpCode::F32_CONVERT_S_I64> = "f32.convert_s/i64";
+
+template <>
+constexpr const char* OP_NAME<OpCode::F32_CONVERT_U_I64> = "f32.convert_u/i64";
+
+template <>
+constexpr const char* OP_NAME<OpCode::F32_DEMOTE_F64> = "f32.demote/f64";
+
+template <>
+constexpr const char* OP_NAME<OpCode::F64_CONVERT_S_I32> = "f64.convert_s/i32";
+
+template <>
+constexpr const char* OP_NAME<OpCode::F64_CONVERT_U_I32> = "f64.convert_u/i32";
+
+template <>
+constexpr const char* OP_NAME<OpCode::F64_CONVERT_S_I64> = "f64.convert_s/i64";
+
+template <>
+constexpr const char* OP_NAME<OpCode::F64_CONVERT_U_I64> = "f64.convert_u/i64";
+
+template <>
+constexpr const char* OP_NAME<OpCode::F64_PROMOTE_F32> = "f64.promote/f32";
 
 template <>
 constexpr const char* OP_NAME<OpCode::I32_REINTERPRET_F32> = "i32.reinterpret/f32";

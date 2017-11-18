@@ -237,21 +237,13 @@ inline auto operator<<(Pith::SexprPrinter& out, const UnaryExpr<op, Immediate>& 
 	return out << OP_NAME<op> << expr.immediate();
 }
 
-template <typename E>
-struct ExprMap {
-	using ExprType = E;
-};
-
-#define AB_DEBUG
-
 template <OpCode op>
 struct OpTraits {
-	/// UnknownExpr is the default expression type for all op codes.
-#ifdef AB_DEBUG
-	using ExprType = UnaryExpr<op, UnhandledImmediate>;
-#else
+// 	/// UnknownExpr is the default expression type for all op codes.
+// #ifdef AB_DEBUG
+// 	using ExprType = UnaryExpr<op, UnhandledImmediate>;
+// #else
 	using ExprType = NullaryExpr<op>;
-#endif
 };
 
 /// unreachable
