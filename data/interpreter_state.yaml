@@ -1,0 +1,29 @@
+# State that is cached in registers and written out to memory in demand
+primary:
+  - name: pc
+    type: const Byte*
+    doc:  pointer to current position in program.
+  - name: sp
+    type: Byte*
+    doc:  Address of top of stack. One past the end.
+  - name: bp
+    type: Byte*
+    doc:  Pointer to the base of frame. locals are located at bp.
+
+# State that is always stored in the interpreter struct.
+secondary:
+  - name: function
+    type: const XFunction*
+  - name: stack
+    type: Byte*
+  - name: condition
+    type: InterpreterCondition
+  - name: flags
+    type: Flags
+
+# flags are stored in the secondary state.
+flags:
+  - name: trap
+    type: bool
+  - name: error
+    type: bool

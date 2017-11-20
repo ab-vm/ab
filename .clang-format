@@ -10,7 +10,7 @@ AlignTrailingComments: true
 AllowAllParametersOfDeclarationOnNextLine: true
 AllowShortBlocksOnASingleLine: false
 AllowShortCaseLabelsOnASingleLine: false
-AllowShortFunctionsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: true
 AllowShortIfStatementsOnASingleLine: false
 AllowShortLoopsOnASingleLine: false
 AlwaysBreakAfterDefinitionReturnType: None
@@ -31,8 +31,11 @@ BraceWrapping:
   BeforeCatch:     false
   BeforeElse:      false
   IndentBraces:    false
+  SplitEmptyFunction: false
+  SplitEmptyRecord: false
+  SplitEmptyNamespace: false
 BreakBeforeBinaryOperators: None
-BreakBeforeBraces: Attach
+BreakBeforeBraces: Custom
 BreakBeforeTernaryOperators: true
 BreakConstructorInitializersBeforeComma: true
 BreakAfterJavaFieldAnnotations: false
@@ -52,11 +55,11 @@ ForEachMacros:   [ foreach, Q_FOREACH, BOOST_FOREACH ]
 IncludeCategories:
   - Regex:           '^<.*Config.hpp>$'
     Priority:        1
-  - Regex:           '^<(Ab|Abi|Om|Pith)/Internal.*>$'
+  - Regex:           '^<(Ab|Abi|Om|Ab)/Internal.*>$'
     Priority:        2
   - Regex:           '^".*"$'
     Priority:        3
-  - Regex:           '^<(Ab|Abi|Om|Pith)/.*>$'
+  - Regex:           '^<(Ab|Abi|Om|Ab)/.*>$'
     Priority:        4
   - Regex:           '^<.*>$'
     Priority:        5

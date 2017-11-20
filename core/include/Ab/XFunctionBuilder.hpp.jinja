@@ -1,0 +1,303 @@
+#ifndef AB_XFUNCTIONBUILDER_HPP_
+#define AB_XFUNCTIONBUILDER_HPP_
+
+#include <Ab/Bytes.hpp>
+
+#include <Ab/XOpCode.hpp>
+#include <Ab/XExpr.hpp>
+#include <Ab/ByteBuffer.hpp>
+#include <Ab/XFunction.hpp>
+
+#include <cstdint>
+#include <cstddef>
+#include <vector>
+#include <string.h>
+
+namespace ab {
+
+#if 0 //////////////
+
+using RelOffset = std::int32_t;
+
+using LabelId = std::size_t;
+
+constexpr auto INVALID_LABEL_ID = SIZE_MAX;
+
+struct Label {
+	using Id = std::size_t;
+	Id id;
+};
+
+struct LabelRecord {
+	RelOffset offset = 0;
+	LabelId id       = INVALID_LABEL_ID;
+	bool placed      = false;
+};
+
+class LabelTable {
+public:
+	// allocate an unplaced label.
+	Label alloc() {
+		LabelRecord record;
+		record.id = next();
+		records_.push_back(record);
+		return Label{record.id};
+	}
+
+	// alloc and place a label.
+	Label alloc(RelOffset offset) {
+		auto label = alloc();
+		place(label, offset);
+		return label;
+	}
+
+	// place a label
+	void place(Label label, std::int32_t offset) {
+		auto& record = records_[label.id];
+		assert(!record.placed);
+		assert(record.id == label.id);
+		record.offset = offset;
+		record.placed = true;
+	}
+
+	// get the offset a label refers to.
+	RelOffset target_of(Label label) {
+		const auto& record = records_[label.id];
+		assert(record.id == label.id);
+		assert(record.placed);
+		return record.offset;
+	}
+
+private:
+	/// get the next unallocated label id.
+	LabelId next() const { return records_.size(); }
+
+	std::vector<LabelRecord> records_;
+};
+
+enum class RelocationKind {
+	GOTO
+};
+
+/// Relocate the target of a goto instruction.
+struct GotoRelocation {
+
+	GotoRelocation(std::int32_t offset, Label label)
+		: offset(offset), label(label) {}
+
+	std::int32_t offset;
+	Label label;
+};
+
+class Relocation {
+public:
+
+	enum class Kind {
+		GOTO
+	};
+
+	union Data {
+		GotoRelocation as_goto;
+	};
+
+	Relocation(const GotoRelocation& goto_relocation)
+		: kind(Kind::GOTO), 
+
+	Kind kind() const { return kind_; }
+
+	GotoRelocation& as_goto() { return data_.as_goto; }
+
+	const GotoRelocation& as_goto() const { return data_.as_goto; }
+
+private:
+
+	RelocationKind kind_;
+	Data data_;
+};
+
+inline AnyRelocation to_any_relocation(const GotoRelocation& relocation) {
+	return { RelocationKind::GOTO, relocation };
+}
+
+inline AnyRelocation mk_goto_relocation(std::int32_t offset, Label label) {
+	return to_any_relocation(GotoRelocation(offset, label));
+}
+
+/// INTERNAL function body builder.
+class XFunctionBuilder {
+public:
+	XFunctionBuilder() {
+		buffer_.append(XFunctionHeader{0, 0});
+		assert(currentOffset() == sizeof(XFunctionHeader));
+	}
+
+	XFunctionHeader& header() { return buffer_.interpret<XFunctionHeader>(0); }
+
+	const XFunctionHeader& header() const { return buffer_.interpret<XFunctionHeader>(0); }
+
+	std::uint32_t decl_x32_param() {
+		auto& hdr = header();
+		const auto offset = hdr.paramBytes;
+		hdr.paramBytes += 4;
+		return offset;
+	}
+
+	std::uint32_t decl_x64_param() {
+		auto& hdr = header();
+		const auto offset = hdr.paramBytes;
+		hdr.paramBytes += 8;
+		return offset;
+	}
+
+	std::uint32_t decl_x32_local() {
+		auto& hdr = header();
+		const auto offset = hdr.paramBytes + hdr.localBytes;
+		hdr.localBytes += 4;
+		return offset;
+	}
+
+	std::uint32_t decl_x64_local() {
+		auto& hdr = header();
+		const auto offset = hdr.paramBytes + hdr.localBytes;
+		hdr.localBytes += 8;
+		return offset;
+	}
+
+	void  place(Label label) { return labels_.place(label, current_offset()); }
+
+	Label mklabel() { return labels_.alloc(); }
+
+	@[ for op in data.abx_operators ]
+
+		@[ set args ]
+			@[ if op.immediates is defined ]
+				@[ for immediate in op.immediates ]
+					@( data.types[immediate.type].ctype ) @( immediate.name | varify )@( "," if not loop.last )
+				@[ endfor ]
+			@[ endif ]
+		@[ endset ]
+
+		void emit@( op.name | typeify )(@( args )) {
+			emitOpcode(XOpCode::@( op.name | constify ));
+			@[ for immediate in op.immediates ]
+				emit@( immediate.type | title )(@( immediate.name | varify ));
+			@[ endfor ]
+		}
+	@[ endfor ]
+
+	void emitGoto(Label label) {
+		relocations_.push_back(mkGotoRelocation(currentOffset(), label));
+		emitOpcode(XOpCode::GOTO);
+		emitLabelPlaceholder();
+	}
+
+	void emitGotoIf(Label label) {
+		relocations_.push_back(mkGotoRelocation(currentOffset(), label));
+		emitOpcode(XOpCode::GOTO_IF);
+		emitLabelPlaceholder();
+	}
+
+	void emitGotoUnless(Label label) {
+		relocations_.push_back(mkGotoRelocation(currentOffset(), label));
+		emitOpcode(XOpCode::GOTO_UNLESS);
+		emitLabelPlaceholder();
+	}
+
+	/// finalize the byte stream and release it.
+	XFunction* finalize() {
+		doRelocations();
+		return reinterpret_cast<XFunction*>(buffer_.release());
+	}
+
+	ByteBuffer& buffer() { return buffer_; }
+
+	const ByteBuffer& buffer() const { return buffer_; }
+
+	Byte* data() { return buffer_.data(); }
+
+	const Byte* data() const { return buffer_.data(); }
+
+	Byte* begin() { return buffer_.begin(); }
+
+	Byte* end() { return buffer_.end(); }
+
+private:
+	void emit_opcode(XOpCode op) {
+		emit_data(op);
+	}
+
+	void emit_int32(std::int32_t x) {
+		emit_data(x);
+	}
+
+	void emit_uint32(std::uint32_t x) {
+		emit_data(x);
+	}
+
+	void emit_int64(std::int64_t x) {
+		emit_data(x);
+	}
+
+	void emit_uint64(std::uint64_t x) {
+		emit_data(x);
+	}
+
+	void emit_ptr(std::uintptr_t x) {
+		emit_data(x);
+	}
+
+	/// emit a placeholder and return it's address in the byte buffer.
+	/// returns address into the stream.
+	std::int32_t emit_label_placeholder() {
+		auto offset = current_offset();
+		emit_data(RelOffset(0));
+		return offset;
+	}
+
+	template <typename T>
+	void emit_data(T x) {
+		buffer_.append(x);
+	}
+
+	Byte* addr() { return buffer_.end(); }
+
+	/// current offset into the function.
+	std::int32_t current_offset() const {
+		auto bytes = buffer_.size();
+		assert(bytes <= INT32_MAX);
+		return static_cast<std::int32_t>(bytes);
+	}
+
+	void relocate(const GotoRelocation& relocation) {
+		auto target = labels_.target_of(relocation.label) - relocation.offset - sizeof(XExprGoto);
+		fprintf(stderr, "relocating goto: label-id=%lu, location=%d, target=%lu\n", relocation.label.id, relocation.offset, target);
+		buffer_.write<std::uint32_t>(relocation.offset + 1, target);
+	}
+
+	/// dispatch to specific relocation subroutine.
+	void relocate(const AnyRelocation& relocation) {
+		switch(relocation.kind) {
+		case RelocationKind::GOTO:
+			relocate(relocation.as_goto);
+			break;
+		default:
+			assert(0);
+		}
+	}
+
+	void do_relocations() {
+		for (const auto& relocation : relocations_) {
+			relocate(relocation);
+		}
+	}
+
+	ByteBuffer buffer_;
+	LabelTable labels_;
+	std::vector<AnyRelocation> relocations_;
+};
+
+#endif ///////////////////////////
+
+} // namespace Ab
+
+#endif // AB_XFUNCTIONBUILDER_HPP_

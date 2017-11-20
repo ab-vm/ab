@@ -1,0 +1,16 @@
+
+(export main "main")
+
+(fn main [argc :i32 argv :i64] :i32
+  (let [x :i64]
+    (store x 1)
+    (add x x x)
+    (return x)))
+
+(export add-one "add-one")
+
+(fn add-one [x :i32] :i32
+  (let [y :i32]
+    (i32-const y 1)
+    (i32-add x x y)
+    (return x)))

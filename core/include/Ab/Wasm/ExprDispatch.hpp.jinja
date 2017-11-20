@@ -1,0 +1,38 @@
+#ifndef AB_WASM_EXPRDISPATCH_HPP_
+#define AB_WASM_EXPRDISPATCH_HPP_
+
+#include <Ab/Config.hpp>
+#include <Ab/Wasm/Expression.hpp>
+
+#include <utility>
+
+namespace Ab {
+namespace Wasm {
+
+template <template<typename> typename Fn, typename... Args>
+auto dispatch(const AnyExpr& expr, Args&&... args) -> void {
+	switch(expr.op()) {
+		@[ for operator in data.wasm_operators ]
+	
+			@[- set op_value -]
+				OpCode::@( operator.name | upper )
+			@[- endset -]
+
+			@[- set expr_type -]
+				@( operator.name | replace("_", " ") | title | replace(" ", "") )Expr
+			@[- endset -]
+	
+			case @( op_value ): {
+				Fn<@( expr_type )>()(
+					static_cast<const @( expr_type )&>(expr),
+					std::forward<Args>(args)...);
+			}
+			break;
+		@[ endfor ]
+	}
+}
+
+}  // namespace Wasm
+}  // namespace Ab
+
+#endif  // AB_WASM_EXPRDISPATCH_HPP_

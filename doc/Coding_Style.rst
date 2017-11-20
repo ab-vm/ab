@@ -62,8 +62,8 @@ The project name must prefix every include.
 
 Example::
 
-	#include <Pith/Config.hpp> // Configuration first
-	#include <Pith/*.hpp>      // Internal headers, alphabetical, with the project prefix
+	#include <Ab/Config.hpp> // Configuration first
+	#include <Ab/*.hpp>      // Internal headers, alphabetical, with the project prefix
 	#include <external.hpp>    // External headers, alphabetical
 	#include <system>          // System and standard headers, last.
 

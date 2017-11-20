@@ -1,0 +1,6 @@
+#if !defined(AB_TEST_CONFIG_HPP_)
+#define AB_TEST_CONFIG_HPP_
+
+#define AB_SOURCE_DIR "@abigail_SOURCE_DIR@"
+
+#endif // AB_TEST_CONFIG_HPP_

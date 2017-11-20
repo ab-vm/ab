@@ -1,0 +1,124 @@
+#ifndef AB_INTERPRETER_HPP_
+#define AB_INTERPRETER_HPP_
+
+#include <Ab/Config.hpp>
+#include <Ab/Instruction.hpp>
+#include <Ab/Assert.hpp>
+#include <Ab/Address.hpp>
+#include <Ab/Bytes.hpp>
+#include <Ab/XFunction.hpp>
+
+#include <iostream>
+
+namespace Ab {
+
+enum class ValueKind {
+	@[for entry in data.types]
+		@(entry | upper)@(",\n" if not loop.last)
+	@[endfor]
+};
+
+union AnyValueData {
+	@[ for key in data.types ]
+		@( data.types[key].ctype ) as@( key | typeify );
+	@[ endfor ]
+};
+
+struct AnyValue {
+	ValueKind kind;
+	AnyValueData data;
+};
+
+enum class InterpreterCondition {
+	UNDEFINED, RUNNING, HALTED, TRAPPED, ERRORED
+};
+
+struct PrimaryState;
+struct SecondaryState;
+struct State;
+
+/// Primary state is cached in the interpreter, and kept in local variables.
+/// The state is only reflected back into the struct explicitly, when needed.
+struct PrimaryState {
+	@[ for state in data.interpreter_state.primary ]
+		@( state.type ) @( state.name | varify );
+	@[ endfor ]
+};
+
+/// Flags are runtime conditions located in secondary state.
+struct Flags {
+	@[ for flag in data.interpreter_state.flags ]
+		@( flag.type ) @( flag.name | varify );
+	@[ endfor ]
+};
+
+/// Secondary state is kept in memory and up-to-date. Frequently accessed data
+/// should be placed in the primary state and cached.
+struct SecondaryState {
+	@[ for state in data.interpreter_state.secondary ]
+		@( state.type ) @( state.name | varify );
+	@[ endfor ]
+};
+
+/// Interpreter state is divided into primary and secondary state.
+/// primary state is frequently accessed, and typically cached in local registers.
+/// Secondary state is less frequently accessed, and normally kept up to date in memory.
+struct State {
+	PrimaryState primary;
+	SecondaryState secondary;
+};
+
+class Interpreter;
+
+using PrimitiveFn = void(*)(Interpreter*);
+
+class Interpreter {
+public:
+	Interpreter() {
+		state_.secondary.stack = new Byte[2048];
+		state_.secondary.function = nullptr;
+		state_.secondary.flags.trap = false;
+		state_.secondary.flags.error = false;
+		state_.secondary.condition = InterpreterCondition::HALTED;
+
+		state_.primary.sp = state_.secondary.stack;
+		state_.primary.bp = state_.secondary.stack;
+		state_.primary.pc = nullptr;
+	}
+
+	Interpreter(const Interpreter&) = delete;
+
+	~Interpreter() {
+		delete[] state_.secondary.stack;
+	}
+
+	/// Interpret any function. The return result is calculated from the target's type signature.
+	AnyValue interpret_any(const XFunction* target);
+
+	/// Interpret a function which returns an int32.
+	std::int32_t interpret_i32(const XFunction* target);
+
+	/// interpret a function returning no value.
+	void interpret_nil(const XFunction* target);
+
+	template <typename T>
+	void push_parameter(const T& value) {
+		*reinterpret_cast<T*>(state_.primary.sp) = value;
+		state_.primary.sp += sizeof(T);
+	}
+
+private:
+	/// initialize interpreter state and execute interpreter.
+	///
+	void interpret(const XFunction* target);
+
+	/// run interpretation, assuming state has been pre-initialized.
+	///
+	void do_interpret();
+
+	State state_;
+}; 
+
+}  // namespace Ab
+
+#endif  // AB_INTERPRETER_HPP_

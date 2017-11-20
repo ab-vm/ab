@@ -1,0 +1,5 @@
+(module
+  (func $add (param #0 i32) (param #1) (result i32)
+    (i32.add #0 #1 #0)
+    (return-val #0))
+  (export "add" $add))

@@ -1,0 +1,33 @@
+#include <Ab/Wast/FunctionParser.hpp>
+#include <Ab/Wasm/OpCode.hpp>
+
+%%{
+	machine ab_wast_instruction_parser;
+
+	@[ for operator in data.wasm_operators -]
+		@( operator.name ) = "@( operator.name )" @{
+			fmt::print("found operator @( operator.name )");
+		};
+	@[ endfor ]
+
+	main := @[ for operator in data.wasm_operators -]
+	@( "\t| " if not loop.first )@(operator.name )@( "; " if loop.last )
+	@[ endfor ]
+}%%
+
+namespace Ab::Wast {
+
+std::vector<std::uint8_t> parseFunctionInstructions() {
+	std::vector<std::uint8_t> bytecodes;
+	return bytecodes;
+}
+
+FunctionParser::FunctionParser(Location start) {
+}
+
+ParseError FunctionParser::parse(Alph* p, Alph* pe, Alph* eof) {
+	Lexer lexer;
+	return ParseError();
+}
+
+}  // namespace Ab::Wast

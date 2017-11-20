@@ -1,0 +1,651 @@
+#include <Ab/Interpreter.hpp>
+#include <Ab/XOpCode.hpp>
+#include <Ab/XExpr.hpp>
+
+#include <cstdio>
+
+namespace Ab {
+
+@[set decl_state_vars]
+    @[for var in data.interpreter_state.primary]
+        @(- var.type ) @( var.name );
+    @[endfor]
+@[endset]
+
+@# calculate the size of a complete operation #
+@[macro expr_size(name)]
+    @[set sizes = [1]] @# starts at one for size of bytecode #
+    @[set ops = data.abx_operators | selectattr('name', 'equalto', name) | list]
+    @[set operator = ops[0]]
+    @[for imm in operator.immediates]
+        @[do sizes.append(data.types[imm.type].csizeof)]
+    @[endfor]
+    @(sizes | sum)
+@[endmacro]
+
+@[set commit_state]
+    // commit_state
+    @[for var in data.interpreter_state.primary]
+        state_.primary.@(var.name) = @(var.name);
+    @[endfor]
+@[endset]
+
+@[set reload_state]
+    // reload_state
+    @[for var in data.interpreter_state.primary]
+        @(var.name) = state_.primary.@(var.name);
+    @[endfor]
+@[endset]
+
+@[macro trace(name)]
+    // trace
+    fprintf(stderr, "executing: pc=%p op=%d name=@( name )\n", pc, (int)*pc);
+@[endmacro]
+
+@# mangle an operator name to the handlers name #
+@[macro handler_name(op_name)]
+    @(("do_" + op_name) | varify)
+@[endmacro]
+
+@[macro begin_handler(op_name)]
+    @(handler_name(op_name)):
+            @(trace(op_name))
+@[endmacro]
+
+@# dispatch to the next bytecode handler. Adjust the pc before instantiating this macro. #
+@[set dispatch]
+    // dispatch
+    fprintf(stderr, "dispatch: pc=%p op=%d\n", pc, (int)*pc);
+    goto *INSTRUCTION_TABLE[*pc];
+@[endset]
+
+template <typename T>
+void push(Byte*& sp, const T& value) {
+    *reinterpret_cast<T*>(sp) = value;
+    sp += sizeof(T);
+}
+
+@[macro pop(type, var)]
+    sp -= sizeof(T);
+    var = reinterpret_cast<T*>(sp);
+@[endmacro]
+
+template <typename T>
+T pop(Byte*& sp) {
+    sp -= sizeof(T);
+    return *reinterpret_cast<T*>(sp);
+}
+
+template <typename T>
+T peek(Byte* sp, std::size_t offset = 0) {
+    return *reinterpret_cast<T*>(sp - offset - sizeof(T));
+}
+
+template <typename T>
+T& load_local(Byte* const& bp, std::uint32_t offset) {
+    return *reinterpret_cast<T*>(bp + offset);
+}
+
+template <typename T>
+const T& decode(Address pc) {
+    return *reinterpret_cast<const T*>(pc);
+}
+
+void save(Byte*& sp, const State& state) {
+
+}
+
+void restore(Byte*& sp, const State& state) {
+
+}
+
+void Interpreter::do_interpret() {
+
+    static void* const INSTRUCTION_TABLE[256] = {
+        @[for i in range(0, 256)]
+            @[set operators = data.abx_operators | selectattr('code', 'equalto', i) | list]
+            @[if operators | count != 0]
+                @[set operator = operators[0]]
+                &&@(handler_name(operator.name))
+            @[else]
+                &&do_unimplemented
+            @[endif]@("," if not loop.last) // @(i)
+        @[endfor]
+    };
+
+    @(decl_state_vars)
+    @(reload_state)
+    @(dispatch)
+
+    ///////////// Special Handlers
+
+    @(begin_handler('reserved')) {
+        @(commit_state)
+        state_.secondary.flags.error = true;
+        return;
+    }
+
+    @(begin_handler('unimplemented')) {
+        @(commit_state)
+        state_.secondary.flags.error = true;
+        return;
+    }
+
+    ///////////// Standard Handlers
+
+    @(begin_handler('unreachable')) {
+        @(commit_state)
+        state_.secondary.flags.error = true;
+        return;
+    }
+
+    @(begin_handler('nop')) {
+        pc += sizeof(XExprNop);
+        @(dispatch)
+    }
+
+    @(begin_handler('call_primitive')) {
+        const auto& expr = *reinterpret_cast<const XExprCallPrimitive*>(pc);
+
+        @(commit_state)
+        auto target = reinterpret_cast<PrimitiveFn>(expr.target);
+        target(this);
+        @(reload_state)
+        pc += sizeof(XExprCallPrimitive);
+        @(dispatch)
+    }
+
+    @(begin_handler('goto')) {
+        const auto& expr = *reinterpret_cast<const XExprGoto*>(pc);
+        fprintf(stderr, "offset=%d", expr.offset);
+        pc += expr.offset + XEXPR_GOTO_SIZE;
+        @(dispatch)
+    }
+
+    @(begin_handler('goto_if')) {
+        const auto& expr = *reinterpret_cast<const XExprGotoIf*>(pc);
+        fprintf(stderr, "offset=%d", expr.offset);
+        if (pop<std::uint32_t>(sp)) {
+            pc += expr.offset + XEXPR_GOTO_IF_SIZE;
+        } else {
+            pc += XEXPR_GOTO_IF_SIZE;
+        }
+        @(dispatch)
+    }
+
+    @(begin_handler('goto_unless')) {
+        const auto& expr = *reinterpret_cast<const XExprGotoUnless*>(pc);
+        fprintf(stderr, "offset=%d", expr.offset);
+        if (!pop<std::uint32_t>(sp)) {
+            pc += expr.offset + XEXPR_GOTO_UNLESS_SIZE;
+        } else {
+            pc += XEXPR_GOTO_UNLESS_SIZE;
+        }
+        @(dispatch)
+    }
+
+    /*
+
+    - args
+      - 2
+      - 1
+      - 0
+    - locals
+      - 
+    old-state
+      bp
+      sp
+      pc
+
+    */
+
+    @(begin_handler('return')) {
+        pc += sizeof(XExprReturn);
+        @( commit_state )
+        
+        return;
+    }
+
+    @(begin_handler('call')) {
+
+        @( dispatch )
+    }
+
+    @(begin_handler('call_indirect')) {
+        pc += sizeof(XExprCallIndirect);
+        return;
+    }
+
+    @(begin_handler('halt')) {
+        @(commit_state)
+        return;
+    }
+
+    @(begin_handler('x32_drop')) {
+        pop<std::uint32_t>(sp);
+        pc += XEXPR_X32_DROP_SIZE;
+        @(dispatch)
+    }
+
+    @(begin_handler('x32_select')) {
+        auto cond = pop<std::uint32_t>(sp);
+        auto fval = pop<std::uint32_t>(sp);
+        auto tval = pop<std::uint32_t>(sp);
+        push<std::uint32_t>(sp, cond ? tval : fval);
+        pc += XEXPR_X32_SELECT_SIZE;
+        @(dispatch)
+    }
+
+    @(begin_handler('x64_drop')) {
+        pop<std::uint64_t>(sp);
+        pc += XEXPR_X64_DROP_SIZE;
+        @(dispatch)
+    }
+
+    @(begin_handler('x64_select')) {
+        auto cond = pop<std::uint32_t>(sp);
+        auto fval = pop<std::uint64_t>(sp);
+        auto tval = pop<std::uint64_t>(sp);
+        push<std::uint64_t>(sp, cond ? tval : fval);
+        pc += XEXPR_X32_SELECT_SIZE;
+        @(dispatch)
+    }
+
+#if 0
+    @( begin_handler("x32_get_arg") ) {
+        const auto expr = decode<XExprX32GetArg>(pc);
+        push<std::uint32_t>(sp, localAt<std::uint32_t>(bp, expr.offset));
+        pc += XEXPR_X32_GET_LOCAL_SIZE;
+        @( dispatch )
+    }
+
+    @( begin_handler("x32_set_loca") ) {
+        const auto expr = decode<XExprX32SetLocal>(pc);
+        localAt<std::uint32_t>(bp, expr.offset) = pop<std::uint32_t>(sp);
+        pc += XEXPR_X32_SET_LOCAL_SIZE;
+        @( dispatch )
+    }
+
+    @( begin_handler("x32_tee_local") ) {
+        const auto expr = decode<XExprX32TeeLocal>(pc);
+        localAt<std::uint32_t>(bp, expr.offset) = peek<std::uint32_t>(sp);
+        pc += XEXPR_X32_TEE_LOCAL_SIZE;
+        @( dispatch )
+    }
+
+    @( begin_handler("x64_get_local") ) {
+        const auto expr = decode<XExprX64GetLocal>(pc);
+        push<std::uint64_t>(sp, localAt<std::uint64_t>(bp, expr.offset));
+        pc += XEXPR_X64_GET_LOCAL_SIZE;
+        @( dispatch )
+    }
+
+    @( begin_handler("x64_set_local") ) {
+        const auto expr = decode<XExprX64SetLocal>(pc);
+        localAt<std::uint64_t>(bp, expr.offset) = pop<std::uint64_t>(sp);
+        pc += XEXPR_X64_SET_LOCAL_SIZE;
+        @( dispatch )
+    }
+
+    @( begin_handler("x64_tee_local") ) {
+        const auto expr = decode<XExprX64TeeLocal>(pc);
+        localAt<std::uint64_t>(bp, expr.offset) = peek<std::uint64_t>(sp);
+        pc += XEXPR_X64_TEE_LOCAL_SIZE;
+        @( dispatch )
+    }
+#endif
+
+    @(begin_handler('get_global')) {
+        @(commit_state)
+        state_.secondary.flags.error = true;
+        return;
+    }
+
+    @(begin_handler('set_global')) {
+        @(commit_state)
+        state_.secondary.flags.error = true;
+        return;
+    }
+
+#if 0
+    @( begin_handler('i32_const') ) {
+        const auto& expr = *reinterpret_cast<const XExprI32Const*>(pc);
+        push<std::int32_t>(sp, expr.value);
+        pc += XEXPR_I32_CONST_SIZE;
+        @( dispatch )
+    }
+
+    @( begin_handler('i64_const') ) {
+        const auto& expr = *reinterpret_cast<const XExprI32Const*>(pc);
+        push<std::int32_t>(sp, expr.value);
+        pc += XEXPR_I64_CONST_SIZE;
+        @( dispatch )
+    }
+#endif
+
+    @( begin_handler('i32_eqz') ) {
+        const auto x = pop<std::uint32_t>(sp);
+        push<std::uint32_t>(sp, x == 0);
+        pc += XEXPR_I32_EQZ_SIZE;
+        @( dispatch )
+    }
+
+    @(begin_handler('i32_eq')) {
+        const auto rhs = pop<std::uint32_t>(sp);
+        const auto lhs = pop<std::uint32_t>(sp);
+        push<std::uint32_t>(sp, lhs == rhs);
+        pc += XEXPR_I32_EQ_SIZE;
+        @(dispatch)
+    }
+
+    @( begin_handler('i32_ne') ) {
+        const auto rhs = pop<std::uint32_t>(sp);
+        const auto lhs = pop<std::uint32_t>(sp);
+        push<std::uint32_t>(sp, lhs != rhs);
+        pc += XEXPR_I32_NE_SIZE;
+        @( dispatch )
+    }
+
+    @( begin_handler('i32_lt_s') ) {
+        const auto rhs = pop<std::int32_t>(sp);
+        const auto lhs = pop<std::int32_t>(sp);
+        push<std::uint32_t>(sp, lhs < rhs);
+        pc += XEXPR_I32_LT_S_SIZE;
+        @( dispatch )
+    }
+
+    @( begin_handler('i32_lt_u') ) {
+        auto rhs = pop<std::uint32_t>(sp);
+        auto lhs = pop<std::uint32_t>(sp);
+        push<std::uint32_t>(sp, lhs < rhs);
+        pc += XEXPR_I32_LT_U_SIZE;
+        @( dispatch )
+    }
+
+    @( begin_handler('i32_gt_s') ) {
+        const auto rhs = pop<std::int32_t>(sp);
+        const auto lhs = pop<std::int32_t>(sp);
+        push<std::uint32_t>(sp, lhs > rhs);
+        pc += XEXPR_I32_GT_S_SIZE;
+        @( dispatch )
+    }
+
+    @( begin_handler('i32_gt_u') ) {
+        auto rhs = pop<std::uint32_t>(sp);
+        auto lhs = pop<std::uint32_t>(sp);
+        push<std::uint32_t>(sp, lhs > rhs);
+        pc += XEXPR_I32_GT_U_SIZE;
+        @( dispatch )
+    }
+
+    @( begin_handler('i32_le_s') ) {
+        const auto rhs = pop<std::int32_t>(sp);
+        const auto lhs = pop<std::int32_t>(sp);
+        push<std::uint32_t>(sp, lhs <= rhs);
+        pc += XEXPR_I32_LE_S_SIZE;
+        @( dispatch )
+    }
+
+    @(begin_handler('i32_le_u')) {
+        auto rhs = pop<std::uint32_t>(sp);
+        auto lhs = pop<std::uint32_t>(sp);
+        push<std::uint32_t>(sp, lhs <= rhs);
+        pc += XEXPR_I32_LE_U_SIZE;
+        @(dispatch)
+    }
+
+    @(begin_handler('i32_ge_s')) {
+        const auto rhs = pop<std::int32_t>(sp);
+        const auto lhs = pop<std::int32_t>(sp);
+        push<std::uint32_t>(sp, lhs >= rhs);
+        pc += XEXPR_I32_GE_S_SIZE;
+        @(dispatch)
+    }
+
+    @( begin_handler('i32_ge_u') ) {
+        auto rhs = pop<std::uint32_t>(sp);
+        auto lhs = pop<std::uint32_t>(sp);
+        push<std::uint32_t>(sp, lhs >= rhs);
+        pc += XEXPR_I32_GE_U_SIZE;
+        @( dispatch )
+    }
+
+    @( begin_handler('i64_eqz') ) {
+        const auto x = pop<std::uint64_t>(sp);
+        push<std::uint64_t>(sp, x == 0);
+        pc += XEXPR_I64_EQZ_SIZE;
+        @( dispatch )
+    }
+
+    @( begin_handler('i64_eq') ) {
+        const auto rhs = pop<std::uint64_t>(sp);
+        const auto lhs = pop<std::uint64_t>(sp);
+        push<std::uint64_t>(sp, lhs == rhs);
+        pc += XEXPR_I64_EQ_SIZE;
+        @( dispatch )
+    }
+
+    @( begin_handler('i64_ne') ) {
+        const auto rhs = pop<std::uint64_t>(sp);
+        const auto lhs = pop<std::uint64_t>(sp);
+        push<std::uint64_t>(sp, lhs != rhs);
+        pc += XEXPR_I64_NE_SIZE;
+        @( dispatch )
+    }
+
+    @( begin_handler('i64_lt_s') ) {
+        const auto rhs = pop<std::int64_t>(sp);
+        const auto lhs = pop<std::int64_t>(sp);
+        push<std::uint64_t>(sp, lhs < rhs);
+        pc += XEXPR_I64_LT_S_SIZE;
+        @( dispatch )
+    }
+
+    @( begin_handler('i64_lt_u') ) {
+        auto rhs = pop<std::uint64_t>(sp);
+        auto lhs = pop<std::uint64_t>(sp);
+        push<std::uint64_t>(sp, lhs < rhs);
+        pc += XEXPR_I64_LT_U_SIZE;
+        @( dispatch )
+    }
+
+    @( begin_handler('i64_gt_s') ) {
+        const auto rhs = pop<std::int64_t>(sp);
+        const auto lhs = pop<std::int64_t>(sp);
+        push<std::uint64_t>(sp, lhs > rhs);
+        pc += XEXPR_I64_GT_S_SIZE;
+        @( dispatch )
+    }
+
+    @( begin_handler('i64_gt_u') ) {
+        auto rhs = pop<std::uint64_t>(sp);
+        auto lhs = pop<std::uint64_t>(sp);
+        push<std::uint64_t>(sp, lhs > rhs);
+        pc += XEXPR_I64_GT_U_SIZE;
+        @( dispatch )
+    }
+
+    @( begin_handler('i64_le_s') ) {
+        const auto rhs = pop<std::int64_t>(sp);
+        const auto lhs = pop<std::int64_t>(sp);
+        push<std::uint64_t>(sp, lhs <= rhs);
+        pc += XEXPR_I64_LE_S_SIZE;
+        @( dispatch )
+    }
+
+    @( begin_handler('i64_le_u') ) {
+        auto rhs = pop<std::uint64_t>(sp);
+        auto lhs = pop<std::uint64_t>(sp);
+        push<std::uint64_t>(sp, lhs <= rhs);
+        pc += XEXPR_I64_LE_U_SIZE;
+        @( dispatch )
+    }
+
+    @( begin_handler('i64_ge_s') ) {
+        const auto rhs = pop<std::int64_t>(sp);
+        const auto lhs = pop<std::int64_t>(sp);
+        push<std::uint64_t>(sp, lhs >= rhs);
+        pc += XEXPR_I64_GE_S_SIZE;
+        @( dispatch )
+    }
+
+    @( begin_handler('i64_ge_u') ) {
+        auto rhs = pop<std::uint64_t>(sp);
+        auto lhs = pop<std::uint64_t>(sp);
+        push<std::uint64_t>(sp, lhs >= rhs);
+        pc += XEXPR_I64_GE_U_SIZE;
+        @( dispatch )
+    }
+
+    @( begin_handler('i32_add') ) {
+        auto rhs = pop<std::uint32_t>(sp);
+        auto lhs = pop<std::uint32_t>(sp);
+        push<std::uint32_t>(sp, lhs + rhs);
+        pc += XEXPR_I32_ADD_SIZE;
+        @( dispatch )
+    }
+
+    @( begin_handler('i32_sub') ) {
+        auto rhs = pop<std::uint32_t>(sp);
+        auto lhs = pop<std::uint32_t>(sp);
+        push<std::uint32_t>(sp, lhs - rhs);
+        pc += XEXPR_I32_SUB_SIZE;
+        @( dispatch )
+    }
+
+    @( begin_handler('i32_mul') ) {
+        auto rhs = pop<std::uint32_t>(sp);
+        auto lhs = pop<std::uint32_t>(sp);
+        push<std::uint32_t>(sp, lhs * rhs);
+        pc += XEXPR_I32_MUL_SIZE;
+        @( dispatch )
+    }
+
+    @( begin_handler('i32_div_s') ) {
+        auto rhs = pop<std::int32_t>(sp);
+        auto lhs = pop<std::int32_t>(sp);
+        push<std::int32_t>(sp, lhs / rhs);
+        pc += XEXPR_I32_DIV_S_SIZE;
+        @( dispatch )
+    }
+
+    @( begin_handler('i32_div_u') ) {
+        auto rhs = pop<std::uint32_t>(sp);
+        auto lhs = pop<std::uint32_t>(sp);
+        push<std::uint32_t>(sp, lhs / rhs);
+        pc += XEXPR_I32_DIV_U_SIZE;
+        @( dispatch )
+    }
+
+    @( begin_handler('i32_rem_s') ) {
+        auto rhs = pop<std::int32_t>(sp);
+        auto lhs = pop<std::int32_t>(sp);
+        push<std::int32_t>(sp, lhs % rhs);
+        pc += XEXPR_I32_REM_S_SIZE;
+        @( dispatch )
+    }
+
+    @( begin_handler('i32_rem_u') ) {
+        auto rhs = pop<std::uint32_t>(sp);
+        auto lhs = pop<std::uint32_t>(sp);
+        push<std::uint32_t>(sp, lhs % rhs);
+        pc += XEXPR_I32_REM_U_SIZE;
+        @( dispatch )
+    }
+
+    @( begin_handler('i32_and') ) {
+        auto rhs = pop<std::uint32_t>(sp);
+        auto lhs = pop<std::uint32_t>(sp);
+        push<std::uint32_t>(sp, lhs & rhs);
+        pc += XEXPR_I32_AND_SIZE;
+        @( dispatch )
+    }
+
+    @( begin_handler('i32_or') ) {
+        auto rhs = pop<std::uint32_t>(sp);
+        auto lhs = pop<std::uint32_t>(sp);
+        push<std::uint32_t>(sp, lhs | rhs);
+        pc += XEXPR_I32_OR_SIZE;
+        @( dispatch )
+    }
+
+    @( begin_handler('i32_xor') ) {
+        auto rhs = pop<std::uint32_t>(sp);
+        auto lhs = pop<std::uint32_t>(sp);
+        push<std::uint32_t>(sp, lhs ^ rhs);
+        pc += XEXPR_I32_XOR_SIZE;
+        @( dispatch )
+    }
+
+    @( begin_handler('i32_shl') ) {
+        auto shift = pop<std::uint32_t>(sp) % 32;
+        auto value = pop<std::uint32_t>(sp);
+        push<std::uint32_t>(sp, value << shift);
+        pc += XEXPR_I32_SHL_SIZE;
+        @( dispatch )
+    }
+
+    @( begin_handler('i32_shr_s') ) {
+        auto shift = pop<std::uint32_t>(sp) % 32;
+        auto value = pop<std::int32_t>(sp);
+        push<std::uint32_t>(sp, value >> shift);
+        pc += XEXPR_I32_SHR_S_SIZE;
+        @( dispatch )
+    }
+
+    @( begin_handler('i32_shr_u') ) {
+        auto shift = pop<std::uint32_t>(sp) % 32;
+        auto value = pop<std::uint32_t>(sp);
+        push<std::uint32_t>(sp, value >> shift);
+        pc += XEXPR_I32_SHR_U_SIZE;
+        @( dispatch )
+    }
+
+    @( begin_handler('i32_rotl') ) {
+        auto shift = pop<std::uint32_t>(sp) % 32;
+        auto value = pop<std::uint32_t>(sp);
+        push<std::uint32_t>(sp, (value << shift) | (shift >> (32 - value))); 
+        pc += XEXPR_I32_ROTL_SIZE;
+        @( dispatch )
+    }
+
+    @( begin_handler('i32_rotr') ) {
+        auto shift = pop<std::uint32_t>(sp) % 32;
+        auto value = pop<std::uint32_t>(sp);
+        push<std::uint32_t>(sp, (value >> shift) | (shift << (32 - value)));
+        pc += XEXPR_I32_ROTR_SIZE;
+        @( dispatch )
+    }
+};
+
+std::int32_t Interpreter::interpret_i32(const XFunction* target) {
+    interpret(target);
+    return pop<std::int32_t>(state_.primary.sp);
+}
+
+void Interpreter::interpret_nil(const XFunction* target) {
+    interpret(target);
+}
+
+AnyValue Interpreter::interpret_any(const XFunction* target) {
+    interpret(target);
+
+    AnyValue result;
+    result.kind       = ValueKind::NIL;
+    result.data.asNil = 0;
+
+    return result;
+}
+
+void Interpreter::interpret(const XFunction* target) {
+    state_.secondary.function = target;
+
+    state_.secondary.flags.trap  =  false;
+    state_.secondary.flags.error = 0;
+
+    state_.primary.pc  = target->body;
+
+    do_interpret();
+}
+
+} // namespace Ab

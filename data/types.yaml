@@ -1,0 +1,45 @@
+varuint1:
+  ctype: "std::uint8_t"
+  csizeof: 1
+varuint32:
+  ctype: "std::uint32_t"
+  csizeof: 4
+varint32:
+  ctype: "std::uint32_t"
+  csizeof: 4
+int32:
+  ctype: "std::int32_t"
+  csizeof: 4
+uint32:
+  ctype: "std::int32_t"
+  csizeof: 4
+int64:
+  ctype: "std::int64_t"
+  csizeof: 8
+uint64:
+  ctype: "std::int64_t"
+  csizeof: 8
+ptr:
+  ctype: "std::uintptr_t"
+  csizeof: 8
+nil:
+  ctype: "std::uint8_t"
+  csizeof: 1
+i32:
+  ctype: "std::int32_t"
+  csizeof: 4
+u32:
+  ctype: "std::int32_t"
+  csizeof: 4
+i64:
+  ctype: "std::int64_t"
+  csizeof: 8
+u64:
+  ctype: "std::int64_t"
+  csizeof: 8
+f32:
+  ctype: "float"
+  csizeof: 4
+f64:
+  ctype: "double"
+  csizeof: 8

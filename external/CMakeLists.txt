@@ -10,4 +10,7 @@ elseif()
 endif()
 
 add_subdirectory(googletest)
-add_subdirectory(omr)
+
+if(AB_USE_OMR)
+	add_subdirectory(omr)
+endif()

@@ -1,75 +1,91 @@
 cmake_minimum_required(VERSION 3.2 FATAL_ERROR)
 
-project(ab-vm LANGUAGES C CXX)
+# Module path
 
 list(APPEND CMAKE_MODULE_PATH
 	${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules
-	${CMAKE_CURRENT_SOURCE_DIR}/external/omr/cmake/modules
 )
 
+# Versioning
+
+set(AB_VERSION_MAJOR 0)
+set(AB_VERSION_MINOR 0)
+set(AB_VERSION_PATCH 1)
+set(AB_VERSION ${AB_VERSION_MAJOR}.${AB_VERSION_MINOR}.${AB_VERSION_PATCH})
+
+project(abigail
+	VERSION ${AB_VERSION}
+	LANGUAGES C CXX
+)
+
+# Module Imports
+
 include(FindClangTidy)
-include(OmrPlatform)
 include(Utilities)
+
+if (AB_USE_OMR)
+	include(UseOmr)
+endif(AB_USE_OMR)
+
 
 # Global Configuration
 
-omr_platform_global_setup()
-
 get_git_commit(GIT_COMMIT)
+
+set(AB_COMMIT ${GIT_COMMIT})
+
+configure_file(
+	"Config.hpp.in"
+	"include/Ab/Config.hpp"
+)
 
 enable_testing()
 
-# OMR Configuration
-
-set(OMR_GLUE_TARGET "om_omr_glue" CACHE PATH "Om Implements the OMR glue")
-set(OMR_FVTEST OFF CACHE BOOL "Disable OMR Testing in Ab")
-set(OMR_GC ON CACHE BOOL "Enable OMR GC in Ab, for Om")
-set(OMR_JITBUILDER ON CACHE BOOL "Enable OMR Jitbuilder, for Ab")
-set(OMR_WARNINGS_AS_ERRORS OFF CACHE BOOL "Disable warnings as errors")
-
-# OMR Glue
-
-set(OMR_GC_GLUE_TARGET "om_gc_glue" CACHE STRING "The gc glue target, must be interface library")
-set(OMR_UTIL_GLUE_TARGET "om_util_glue" CACHE STRING "The util glue target, must be interface library")
-set(OMR_RAS_GLUE_TARGET "om_ras_glue" CACHE STRING "The ras glue target, must be interface library")
-set(OMR_CORE_GLUE_TARGET "om_core_glue" CACHE STRING "The core glue target, must be and interface library")
+link_directories(/usr/local/lib)
 
 # Misc utilities
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS true)
 
-# Project setup
+if(CLANG_TIDY_FOUND)
+	set(CMAKE_CXX_CLANG_TIDY ${CLANG_TIDY_EXECUTABLE})
+endif()
 
-macro(ab_setup)
+# ab_base: basic configuration
 
-	# Use C++14
+add_library(ab-base INTERFACE)
 
-	set(CMAKE_CXX_STANDARD 14)
-	set(CMAKE_CXX_STANDARD_REQUIRED true)
-	set(CMAKE_CXX_EXTENSIONS off)
+target_compile_features(ab-base
+	INTERFACE
+		cxx_std_17
+)
 
-	# Compilation warnings
+target_compile_options(ab-base
+	INTERFACE
+)
 
-	add_compile_options(-Wall -Wextra -Wno-unused-parameter)
+target_include_directories(ab-base
+	INTERFACE
+		${CMAKE_CURRENT_BINARY_DIR}/include
+		/usr/local/include
+		/include
+)
 
-	# Use clang tidy for static analysis
+# External projects
 
-	if(CLANG_TIDY_FOUND)
-		set(CMAKE_CXX_CLANG_TIDY ${CLANG_TIDY_EXECUTABLE})
-	endif()
-
-  # OMR Crap
-
-  add_definitions(-DUT_DIRECT_TRACE_REGISTRATION)
-
-endmacro()
+add_subdirectory(external)
 
 # Sub directories
 
 add_subdirectory(ab)
-add_subdirectory(abi)
-add_subdirectory(ab-dump)
+add_subdirectory(asm)
+add_subdirectory(commands)
+add_subdirectory(core)
+add_subdirectory(disasm)
 add_subdirectory(doc)
-add_subdirectory(external)
-add_subdirectory(om)
-add_subdirectory(pith)
+add_subdirectory(edn)
+add_subdirectory(interpreter)
+add_subdirectory(parse)
+add_subdirectory(test)
+add_subdirectory(util)
+add_subdirectory(wast)

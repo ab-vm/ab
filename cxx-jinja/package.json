@@ -1,0 +1,25 @@
+{
+    "name": "cxx-jinja",
+    "displayName": "cxx-jinja",
+    "description": "",
+    "version": "0.0.1",
+    "engines": {
+        "vscode": "^1.30.0"
+    },
+    "categories": [
+        "Programming Languages"
+    ],
+    "contributes": {
+        "languages": [{
+            "id": "cppjinja",
+            "aliases": ["C++ / Jinja", "c++jinja"],
+            "extensions": [".cpp.jinja",".c.jinja",".h.jinja",".hpp.jinja"],
+            "configuration": "./language-configuration.json"
+        }],
+        "grammars": [{
+            "language": "cppjinja",
+            "scopeName": "source.cppjinja",
+            "path": "./syntaxes/cppjinja.tmLanguage.json"
+        }]
+    }
+}

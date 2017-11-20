@@ -1,0 +1,8 @@
+[]
+[nil]
+[nil nil]
+[1 2 3 4]
+[one two three four]
+[:one :two :three :four]
+["one" "two" "three" "four"]
+[{} {} {} {}]
