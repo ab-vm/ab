@@ -1,0 +1,27 @@
+name: build-ab
+on:
+  - pull_request
+  
+jobs:
+  build:
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest,
+          - macOS-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout Source
+        uses: actions/checkout@v1
+        with:
+          fetch-depth: 1
+      - name: Configure Build
+        run:
+          - mkdir build
+          - cmake -Wdev -S . -B build
+      - name: Build
+        run: cmake --build build
+      - name: Test
+        run: ctest -V ./build/
+  
