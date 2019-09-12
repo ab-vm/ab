@@ -4,24 +4,18 @@ on:
   
 jobs:
   build:
-    strategy:
-      matrix:
-        os:
-          - ubuntu-latest
-          - windows-latest,
-          - macOS-latest
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout Source
+      - name: checkout
         uses: actions/checkout@v1
         with:
           fetch-depth: 1
-      - name: Configure Build
+      - name: configure
         run:
           - mkdir build
           - cmake -Wdev -S . -B build
-      - name: Build
+      - name: build
         run: cmake --build build
-      - name: Test
+      - name: test
         run: ctest -V ./build/
   
