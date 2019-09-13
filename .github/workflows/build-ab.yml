@@ -8,14 +8,14 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install build-essential cmake libfmt-dev python3-pip ninja-build ragel
+          sudo apt-get install gcc-9 build-essential cmake libfmt-dev python3-pip ninja-build ragel
           sudo pip install pyyaml jinja2
       - name: checkout
         uses: actions/checkout@master
         with:
           submodules: true
       - name: Configure
-        run: mkdir build && cd build && cmake -Wdev -GNinja -DAB_COLOR_DIAGNOSTICS=on ..
+        run: mkdir build && cd build && cmake -Wdev -GNinja -DAB_COLOR_DIAGNOSTICS=on -DCMAKE_C_COMPILER=gcc-9 -DCMAKE_CXX_COMPILER=g++-9 ..
       - name: Build
         run: cd build && ninja
       - name: Test
