@@ -2,6 +2,7 @@
 #define AB_PARSE_LINEINFO_HPP_
 
 #include <Ab/Parse/Location.hpp>
+#include <Ab/Assert.hpp>
 
 #include <vector>
 
@@ -70,7 +71,7 @@ public:
 			}
 		}
 
-		throw std::runtime_error("Could not find the line containing offset.");
+		AB_ASSERT_UNREACHABLE();
 	}
 
 	/// Find the column number of a position. Columns are 0-indexed.
