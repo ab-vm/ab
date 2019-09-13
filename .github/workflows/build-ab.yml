@@ -7,7 +7,7 @@ jobs:
     steps:
       - name: Install dependencies
         run: |
-          sudo apt-get install build-essential cmake libfmt-dev python3-pip ninja-build
+          sudo apt-get install build-essential cmake libfmt-dev python3-pip ninja-build ragel
           sudo pip install pyyaml jinja2
       - name: checkout
         uses: actions/checkout@master
