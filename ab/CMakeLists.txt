@@ -12,5 +12,5 @@ target_link_libraries(ab
 		ab-base
 		ab-util
 		ab-commands
-		fmt
+		fmt::fmt
 )
