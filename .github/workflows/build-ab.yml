@@ -8,7 +8,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install build-essential cmake libfmt-dev python3-pip ninja-build ragel clang-format
+          sudo apt-get install build-essential cmake libfmt-dev python3-pip ninja-build ragel
           sudo pip install pyyaml jinja2
       - name: checkout
         uses: actions/checkout@master
@@ -18,7 +18,7 @@ jobs:
       - name: Configure
         run: mkdir build && cd build && cmake -Wdev -GNinja -DAB_COLOR_DIAGNOSTICS=on ..
       - name: Build
-        run: cd build && cmake --build .
+        run: cd build && ninja --verbose
       - name: Test
         run: cd build && ctest -V
         env:
