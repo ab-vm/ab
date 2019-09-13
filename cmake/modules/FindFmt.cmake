@@ -1,6 +1,6 @@
 include(FindPackageHandleStandardArgs)
 
-find_path(Fmt_INCLUDE_DIR fmt/core.h)
+find_path(Fmt_INCLUDE_DIR fmt/format.h)
 find_library(Fmt_LIBRARY fmt)
 
 find_package_handle_standard_args(Fmt

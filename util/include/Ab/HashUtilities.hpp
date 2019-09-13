@@ -54,4 +54,3 @@ constexpr std::size_t hash(Ts... xs) {
 }  // namespace Ab
 
 #endif  // AB_HASHUTILITIES_HPP_
-

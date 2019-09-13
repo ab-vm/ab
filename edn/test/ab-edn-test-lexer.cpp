@@ -9,7 +9,7 @@
 #include <fstream>
 
 #include <gtest/gtest.h>
-#include <fmt/core.h>
+#include <fmt/format.h>
 
 namespace Ab::Edn::Test {
 

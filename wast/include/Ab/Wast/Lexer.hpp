@@ -3,7 +3,7 @@
 
 #include <Ab/Wast/Alph.hpp>
 #include <Ab/Wast/Location.hpp>
-#include <fmt/core.h>
+#include <fmt/format.h>
 #include <fmt/format.h>
 #include <queue>
 

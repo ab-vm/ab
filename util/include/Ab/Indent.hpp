@@ -3,7 +3,7 @@
 
 #include <Ab/Config.hpp>
 
-#include <fmt/core.h>
+#include <fmt/format.h>
 #include <string>
 #include <cstddef>
 
@@ -66,7 +66,7 @@ struct ::fmt::formatter<Ab::Indent> {
 
 	template <typename FormatContext>
 	constexpr auto format(const Ab::Indent& indent, FormatContext& cx) const {
-		return format_to(cx.out(), indent.tostring());
+		return fmt::format_to(cx.out(), indent.tostring());
 	}
 };
 

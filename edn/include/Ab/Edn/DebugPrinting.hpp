@@ -5,7 +5,7 @@
 #include <Ab/Edn/Token.hpp>
 #include <Ab/Parse/Location.hpp>
 
-#include <fmt/core.h>
+#include <fmt/format.h>
 #include <fmt/ostream.h>
 
 template <>

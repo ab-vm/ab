@@ -84,8 +84,3 @@ template
 struct {
 	Read(ReadState& in, )
 }
-
-
-Error: while parsing arg 3: unrecognized short option "p", in
-  b9run -1 -2 -qpp
-              ~~~^

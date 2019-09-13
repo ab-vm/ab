@@ -8,14 +8,12 @@
 
 #include <Ab/Config.hpp>
 #include <Ab/CppUtilities.hpp>
-#include <fmt/core.h>
 #include <cstdio>
+#include <fmt/format.h>
 
 namespace Ab {
 
-inline void trace(const char* function) {
-	fmt::print(stderr, "TRACE!>{}\n", function);
-}
+inline void trace(const char* function) { fmt::print(stderr, "TRACE!>{}\n", function); }
 
 }  // namespace Ab
 
@@ -50,7 +48,7 @@ inline void trace(const char* function) {
 #ifdef AB_DEBUG
 #define AB_DEBUG_PRINT(...) ::fmt::print(__VA_ARGS__)
 #else
-#define AB_DEBUG_PRINT(...) // nothing
+#define AB_DEBUG_PRINT(...)  // nothing
 #endif
 
 /// @macro AB_DBG_MSG(...)
@@ -59,7 +57,7 @@ inline void trace(const char* function) {
 #ifdef AB_DEBUG
 #define AB_DBG_MSG(...) ::fmt::print(stderr, __VA_ARGS__)
 #else
-#define AB_DBG_MSG(...) // nothing
+#define AB_DBG_MSG(...)  // nothing
 #endif
 
 #endif  // AB_DEBUG_HPP_
