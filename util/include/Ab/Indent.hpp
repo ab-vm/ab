@@ -58,7 +58,7 @@ std::string to_string(const Indent& indent) {
 }  // namespace Ab
 
 template <>
-struct ::fmt::formatter<Ab::Indent> {
+struct fmt::formatter<Ab::Indent> {
 	template <typename ParseContext>
 	constexpr auto parse(ParseContext& cx) const {
 		return cx.begin();
