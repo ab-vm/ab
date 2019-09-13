@@ -57,7 +57,7 @@ struct BaseXExprFormatter {
 		template <typename FormatContext>
 		constexpr auto format(const Ab::@( expr_typename )& expr, FormatContext& cx) {
 			return format_to(
-				cx.begin(),
+				cx.out(),
 				"(@( operator.name )@[ for imm in operator.immediates ] :@( imm.name ) {}@[ endfor ])"
 				@[ for imm in operator.immediates ]
 					, expr.@( imm.name | varify )
