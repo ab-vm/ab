@@ -9,6 +9,7 @@ if(CMAKE_COMPILER_ID STREQUAL "AppleClang" OR
 elseif()
 endif()
 
+add_subdirectory(fmt)
 add_subdirectory(googletest)
 
 if(AB_USE_OMR)
