@@ -8,8 +8,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get upgrade
-          sudo apt-get install build-essential cmake libfmt-dev python3-pip ninja-build ragel clang-format-6.0
+          sudo apt-get install build-essential cmake libfmt-dev python3-pip ninja-build ragel clang-format
           sudo pip install pyyaml jinja2
       - name: checkout
         uses: actions/checkout@master
