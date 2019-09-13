@@ -76,8 +76,6 @@ endif()
 target_include_directories(ab-base
 	INTERFACE
 		${CMAKE_CURRENT_BINARY_DIR}/include
-		/usr/local/include
-		/include
 )
 
 # External projects
