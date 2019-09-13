@@ -45,7 +45,7 @@ endfunction(add_ab_test)
 
 # Helper to translate a source file to an absolute path.
 function(ab_resolve_source_name output_var file_name)
-	get_filename_component(resolved_file_name ${ARG_INPUT} ABSOLUTE ${CMAKE_CURRENT_SOURCE_DIR})
+	get_filename_component(resolved_file_name ${ARG_INPUT} ABSOLUTE BASE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 	set(${output_var} ${resolved_file_name} PARENT_SCOPE)
 endfunction(ab_resolve_source_name)
 
@@ -59,16 +59,19 @@ endfunction(ab_resolve_source_name)
 #  )
 function(ab_add_jinja_template)
 	cmake_parse_arguments("ARG" "" "INPUT;OUTPUT" "DATA_FILES;TEMPLATE_INCLUDES" "${ARGN}")
-	ab_resolve_source_name(input ${ARG_INPUT})
+
+	get_filename_component(ARG_INPUT  ${ARG_INPUT}  ABSOLUTE BASE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+	get_filename_component(ARG_OUTPUT ${ARG_OUTPUT} ABSOLUTE BASE_DIR ${CMAKE_CURRENT_BINARY_DIR})
+
 	add_custom_command(
 		COMMAND
 			python3 ${CMAKE_SOURCE_DIR}/scripts/jinja-generate.py
-			--data-dir=${CMAKE_SOURCE_DIR}/data
-			--include-dir=${CMAKE_SOURCE_DIR}/templates
-			${input}
-			${ARG_OUTPUT}
+				--data-dir=${CMAKE_SOURCE_DIR}/data
+				--include-dir=${CMAKE_SOURCE_DIR}/templates
+				${ARG_INPUT}
+				${ARG_OUTPUT}
 		MAIN_DEPENDENCY ${ARG_INPUT}
-		OUTPUT ${ARG_OUTPUT}
+		OUTPUT          ${ARG_OUTPUT}
 		DEPENDS
 			${CMAKE_SOURCE_DIR}/scripts/jinja-generate.py
 			${ARG_DATA_FILES}
@@ -86,13 +89,16 @@ endfunction(ab_add_jinja_template)
 #  )
 function(ab_add_jinja_cxx_template)
 	cmake_parse_arguments("ARG" "" "INPUT;OUTPUT" "DATA_FILES;TEMPLATE_INCLUDES" "${ARGN}")
-	get_filename_component(ARG_INPUT ${ARG_INPUT} ABSOLUTE BASE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+
+	get_filename_component(ARG_INPUT  ${ARG_INPUT}  ABSOLUTE BASE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 	get_filename_component(ARG_OUTPUT ${ARG_OUTPUT} ABSOLUTE BASE_DIR ${CMAKE_CURRENT_BINARY_DIR})
+
 	ab_add_jinja_template(
 		INPUT      ${ARG_INPUT}
 		OUTPUT     ${ARG_OUTPUT}.dirty
 		DATA_FILES ${ARG_DATA_FILES}
 	)
+
 	clang_formatx(
 		INPUT  ${ARG_OUTPUT}.dirty
 		OUTPUT ${ARG_OUTPUT}
