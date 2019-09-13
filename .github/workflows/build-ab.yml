@@ -8,7 +8,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install gcc-9 build-essential cmake libfmt-dev python3-pip ninja-build ragel
+          sudo apt-get install gcc-9 g++-9 build-essential cmake libfmt-dev python3-pip ninja-build ragel
           sudo pip install pyyaml jinja2
       - name: checkout
         uses: actions/checkout@master
