@@ -63,6 +63,7 @@ target_compile_features(ab-base
 
 target_compile_options(ab-base
 	INTERFACE
+		-Wall -Wextra
 )
 
 if(AB_COLOR_DIAGNOSTICS)
