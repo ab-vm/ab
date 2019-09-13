@@ -154,21 +154,36 @@ inline std::string stringify(const std::string& str) {
 // 	return out << to_string(x);
 // }
 
+auto operator<<(Ab::Sexpr::Formatter& out, unsigned char x) -> Ab::Sexpr::Formatter& {
+	fmt::print("asdfasdfasd\n");
+	return out << fmt::format("{}", x);
+}
+
+auto operator<<(Ab::Sexpr::Formatter& out, unsigned short x) -> Ab::Sexpr::Formatter& {
+	fmt::print("asdfasdfasd\n");
+	return out << fmt::format("{}", x);
+}
+
 auto operator<<(Ab::Sexpr::Formatter& out, int x) -> Ab::Sexpr::Formatter& {
 	return out << std::to_string(x);
 }
 
-auto operator<<(Ab::Sexpr::Formatter& out, std::size_t x) -> Ab::Sexpr::Formatter& {
+auto operator<<(Ab::Sexpr::Formatter& out, unsigned int x) -> Ab::Sexpr::Formatter& {
+	return out << std::to_string(x);
+}
+
+
+auto operator<<(Ab::Sexpr::Formatter& out, unsigned long x) -> Ab::Sexpr::Formatter& {
 	fmt::print("xxxxxxxxxxxxxxx\n");
 	return out << std::to_string(x);
 }
 
-auto operator<<(Ab::Sexpr::Formatter& out, std::uint32_t x) -> Ab::Sexpr::Formatter& {
+auto operator<<(Ab::Sexpr::Formatter& out, unsigned long long x) -> Ab::Sexpr::Formatter& {
 	fmt::print("thtergergergergerg\n");
 	return out << std::to_string(x);
 }
 
-auto operator<<(Ab::Sexpr::Formatter& out, std::uint64_t x) -> Ab::Sexpr::Formatter& {
+auto operator<<(Ab::Sexpr::Formatter& out, unsigned char x) -> Ab::Sexpr::Formatter& {
 	fmt::print("asdfasdfasd\n");
 	return out << fmt::format("{}", x);
 }
