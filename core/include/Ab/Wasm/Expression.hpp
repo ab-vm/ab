@@ -6,6 +6,7 @@
 #include <Ab/Wasm/TypeCode.hpp>
 #include <Ab/leb128.hpp>
 #include <Ab/Sexpr.hpp>
+#include <Ab/Assert.hpp>
 #include <cstddef>
 #include <cstdint>
 #include <vector>
@@ -39,9 +40,8 @@ class Immediate {};
 
 struct UnhandledImmediate : public Immediate {
 	using Value = std::uintptr_t;
-	static auto read(ReaderInput& in, std::uintptr_t& out) -> void {
-		out = ~std::uintptr_t(0);
-		throw std::runtime_error("Unhandled immediate");
+	static auto read([[maybe_unused]] ReaderInput& in, [[maybe_unused]] std::uintptr_t& out) -> void {
+		AB_ASSERT_UNREACHABLE();
 	}
 };
 
@@ -169,7 +169,7 @@ struct NullaryExpr : public Expr<op> {};
 
 template <OpCode op>
 struct ReadImmediates<NullaryExpr<op>> {
-	auto operator()(ReaderInput& in, NullaryExpr<op>& out) -> void {
+	auto operator()([[maybe_unused]] ReaderInput& in, [[maybe_unused]] NullaryExpr<op>& out) -> void {
 		// Nullary expressions have no immediates, so there is no decoding work here.
 	}
 };

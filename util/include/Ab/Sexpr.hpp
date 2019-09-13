@@ -183,9 +183,4 @@ auto operator<<(Ab::Sexpr::Formatter& out, unsigned long long x) -> Ab::Sexpr::F
 	return out << std::to_string(x);
 }
 
-auto operator<<(Ab::Sexpr::Formatter& out, unsigned char x) -> Ab::Sexpr::Formatter& {
-	fmt::print("asdfasdfasd\n");
-	return out << fmt::format("{}", x);
-}
-
 #endif  // AB_SEXPR_HPP_
