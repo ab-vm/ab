@@ -1,6 +1,6 @@
 include(Utilities)
 
-ab_add_ragel_source(
+add_ragel_source(
 	INPUT  src/ab-edn-lexer.cpp.rl
 	OUTPUT src/ab-edn-lexer.cpp
 )
@@ -34,3 +34,4 @@ target_compile_features(ab-edn
 )
 
 add_subdirectory(test)
+ 

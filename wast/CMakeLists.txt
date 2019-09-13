@@ -5,7 +5,7 @@ ab_add_jinja_template(
 		${CMAKE_SOURCE_DIR}/data/wasm_operators.yaml
 )
 
-ab_add_ragel_sources(
+add_ragel_sources(
 	src/ab-wast-ModuleParser.cpp.rl
 	src/ab-wast-Lexer.cpp.rl
 	${CMAKE_CURRENT_BINARY_DIR}/src/ab-wast-FunctionParser.cpp.rl

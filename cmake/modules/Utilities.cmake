@@ -3,7 +3,7 @@ if (_AB_UTILITIES_INC)
 endif()
 set(_AB_UTILITIES_INC true)
 
-find_package(ClangFormat REQUIRED)
+find_package(ClangFormat)
 find_package(Ragel REQUIRED)
 
 function(get_git_commit output_variable)
@@ -86,15 +86,15 @@ endfunction(ab_add_jinja_template)
 #  )
 function(ab_add_jinja_cxx_template)
 	cmake_parse_arguments("ARG" "" "INPUT;OUTPUT" "DATA_FILES;TEMPLATE_INCLUDES" "${ARGN}")
-	get_filename_component(input ${ARG_INPUT} ABSOLUTE ${CMAKE_CURRENT_SOURCE_DIR})
+	get_filename_component(ARG_INPUT ${ARG_INPUT} ABSOLUTE BASE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+	get_filename_component(ARG_OUTPUT ${ARG_OUTPUT} ABSOLUTE BASE_DIR ${CMAKE_CURRENT_BINARY_DIR})
 	ab_add_jinja_template(
-		INPUT ${input}
-		OUTPUT ${ARG_OUTPUT}.dirty
+		INPUT      ${ARG_INPUT}
+		OUTPUT     ${ARG_OUTPUT}.dirty
 		DATA_FILES ${ARG_DATA_FILES}
 	)
-	add_custom_command(
-		COMMAND clang-format ${ARG_OUTPUT}.dirty > ${ARG_OUTPUT}
-		MAIN_DEPENDENCY ${ARG_OUTPUT}.dirty
+	clang_formatx(
+		INPUT  ${ARG_OUTPUT}.dirty
 		OUTPUT ${ARG_OUTPUT}
 	)
 endfunction(ab_add_jinja_cxx_template)
