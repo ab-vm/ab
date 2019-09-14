@@ -1,4 +1,5 @@
 include(FindPackageHandleStandardArgs)
+include(AbUtilities)
 
 find_package(ClangFormat)
 
@@ -15,14 +16,18 @@ endif()
 # Add a ragel-generated source file. Run clang-format on output.
 # Usage:
 #  add_ragel_source(
-#    INPUT <input>
+#    INPUT  <input>
 #    OUTPUT <output>
 #  )
 function(add_ragel_source)
 	cmake_parse_arguments("ARG" "" "INPUT;OUTPUT" "" "${ARGN}")
-	get_filename_component(ARG_INPUT ${ARG_INPUT} ABSOLUTE BASE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+
+	get_filename_component(ARG_INPUT  ${ARG_INPUT}  ABSOLUTE BASE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 	get_filename_component(ARG_OUTPUT ${ARG_OUTPUT} ABSOLUTE BASE_DIR ${CMAKE_CURRENT_BINARY_DIR})
+	get_filename_component(DIR        ${ARG_OUTPUT} DIRECTORY)
+
 	add_custom_command(
+		COMMAND cmake -E make_directory ${DIR}
 		COMMAND ragel ${ARG_INPUT} -o ${ARG_OUTPUT}.dirty
 		MAIN_DEPENDENCY ${ARG_INPUT}
 		OUTPUT ${ARG_OUTPUT}.dirty

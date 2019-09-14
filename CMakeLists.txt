@@ -21,7 +21,7 @@ project(abigail
 # Module Imports
 
 include(FindClangTidy)
-include(Utilities)
+include(AbUtilities)
 
 if (AB_USE_OMR)
 	include(UseOmr)

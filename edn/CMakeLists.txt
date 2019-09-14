@@ -1,4 +1,4 @@
-include(Utilities)
+find_package(Ragel REQUIRED)
 
 add_ragel_source(
 	INPUT  src/ab-edn-lexer.cpp.rl
