@@ -34,7 +34,7 @@ public:
 	/// Prints spacing between elements, or indentation if the line is fresh.
 	auto spacing() -> Formatter& {
 		if (fresh_) {
-			buffer_ += indent_.tostring();
+			buffer_ += indent_.to_string();
 		} else if (needsSpacing_) {
 			buffer_ += " ";
 		}
