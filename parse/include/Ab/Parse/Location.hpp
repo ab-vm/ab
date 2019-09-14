@@ -15,7 +15,7 @@ public:
 
 	constexpr explicit SrcPos(std::size_t offset) : offset_(offset) {}
 
-	std::size_t get() const noexcept { return offset_; }
+	constexpr std::size_t get() const noexcept { return offset_; }
 
 private:
 	std::size_t offset_;
