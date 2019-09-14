@@ -45,7 +45,6 @@ public:
 	/// @param o offset
 	std::size_t line(std::size_t offset) const {
 		auto n = breaks_.size();
-		assert(0 < n);
 	
 		// If the offset is _after_ the last line break, the offset occurs on
 		// the last line. The last line has no upper-limit, so we have to treat
