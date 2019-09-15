@@ -27,7 +27,7 @@ public:
 #ifdef AB_USE_OMR
 		return om().init();
 #else
-		return true;
+		return 0;
 #endif
 	}
 
