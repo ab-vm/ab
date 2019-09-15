@@ -1,8 +1,8 @@
 #ifndef AB_PARSE_LINEINFO_HPP_
 #define AB_PARSE_LINEINFO_HPP_
 
-#include <Ab/Parse/Location.hpp>
 #include <Ab/Assert.hpp>
+#include <Ab/Parse/Location.hpp>
 
 #include <vector>
 
@@ -13,21 +13,19 @@ namespace Ab::Parse {
 class LineInfo {
 public:
 	LineInfo() {
-		// first line starts at zero.
+		// The start of the first line is implicit.
 		store(0);
 	}
 
 	/// Get the start offset of a line.
 	/// @param n line number
-	std::size_t line_start(std::size_t n) const {
-		return breaks_[n];
-	}
+	///
+	std::size_t line_start(std::size_t n) const { return breaks_[n]; }
 
 	/// Get the end offset of a line. "one past the end". Zero indexed.
 	/// @param n line number
-	std::size_t line_end(std::size_t n) const {
-		return breaks_[n + 1];
-	}
+	///
+	std::size_t line_end(std::size_t n) const { return breaks_[n + 1]; }
 
 	/// True if offset is within line number n.
 	///
@@ -43,9 +41,10 @@ public:
 
 	/// find the line number of a position. Lines are 0-indexed.
 	/// @param o offset
+	///
 	std::size_t line(std::size_t offset) const {
-		auto n = breaks_.size();
-	
+		const auto n = breaks_.size();
+
 		// If the offset is _after_ the last line break, the offset occurs on
 		// the last line. The last line has no upper-limit, so we have to treat
 		// it specially.
@@ -62,7 +61,7 @@ public:
 		while (l <= r) {
 			std::size_t m = (l + r) / 2;
 			if (line_end(m) < offset + 1) {
-				l = m  + 1;
+				l = m + 1;
 			} else if (offset < line_start(m)) {
 				r = m - 1;
 			} else {
@@ -75,44 +74,44 @@ public:
 
 	/// Find the column number of a position. Columns are 0-indexed.
 	/// @param o offset
-	std::size_t column(std::size_t o) const {
-		return o - line_start(line(o));
-	};
+	///
+	std::size_t column(std::size_t o) const { return o - line_start(line(o)); };
 
 	/// Convert a position to a line/column location.
 	/// @param o offset
+	///
 	Location location(std::size_t o) const {
 		auto l = line(o);
-		auto c =  o - line_start(l);
-		return { l, c };
+		auto c = o - line_start(l);
+		return {l, c};
 	}
 
 	/// Convert two positions into a range.
 	///
 	LocationRange range(std::size_t start, std::size_t end) const {
-		return { location(start), location(end) };
+		return {location(start), location(end)};
 	}
 
 	/// Note a linebreak at position p.
 	///
-	void store(std::size_t offset) {
-		breaks_.push_back(offset);
-	}
+	void store(std::size_t offset) { breaks_.push_back(offset); }
 
 	/// Note a linebreak at position p.
 	///
-	void record_br(std::size_t offset) {
-		breaks_.push_back(offset);
-	}
+	void record_br(std::size_t offset) { breaks_.push_back(offset); }
 
 	/// Access the underlying set of recorded line breaks.
 	///
 	const std::vector<std::size_t> breaks() const { return breaks_; }
 
+	/// The offset of the last line break.
+	///
+	std::size_t last_break() const { return breaks_[breaks_.size() - 1]; }
+
 private:
 	std::vector<std::size_t> breaks_;
 };
 
-} // namespace Ab::Parse
+}  // namespace Ab::Parse
 
-#endif // AB_PARSE_LINEINFO_HPP_
+#endif  // AB_PARSE_LINEINFO_HPP_

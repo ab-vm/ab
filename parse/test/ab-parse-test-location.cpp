@@ -10,29 +10,33 @@ TEST(Location, ConstructsOk) {
 
 TEST(Location, Empty) {
 	Parse::LineInfo table;
-	EXPECT_THROW(table.line(0), std::runtime_error);
+	EXPECT_EQ(table.line(0), 0);
 }
 
-TEST(Location, TooFewEntries) {
-	Parse::LineInfo table;
-	table.store(0);
-	EXPECT_THROW(table.line(0), std::runtime_error);
-}
-
-TEST(TestLocation, OneLine) {
+TEST(Location, LineAtOne) {
 	Parse::LineInfo table;
 
-	table.store(0); // 0
-	table.store(2); // 1 - eof
+	table.store(1);
 
 	EXPECT_EQ(table.line(0), 0);
-	EXPECT_EQ(table.line(1), 0);
+	EXPECT_EQ(table.line(1), 1);
+	EXPECT_EQ(table.line(2), 1);
 }
 
-TEST(TestLocation, TwoLines) {
+TEST(TestLocation, LineAtTwo) {
 	Parse::LineInfo table;
 
-	table.store(0); // 0
+	table.store(2); // 1 - eof
+
+	EXPECT_EQ(table.line(1), 0);
+	EXPECT_EQ(table.line(1), 0);
+	EXPECT_EQ(table.line(2), 1);
+	EXPECT_EQ(table.line(3), 1);
+}
+
+TEST(TestLocation, LinesAtTwoAndFour) {
+	Parse::LineInfo table;
+
 	table.store(2); // 1
 	table.store(4); // 2 - eof
 
@@ -45,7 +49,7 @@ TEST(TestLocation, TwoLines) {
 
 TEST(Location, EmptyLines) {
 	Parse::LineInfo table;
-	table.store(0); // 0π
+
 	table.store(1); // 1
 	table.store(2); // 2 - eof
 
@@ -56,7 +60,7 @@ TEST(Location, EmptyLines) {
 
 TEST(Location, Columns) {
 	Parse::LineInfo table;
-	table.store(0); // 0
+
 	table.store(1); // 1
 	table.store(3); // 2 - eof
 
