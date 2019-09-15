@@ -19,6 +19,6 @@ jobs:
       - name: Build
         run: cd build && ninja
       - name: Test
-        run: cd build && ctest -V
+        run: cd build && ctest --output-on-failure
         env:
           GTEST_COLOR: yes
