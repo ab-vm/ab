@@ -58,10 +58,9 @@ public:
 
 	/// Export Section
 
-	virtual void export_section([[maybe_unused]] [[maybe_unused]] std::size_t count) override {}
+	virtual void export_section([[maybe_unused]] std::size_t count) override {}
 
-	virtual void
-	export_entry([[maybe_unused]] [[maybe_unused]] const ExportEntry& entry) override {}
+	virtual void export_entry([[maybe_unused]] const ExportEntry& entry) override {}
 
 	/// Element Section
 
