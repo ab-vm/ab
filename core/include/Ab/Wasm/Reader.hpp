@@ -34,7 +34,7 @@ public:
 
 struct SetInitExpr {
 	template <typename E>
-	auto operator()(const E& e, InitExpr&) const -> void {
+	auto operator()(const E&, InitExpr&) const -> void {
 		std::string m =
 			std::string{"Unexpected expression in initialization expression: "} +
 			OP_NAME<E::OP>;
@@ -344,7 +344,7 @@ private:
 
 	/// The type section contains the types of all functions.
 	/// Every func
-	auto type_section(const Section& section) -> void {
+	auto type_section(const Section&) -> void {
 		auto count = varuint32();
 		visitor_.type_section(count);
 		for (std::size_t i = 0; i < count; i++) {

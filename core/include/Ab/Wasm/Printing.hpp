@@ -234,7 +234,7 @@ struct Print {
 /// Print to std::ostream.
 struct PrintOp {
 	template <typename Expr>
-	auto operator()(const Expr& x, std::ostream& out) const -> std::ostream& {
+	auto operator()(const Expr&, std::ostream& out) const -> std::ostream& {
 		return out << OP_NAME<Expr::OP_CODE>;
 	}
 };
@@ -269,12 +269,12 @@ inline auto operator<<(Sexpr::Formatter& out, const MemoryImmediate::Value& imme
 }
 
 template <OpCode op>
-inline auto operator<<(std::ostream& out, const Expr<op>& expr) -> std::ostream& {
+inline auto operator<<(std::ostream& out, const Expr<op>&) -> std::ostream& {
 	return out << OP_NAME<op>;
 }
 
 template <OpCode op>
-inline auto operator<<(Sexpr::Formatter& out, const NullaryExpr<op>& expr) -> Sexpr::Formatter& {
+inline auto operator<<(Sexpr::Formatter& out, const NullaryExpr<op>&) -> Sexpr::Formatter& {
 	return out << OP_NAME<op>;
 }
 
