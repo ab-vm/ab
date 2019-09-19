@@ -5,9 +5,9 @@
 #include <Ab/Parse/LineInfo.hpp>
 #include <Ab/Parse/Location.hpp>
 
-#include <cstdint>
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 #include <stack>
 #include <string_view>
 #include <type_traits>
@@ -62,17 +62,15 @@ class Token {
 public:
 	Token() = default;
 
-	constexpr Token(TokenKind k, SrcRange range)
-		: range_(range), kind_(k) {}
+	constexpr Token(TokenKind k, SrcRange range) : range_(range), kind_(k) {}
 
-	constexpr Token(TokenKind k, SrcRange range, bool b)
-		: range_(range), kind_(k), data_(b) {}
+	constexpr Token(TokenKind k, SrcRange range, bool b) : range_(range), data_(b), kind_(k) {}
 
 	constexpr Token(TokenKind k, SrcRange range, std::intptr_t integer)
-		: range_(range), kind_(k), data_(integer) {}
+		: range_(range), data_(integer), kind_(k) {}
 
-	constexpr Token(TokenKind k, SrcRange range, double real) 
-		: range_(range), kind_(k), data_(real) {}
+	constexpr Token(TokenKind k, SrcRange range, double real)
+		: range_(range), data_(real), kind_(k) {}
 
 	TokenKind kind() const noexcept { return kind_; }
 
@@ -115,7 +113,7 @@ static_assert(std::is_trivially_destructible_v<Token>, "Tokens must be trivially
 ///
 inline bool operator==(const Token& lhs, const Token& rhs) noexcept {
 	if (lhs.kind() != rhs.kind()) {
-	return false;
+		return false;
 	}
 
 	if (lhs.src_range() != rhs.src_range()) {
@@ -167,7 +165,9 @@ inline Token tok_symbol(SrcRange range) { return Token(TokenKind::SYMBOL, range)
 
 inline Token tok_string(SrcRange range) { return Token(TokenKind::STRING, range); }
 
-inline Token tok_integer(SrcRange range, std::intptr_t value) { return Token(TokenKind::INTEGER, range, value);  }
+inline Token tok_integer(SrcRange range, std::intptr_t value) {
+	return Token(TokenKind::INTEGER, range, value);
+}
 
 inline Token tok_real(SrcRange range, double value) { return Token(TokenKind::REAL, range, value); }
 
@@ -176,7 +176,6 @@ inline Token tok_carat(SrcRange range) { return Token(TokenKind::CARAT, range); 
 /// @}
 ///
 
-}  // namespace Ab::Abt
+}  // namespace Ab::Edn
 
 #endif  // AB_EDN_TOKEN_HPP_
-

@@ -3,7 +3,7 @@
 
 #include <Ab/Wast/Alph.hpp>
 #include <Ab/Wast/Location.hpp>
-#include <fmt/core.h>
+#include <fmt/format.h>
 #include <fmt/format.h>
 #include <queue>
 
@@ -17,7 +17,7 @@ struct fmt::formatter<Ab::Wast::Location> {
 	template <typename FormatContext>
 	auto format(const Ab::Wast::Location& location, FormatContext& ctx) {
 		return fmt::format_to(
-			ctx.begin(), "{}:{} @{}", location.line, location.column, location.offset);
+			ctx.out(), "{}:{} @{}", location.line, location.column, location.offset);
 	}
 };
 

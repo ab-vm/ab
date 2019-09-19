@@ -15,11 +15,17 @@ namespace Ab {
 /// Process-wide! Thread unsafe!
 class Runtime {
 public:
+	Runtime() {
+#ifndef AB_USE_OMR
+		initialized_ = false;
+#endif
+	}
+
 	bool initialized() const {
 #ifdef AB_USE_OMR
 		return om().initialized();
 #else
-		return true;
+		return initialized_;
 #endif
 	}
 
@@ -27,13 +33,16 @@ public:
 #ifdef AB_USE_OMR
 		return om().init();
 #else
-		return true;
+		initialized_ = true;
+		return 0;
 #endif
 	}
 
 	void kill() noexcept {
 #ifdef AB_USE_OMR
 		om().kill();
+#else
+		initialized_ = false;
 #endif
 	}
 
@@ -41,9 +50,13 @@ public:
 	OMR::Om::Runtime& om() { return om_; }
 
 	const OMR::Om::Runtime& om() const { return om_; }
+#endif
 
 private:
+#ifdef AB_USE_OMR
 	OMR::Om::Runtime om_;
+#else
+	bool initialized_;
 #endif
 };
 

@@ -12,7 +12,8 @@ target_include_directories(ab-parse
 
 target_link_libraries(ab-parse
 	INTERFACE
-		# ab-core
+		ab-core
+		ab-util
 )
 
 add_subdirectory(test)

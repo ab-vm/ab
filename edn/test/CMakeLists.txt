@@ -13,6 +13,7 @@ target_link_libraries(ab-edn-test
 		ab-test-main
 )
 
-add_test(run-ab-edn-test
-	COMMAND ab-edn-test
+add_test(
+	NAME run-ab-edn-test
+	COMMAND ab-edn-test --gtest_color=yes
 )

@@ -1,6 +1,6 @@
 
 #include <Ab/Commands.hpp>
-#include <fmt/core.h>
+#include <fmt/format.h>
 #include <string_view>
 #include <utility>
 #include <vector>

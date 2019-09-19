@@ -1,6 +1,7 @@
 #ifndef AB_LINEARMEMORY_HPP_
 #define AB_LINEARMEMORY_HPP_
 
+#include <Ab/Config.hpp>
 #include <Ab/Address.hpp>
 #include <Ab/Assert.hpp>
 #include <Ab/Bytes.hpp>
@@ -21,7 +22,7 @@ struct LinearMemoryConfig {
 	std::size_t page_count_max = 4;
 
 	void verify() const {
-		if (page_count_min > page_count_max) {
+		if (page_count_max < page_count_min) {
 			throw LinearMemoryError(
 				"LinearMemoryConfig validation error: minPageCount greater than "
 				"max");
@@ -55,7 +56,7 @@ public:
 
 	/// The address.
 	///
-	Address addresss() const noexcept { return address_; }
+	Address address() const noexcept { return address_; }
 
 	/// The size of the currently allocated memory.
 	///
@@ -66,6 +67,7 @@ public:
 	std::size_t max_size() const noexcept { return config_.page_count_max; }
 
 	/// Grow the memory by n pages.
+	///
 	void grow(std::size_t n = 1) {
 		// TODO: worry about overflow / underflow
 		if (config_.page_count_max - page_count_ < n) {
@@ -75,6 +77,7 @@ public:
 	}
 
 	/// Shrink the memory by n pages.
+	///
 	void shrink(std::size_t n = 1) {
 		if (page_count_ < n) {
 			throw LinearMemoryError("Failed to shrink: not enough active pages.");

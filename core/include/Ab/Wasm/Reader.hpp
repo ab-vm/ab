@@ -264,7 +264,7 @@ private:
 
 	auto varuint32() -> std::uint64_t { return uleb128(); }
 
-	auto import_section(const Section& section) -> void {
+	auto import_section([[maybe_unused]] const Section& section) -> void {
 		auto count = varuint32();
 		visitor_.import_section(count);
 		for (std::size_t i = 0; i < count; i++) {
@@ -302,7 +302,7 @@ private:
 
 	auto external_kind() -> ExternalKindCode { return (ExternalKindCode)uint8(); }
 
-	auto function_section(const Section& section) -> void {
+	auto function_section([[maybe_unused]] const Section& section) -> void {
 		auto count = varuint32();
 		for (std::size_t i = 0; i < count; i++) {
 			auto type = varuint32();
@@ -316,13 +316,13 @@ private:
 	}
 
 	/// Table Section
-	auto table_section(const Section& section) -> void {}
+	auto table_section([[maybe_unused]] const Section& section) -> void {}
 
 	/// Memory Section
-	auto memory_section(const Section& section) -> void {}
+	auto memory_section([[maybe_unused]] const Section& section) -> void {}
 
 	/// Global Section
-	auto global_section(const Section& section) -> void {
+	auto global_section([[maybe_unused]] const Section& section) -> void {
 		auto count = varuint32();
 		for (std::size_t i = 0; i < count; i++) {
 			global_entry();
@@ -391,7 +391,7 @@ private:
 	}
 
 	/// Export Section
-	inline auto export_section(const Section& section) -> void {
+	inline auto export_section([[maybe_unused]] const Section& section) -> void {
 		std::size_t count = varuint32();
 		for (std::size_t i = 0; i < count; i++) {
 			export_entry();
@@ -408,11 +408,11 @@ private:
 
 	/// Start Section
 	///
-	inline auto start_section(const Section& section) -> void {}
+	inline auto start_section([[maybe_unused]] const Section& section) -> void {}
 
 	/// Element Section
 	///
-	inline auto element_section(const Section& section) -> void {
+	inline auto element_section([[maybe_unused]] const Section& section) -> void {
 		std::size_t count = varuint32();
 		for (std::size_t i = 0; i < count; i++) {
 			element_entry();
@@ -433,7 +433,7 @@ private:
 	}
 
 	/// Code Section
-	inline auto code_section(const Section& section) -> void {
+	inline auto code_section([[maybe_unused]] const Section& section) -> void {
 		std::size_t count = varuint32();
 		for (std::size_t i = 0; i < count; i++) {
 			function_body(i);
@@ -465,7 +465,7 @@ private:
 
 	/// Data Section
 
-	inline auto data_section(const Section& section) -> void {
+	inline auto data_section([[maybe_unused]] const Section& section) -> void {
 		auto count = varuint32();
 		for (std::size_t i = 0; i < count; i++) {
 			data_segment();

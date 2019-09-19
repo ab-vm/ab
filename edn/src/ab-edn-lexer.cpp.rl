@@ -2,7 +2,7 @@
 #include <Ab/Debug.hpp>
 #include <Ab/Edn/Lexer.hpp>
 #include <Ab/Edn/Token.hpp>
-#include <fmt/core.h>
+#include <fmt/format.h>
 #include <cstdint>
 #include <cmath>
 

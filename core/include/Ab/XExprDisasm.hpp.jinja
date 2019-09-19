@@ -8,7 +8,7 @@
 #include <Ab/XExpr.hpp>
 #include <Ab/XOpCode.hpp>
 
-#include <fmt/core.h>
+#include <fmt/format.h>
 #include <fmt/format.h>
 #include <string_view>
 
@@ -55,9 +55,9 @@ struct BaseXExprFormatter {
 	template <>
 	struct fmt::formatter<Ab::@( expr_typename )> : BaseXExprFormatter {
 		template <typename FormatContext>
-		constexpr auto format(const Ab::@( expr_typename )& expr, FormatContext& cx) {
+		constexpr auto format([[maybe_unused]] const Ab::@( expr_typename )& expr, FormatContext& cx) {
 			return format_to(
-				cx.begin(),
+				cx.out(),
 				"(@( operator.name )@[ for imm in operator.immediates ] :@( imm.name ) {}@[ endfor ])"
 				@[ for imm in operator.immediates ]
 					, expr.@( imm.name | varify )

@@ -151,8 +151,8 @@ private:
 	}
 
 	Byte* data_;
-	std::int32_t size_;
-	std::int32_t capa_;  // capacity
+	std::size_t size_;
+	std::size_t capa_;  // capacity
 };
 
 }  // namespace Ab

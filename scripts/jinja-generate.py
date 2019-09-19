@@ -9,6 +9,7 @@ import yaml
 import jinja2
 import argparse
 import os
+import errno
 import sys
 import re
 
@@ -74,6 +75,10 @@ def parse_args():
 	parser.add_argument("-i", "--include-dir", action="append", help="directory containing yaml datafiles")
 	return parser.parse_args()
 
+def ensure_dirname_exists(filename):
+	dirname = os.path.dirname(filename)
+	os.makedirs(dirname, exist_ok = True)
+
 def main():
 	cfg = parse_args()
 
@@ -94,6 +99,7 @@ def main():
 	if cfg.OUT == "-":
 		sys.stdout.write(render)
 	else:
+		ensure_dirname_exists(cfg.OUT)
 		with open(cfg.OUT, "w") as outfile:
 			outfile.write(render)
 

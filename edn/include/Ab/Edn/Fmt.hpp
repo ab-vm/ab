@@ -2,7 +2,7 @@
 #define AB_EDN_FMT_HPP_
 
 #include <Ab/Edn/Ir.hpp>
-#include <fmt/core.h>
+#include <fmt/format.h>
 
 namespace Ab::Edn {
 

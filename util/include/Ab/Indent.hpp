@@ -3,7 +3,7 @@
 
 #include <Ab/Config.hpp>
 
-#include <fmt/core.h>
+#include <fmt/format.h>
 #include <string>
 #include <cstddef>
 
@@ -12,53 +12,50 @@ namespace Ab {
 /// An object for printing indentation.
 /// Output the indent object to print indentation levels.
 /// Use ++indent or --indent to manipulate the depth.
+///
 struct Indent {
 public:
-	Indent(std::size_t depth = 0) : depth_{depth} {}
+	static constexpr std::size_t MAX_DEPTH = 10;
 
-	auto operator++() -> Indent& {
+	constexpr Indent(std::size_t depth = 0) : depth_(depth) {}
+
+	Indent& operator++() {
 		if (depth_ < MAX_DEPTH) {
 			++depth_;
 		}
 		return *this;
 	}
 
-	auto operator--() -> Indent& {
+	Indent& operator--() {
 		if (0 < depth_) {
 			--depth_;
 		}
 		return *this;
 	}
 
-	auto depth() const -> std::size_t { return depth_; }
+	constexpr std::size_t depth() const { return depth_; }
 
-	auto depth(std::size_t depth) -> Indent& {
+	Indent& depth(std::size_t depth) {
 		depth_ = depth;
 		return *this;
 	}
 
-	auto tostring() const -> std::string {
+	std::string to_string() const {
 		std::string result = "";
-		for (auto i = 0; i < depth_; ++i) {
+		for (std::size_t i = 0; i < depth_; ++i) {
 			result = result + "  ";
 		}
 		return result;
 	}
 
 private:
-	static const constexpr std::size_t MAX_DEPTH = 10;
-
 	std::size_t depth_ = 0;
 };
-
-std::string to_string(const Indent& indent) {
-	return indent.tostring();
-}
 
 }  // namespace Ab
 
 template <>
-struct ::fmt::formatter<Ab::Indent> {
+struct fmt::formatter<Ab::Indent> {
 	template <typename ParseContext>
 	constexpr auto parse(ParseContext& cx) const {
 		return cx.begin();
@@ -66,7 +63,7 @@ struct ::fmt::formatter<Ab::Indent> {
 
 	template <typename FormatContext>
 	constexpr auto format(const Ab::Indent& indent, FormatContext& cx) const {
-		return format_to(cx.out(), indent.tostring());
+		return fmt::format_to(cx.out(), indent.to_string());
 	}
 };
 

@@ -1,6 +1,6 @@
 #include <Ab/Commands.hpp>
 #include <Ab/Wast/Parser.hpp>
-#include <fmt/core.h>
+#include <fmt/format.h>
 
 #include <Ab/Wast/Lexer.hpp>
 

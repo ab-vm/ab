@@ -4,7 +4,7 @@
 #include <Ab/Parse/Location.hpp>
 #include <Ab/Edn/Ir.hpp>
 
-#include <fmt/core.h>
+#include <fmt/format.h>
 
 template <>
 struct fmt::formatter<Ab::Parse::SrcPos> {

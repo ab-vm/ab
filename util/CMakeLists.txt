@@ -1,4 +1,4 @@
-find_package(Fmt REQUIRED)
+# find_package(Fmt REQUIRED)
 
 add_library(ab-util
 	src/ab-util-SharedLock.cpp
@@ -18,7 +18,7 @@ target_compile_options(ab-util
 target_link_libraries(ab-util
 	PUBLIC
 		ab-base
-		Fmt::Fmt
+		fmt::fmt
 )
 
 target_include_directories(ab-util

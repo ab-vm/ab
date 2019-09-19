@@ -21,12 +21,11 @@ project(abigail
 # Module Imports
 
 include(FindClangTidy)
-include(Utilities)
+include(AbUtilities)
 
 if (AB_USE_OMR)
 	include(UseOmr)
 endif(AB_USE_OMR)
-
 
 # Global Configuration
 
@@ -42,6 +41,8 @@ configure_file(
 enable_testing()
 
 link_directories(/usr/local/lib)
+
+set(AB_COLOR_DIAGNOSTICS on CACHE BOOL "Enable/Disable colorized compiler output")
 
 # Misc utilities
 
@@ -62,13 +63,19 @@ target_compile_features(ab-base
 
 target_compile_options(ab-base
 	INTERFACE
+		-Wall -Wextra
 )
+
+if(AB_COLOR_DIAGNOSTICS)
+	target_compile_options(ab-base
+		INTERFACE
+			-fdiagnostics-color=always
+	)
+endif()
 
 target_include_directories(ab-base
 	INTERFACE
 		${CMAKE_CURRENT_BINARY_DIR}/include
-		/usr/local/include
-		/include
 )
 
 # External projects

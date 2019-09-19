@@ -1,21 +1,24 @@
-name: build-ab
+name: build ab
 on:
-  - pull_request
-  
+  - push
 jobs:
-  build:
+  build-linux:
     runs-on: ubuntu-latest
     steps:
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install gcc-9 g++-9 build-essential cmake libfmt-dev python3-pip ninja-build ragel
+          sudo pip install pyyaml jinja2
       - name: checkout
-        uses: actions/checkout@v1
+        uses: actions/checkout@master
         with:
-          fetch-depth: 1
-      - name: configure
-        run:
-          - mkdir build
-          - cmake -Wdev -S . -B build
-      - name: build
-        run: cmake --build build
-      - name: test
-        run: ctest -V ./build/
-  
+          submodules: true
+      - name: Configure
+        run: mkdir build && cd build && cmake -Wdev -GNinja -DAB_COLOR_DIAGNOSTICS=on -DCMAKE_C_COMPILER=gcc-9 -DCMAKE_CXX_COMPILER=g++-9 ..
+      - name: Build
+        run: cd build && ninja
+      - name: Test
+        run: cd build && ctest --output-on-failure
+        env:
+          GTEST_COLOR: yes

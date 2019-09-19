@@ -3,7 +3,7 @@
 
 #include <Ab/Config.hpp>
 #include <Ab/Parse/Location.hpp>
-#include <fmt/core.h>
+#include <fmt/format.h>
 #include <string>
 #include <vector>
 

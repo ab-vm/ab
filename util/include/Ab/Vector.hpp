@@ -6,7 +6,7 @@
 
 #include <initializer_list>
 #include <cstdio>
-#include <fmt/core.h>
+#include <fmt/format.h>
 
 namespace Ab {
 
