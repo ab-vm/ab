@@ -4,7 +4,6 @@
 #include <Ab/Wast/Alph.hpp>
 #include <Ab/Wast/Location.hpp>
 #include <fmt/format.h>
-#include <fmt/format.h>
 #include <queue>
 
 template <>
@@ -47,13 +46,13 @@ private:
 
 	void emit(TokenKind k, Alph* ts, Alph* te) { emit({k, {start, location}, ts, te}); }
 
-	Alph* p;   // current parse character
-	Alph* pe;  // end of current parse block
-	Alph* eof; // end of file pointer, or null.
+	// Alph* p;   // current parse character
+	// Alph* pe;  // end of current parse block
+	// Alph* eof; // end of file pointer, or null.
 
-	int cs;    // current state
-	int act;   // internal parse helper
-	int top;   // top of state stack
+	int cs;   // current state
+	int act;  // internal parse helper
+	// int top;   // top of state stack
 	Alph* ts;  // token start
 	Alph* te;  // token end
 
@@ -62,35 +61,35 @@ private:
 
 	std::queue<Token> output;
 
-	int stack[32];
+	// int stack[32];
 };
 
-struct InputChunk {
-	Alph* p;
-	Alph* pe;
-	Alph* eof = nullptr;
-};
+// struct InputChunk {
+// 	Alph* p;
+// 	Alph* pe;
+// 	Alph* eof = nullptr;
+// };
 
-class InputChunkStream {
-};
+// class InputChunkStream {
+// };
 
-class TokenStream {
-public:
+// class TokenStream {
+// public:
 
-	TokenStream(Alph* p, Alph* pe, Alph* eof = nullptr) {
-	}
+// 	TokenStream(Alph* p, Alph* pe, Alph* eof = nullptr) {
+// 	}
 
-	Token operator*() {
-		return {TokenKind::END, {0, 0}, nullptr, nullptr};
-	}
+// 	Token operator*() {
+// 		return {TokenKind::END, {0, 0}, nullptr, nullptr};
+// 	}
 
-	TokenStream& operator++(int) {}
+// 	TokenStream& operator++(int) {}
 
-	void push(Token tok);
+// 	void push(Token tok);
 
-private:
-	Lexer lexer;
-};
+// private:
+// 	Lexer lexer;
+// };
 
 }  // namespace Ab::Wast
 

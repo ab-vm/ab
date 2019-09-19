@@ -1,5 +1,13 @@
 #include <Ab/Wast/Lexer.hpp>
 
+// The lexer generator creates some unused locals, so we disable the warning
+// for this one file.
+#if defined(__clang__)
+#pragma clang diagnostic ignored "-Wunused-variable"
+#elif defined(__GNUC__)
+#pragma GCC diagnostic ignored "-Wunused-variable"
+#endif
+
 // clang-format off
 
 %%{

@@ -8,7 +8,7 @@
 
 namespace Ab::Wast {
 
-class ParseError {
+struct ParseError {
 	Range error;
 };
 
@@ -16,7 +16,7 @@ class FunctionParser {
 public:
 	FunctionParser();
 
-	FunctionParser(Location start = {0, 0});
+	//  FunctionParser(Location start = {0, 0, 0});
 
 	ParseError parse(Alph* p, Alph* pe, Alph* eof = nullptr);
 
