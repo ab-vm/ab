@@ -10,6 +10,8 @@
 
 namespace Ab {
 
+// todo: tail optimization: https://github.com/clojure/clojure/blob/master/src/jvm/clojure/lang/PersistentVector.java#L175
+
 // Persistent Vector
 template <typename T>
 class Vec {
@@ -166,7 +168,7 @@ public:
 	}
 
 	constexpr std::size_t capacity() const noexcept {
-		return  1 << ((level_ + 1) * RADIX.mod2());
+		return  1 << ((level_ + 1) * RADIX.log2());
 	}
 
 	constexpr std::size_t size() const noexcept { return size_; }
@@ -188,11 +190,9 @@ public:
 	void dump() const { dump(level_, root_); }
 
 private:
-
-
 	// return the branch index.
 	static std::size_t subindex(std::size_t level, std::size_t i) noexcept {
-		const auto shift = (level) * RADIX.mod2();
+		const auto shift = level * RADIX.log2();
 		return (i >> shift) % RADIX;
 	}
 
@@ -251,7 +251,7 @@ private:
 
 		auto clone = copy(static_cast<const Branch*>(node));
 		auto si = subindex(level, i);
-		auto shift = level * RADIX.mod2();
+		auto shift = level * RADIX.log2();
 		auto subindex = (i >> shift) % RADIX;
 
 		release(clone->children[si], level - 1);
