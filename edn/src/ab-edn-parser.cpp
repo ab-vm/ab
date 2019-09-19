@@ -189,7 +189,9 @@ std::pair<bool, Ptr<Map>> parse_map(Globals& globals, ErrorLog& log, TokenIter& 
 				Map::Iterator search = map->find(k);
 
 				if (search != map->end()) {
-					log.error(it->src_range(), "duplicate key discovered in map");
+					log
+						.error(it->src_range(),
+						       "duplicate key discovered in map");
 				}
 				map->insert({std::move(k), std::move(v)});
 			} else {
@@ -252,7 +254,8 @@ std::pair<bool, Ptr<Node>> parse_node(Globals& globals, ErrorLog& log, TokenIter
 	return result;
 }
 
-std::pair<bool, Ptr<String>> parse_string(Globals& globals, ErrorLog& log, TokenIter& it) {
+std::pair<bool, Ptr<String>>
+parse_string([[maybe_unused]] Globals& globals, [[maybe_unused]] ErrorLog& log, TokenIter& it) {
 	AB_ASSERT(it != TOKEN_END);
 	AB_ASSERT(it->kind() == TokenKind::STRING);
 
@@ -267,7 +270,8 @@ std::pair<bool, Ptr<String>> parse_string(Globals& globals, ErrorLog& log, Token
 	return {true, node_string(std::move(str))};
 }
 
-std::pair<bool, Ptr<Symbol>> parse_symbol(Globals& globals, ErrorLog& log, TokenIter& it) {
+std::pair<bool, Ptr<Symbol>>
+parse_symbol(Globals& globals, [[maybe_unused]] ErrorLog& log, TokenIter& it) {
 	AB_ASSERT(it != TOKEN_END);
 	AB_ASSERT(it->kind() == TokenKind::SYMBOL);
 
@@ -284,7 +288,8 @@ std::pair<bool, Ptr<Symbol>> parse_symbol(Globals& globals, ErrorLog& log, Token
 	return {true, node_symbol(id)};
 }
 
-std::pair<bool, Ptr<Symbol>> parse_keyword(Globals& globals, ErrorLog& log, TokenIter& it) {
+std::pair<bool, Ptr<Symbol>>
+parse_keyword(Globals& globals, [[maybe_unused]] ErrorLog& log, TokenIter& it) {
 	AB_ASSERT(it != TOKEN_END);
 	AB_ASSERT(it->kind() == TokenKind::KEYWORD);
 
