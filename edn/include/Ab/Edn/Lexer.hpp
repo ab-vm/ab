@@ -1,6 +1,7 @@
 #ifndef AB_EDN_LEXER_HPP_
 #define AB_EDN_LEXER_HPP_
 
+#include <Ab/Assert.hpp>
 #include <Ab/Edn/Error.hpp>
 #include <Ab/Edn/Token.hpp>
 #include <Ab/Iterator.hpp>
@@ -26,13 +27,14 @@ public:
 
 	Lexer(LineInfo& line_info);
 
-	void reset(const char* p, const char* eof) { reset(p, eof, eof); }
+	// void reset(const char* p, const char* eof) { reset(p, eof, eof); }
 
-	void reset(const char* p, const char* pe, const char* eof) {
-		p   = p;
-		pe  = eof;
-		eof = eof;
-	}
+	// void reset(const char* p, const char* pe, const char* eof) {
+	// 	// p   = p;
+	// 	// pe  = eof;
+	// 	// eof = eof;
+	// 	AB_ASSERT_UNREACHABLE();
+	// }
 
 	Token next();
 
