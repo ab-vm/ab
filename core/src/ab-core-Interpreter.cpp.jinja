@@ -91,6 +91,7 @@ const T& decode(Address pc) {
     return *reinterpret_cast<const T*>(pc);
 }
 
+#if 0
 void save(Byte*& sp, const State& state) {
 
 }
@@ -98,6 +99,7 @@ void save(Byte*& sp, const State& state) {
 void restore(Byte*& sp, const State& state) {
 
 }
+#endif // 0
 
 void Interpreter::do_interpret() {
 
@@ -119,11 +121,13 @@ void Interpreter::do_interpret() {
 
     ///////////// Special Handlers
 
+#if 0
     @(begin_handler('reserved')) {
         @(commit_state)
         state_.secondary.flags.error = true;
         return;
     }
+#endif
 
     @(begin_handler('unimplemented')) {
         @(commit_state)

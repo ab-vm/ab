@@ -11,7 +11,7 @@ struct Config {
 
 }  // namespace Abi
 
-extern "C" int main(int argc, char** argv) {
+extern "C" int main([[maybe_unused]] int argc, [[maybe_unused]] char** argv) {
 	Ab::AutoRuntime runtime;
 	Ab::ModuleLoader loader;
 	std::cout << Ab::Version::ABIGAIL << std::endl;
