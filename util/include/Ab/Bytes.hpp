@@ -34,22 +34,35 @@ inline constexpr auto tebibytes(const T n) -> T {
 	return 1024 * gibibytes(n);
 }
 
-inline namespace ByteLiterals {
-/// Numeric memory literals
+constexpr int popcount(unsigned int x) {
+	return __builtin_popcount(x);
+}
 
-inline constexpr auto operator"" _B(const unsigned long long int x) -> unsigned long long int {
+constexpr int popcount(unsigned long x) {
+	return __builtin_popcountl(x);
+}
+
+constexpr int popcount(unsigned long long x) {
+	return __builtin_popcountll(x);
+}
+
+/// Numeric memory literals
+///
+inline namespace ByteLiterals {
+
+constexpr auto operator"" _B(const unsigned long long int x) -> unsigned long long int {
 	return ::Ab::bytes(x);
 }
 
-inline constexpr auto operator"" _KiB(const unsigned long long int x) -> unsigned long long int {
+constexpr auto operator"" _KiB(const unsigned long long int x) -> unsigned long long int {
 	return ::Ab::kibibytes(x);
 }
 
-inline constexpr auto operator"" _MiB(const unsigned long long int x) -> unsigned long long int {
+constexpr auto operator"" _MiB(const unsigned long long int x) -> unsigned long long int {
 	return ::Ab::mebibytes(x);
 }
 
-inline constexpr auto operator"" _GiB(const unsigned long long int x) -> unsigned long long int {
+constexpr auto operator"" _GiB(const unsigned long long int x) -> unsigned long long int {
 	return ::Ab::gibibytes(x);
 }
 

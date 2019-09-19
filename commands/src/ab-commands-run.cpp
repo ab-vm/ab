@@ -2,7 +2,7 @@
 
 namespace Ab {
 
-int cmd_run(int argc, char** argv) {
+int cmd_run([[maybe_unused]] int argc, [[maybe_unused]] char** argv) {
 	return 0;
 }
 

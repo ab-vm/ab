@@ -18,7 +18,7 @@ const char* const HELP_STRING =
 const char* const USAGE_STRING =
 	"usage: ab <command> [--] [<args>...]";
 
-int cmd_help(int argc, char** argv) {
+int cmd_help([[maybe_unused]] int argc, [[maybe_unused]] char** argv) {
 	fmt::print("{}\n{}\n\n{}", SHORT_HELP_STRING, USAGE_STRING, HELP_STRING);
 	return 0;
 }

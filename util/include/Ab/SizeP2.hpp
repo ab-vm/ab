@@ -14,9 +14,12 @@ public:
 
 	constexpr std::size_t get() const { return std::size_t(1) << exponent_; }
 
-	constexpr std::size_t mod2() const { return exponent_; }
+	constexpr std::size_t mod2() const { return get() & 1; }
 
 	constexpr std::size_t modmask() const { return get() - 1; }
+
+	/// Take log2(self)
+	constexpr std::size_t log2() const { return exponent_; }
 
 	// raise value to the nth power.
 	constexpr std::size_t pow(std::size_t n) const { return 1 << (exponent_ + n - 1); }
@@ -28,11 +31,11 @@ private:
 };
 
 constexpr std::size_t operator*(std::size_t lhs, SizeP2 rhs) {
-	return lhs << rhs.mod2();
+	return lhs << rhs.log2();
 }
 
 constexpr std::size_t operator/(std::size_t lhs, SizeP2 rhs) {
-	return lhs >> rhs.mod2();
+	return lhs >> rhs.log2();
 }
 
 constexpr std::size_t operator%(std::size_t a, SizeP2 b) {

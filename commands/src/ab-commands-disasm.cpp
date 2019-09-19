@@ -1,13 +1,13 @@
 #include <Ab/Config.hpp>
+#include <Ab/Maybe.hpp>
+#include <Ab/Sexpr.hpp>
+#include <Ab/StringSpan.hpp>
+#include <Ab/Wasm/ExprPrinter.hpp>
 #include <Ab/Wasm/Expression.hpp>
 #include <Ab/Wasm/Ir.hpp>
 #include <Ab/Wasm/NoOpVisitor.hpp>
 #include <Ab/Wasm/Printing.hpp>
-#include <Ab/Wasm/ExprPrinter.hpp>
 #include <Ab/Wasm/Reader.hpp>
-#include <Ab/Maybe.hpp>
-#include <Ab/Sexpr.hpp>
-#include <Ab/StringSpan.hpp>
 #include <fstream>
 #include <iostream>
 
@@ -23,8 +23,8 @@ const char* const USAGE =
 struct Config {
 	Ab::Maybe<std::string> in  = Ab::NOTHING;
 	Ab::Maybe<std::string> out = Ab::NOTHING;
-	bool debug                   = false;
-	bool verbose                 = false;
+	bool debug                 = false;
+	bool verbose               = false;
 };
 
 namespace Ab {
@@ -37,9 +37,7 @@ class WastPrinter : public NoOpVisitor {
 public:
 	WastPrinter(const Config& cfg, Ab::Sexpr::Formatter& out) : cfg_{cfg}, out_{out} {}
 
-	virtual auto module_start() -> void override {
-		out_ << Ab::Sexpr::START << "module";
-	}
+	virtual auto module_start() -> void override { out_ << Ab::Sexpr::START << "module"; }
 
 	virtual auto module_end() -> void override {
 		out_ << Ab::Sexpr::END;
@@ -53,7 +51,7 @@ public:
 		}
 	}
 
-	virtual auto section_end(const Section& section) -> void override {
+	virtual auto section_end(const Section&) -> void override {
 		if (cfg_.verbose) {
 			--(out_.indent());
 		}
@@ -92,7 +90,7 @@ public:
 		types_.reserve(count);
 	}
 
-	virtual auto function_entry(std::size_t i, std::uint32_t type) -> void override {
+	virtual auto function_entry(std::size_t, std::uint32_t type) -> void override {
 		if (DEBUG) {
 			out_ << Ab::Sexpr::FRESH;
 			out_ << ";; " << Ab::Sexpr::START << "typezzz" << type << Ab::Sexpr::END;
@@ -121,8 +119,7 @@ public:
 
 	/// Element Section
 
-	virtual auto element_section(std::size_t count) -> void override {
-	}
+	virtual auto element_section(std::size_t) -> void override {}
 
 	virtual auto element_entry(const ElementEntry& entry) -> void override {
 		out_ << Ab::Sexpr::FRESH;
@@ -130,11 +127,11 @@ public:
 		out_ << Ab::Sexpr::START << entry.offset << Ab::Sexpr::END;
 	}
 
-	virtual auto element(const ElementEntry& entry, std::uint32_t index) -> void override {
+	virtual auto element(const ElementEntry&, std::uint32_t index) -> void override {
 		out_ << index;
 	}
 
-	virtual auto element_entry_end(const ElementEntry& entry) -> void override {
+	virtual auto element_entry_end(const ElementEntry&) -> void override {
 		out_ << Ab::Sexpr::END;
 	}
 
@@ -152,7 +149,8 @@ public:
 		-> void override {
 		out_ << Ab::Sexpr::FRESH;
 		out_ << Ab::Sexpr::START << "func";
-		out_ << Ab::Sexpr::START << "typezz" << fmt::format("{}", (types_[index])) << Ab::Sexpr::END;
+		out_ << Ab::Sexpr::START << "typezz" << fmt::format("{}", (types_[index]))
+		     << Ab::Sexpr::END;
 		out_ << Ab::Sexpr::FRESH;
 		out_ << body;
 
@@ -164,8 +162,7 @@ public:
 		out_ << Ab::Sexpr::END;
 	}
 
-	virtual auto function_body_end(const FunctionBody& entry) -> void override {
-	}
+	virtual auto function_body_end(const FunctionBody&) -> void override {}
 
 	virtual auto data_segment(const DataSegment& segment) -> void override {
 		out_ << Ab::Sexpr::FRESH << segment;
@@ -180,7 +177,6 @@ private:
 };
 
 }  // namespace Wasm
-
 
 auto dump(Config& cfg, std::istream& is, std::ostream& os) -> void {
 	Ab::Sexpr::Formatter out;

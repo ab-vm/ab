@@ -30,8 +30,8 @@ class Module {
 class XModule {
 public:
 	/// Compile and load a module from src
-	XModule(void* start, std::size_t nbytes)
-		: start_(start), nbytes_(nbytes) {}
+	// XModule(void* start, std::size_t nbytes)
+	// 	: start_(start), nbytes_(nbytes) {}
 
 	// initialize() {
 
@@ -54,8 +54,8 @@ public:
 	// }
 
 private:
-	void* start_;
-	std::size_t nbytes_;
+	// void* start_;
+	// std::size_t nbytes_;
 };
 
 }  // namespace Ab

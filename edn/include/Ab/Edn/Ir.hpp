@@ -213,9 +213,9 @@ public:
 
 	Nil(Ptr<Map>&& metadata) : NodeType(std::move(metadata)) {}
 
-	constexpr bool operator==(const Nil& rhs) const { return true; }
+	constexpr bool operator==(const Nil&) const { return true; }
 
-	constexpr bool operator!=(const Nil& rhs) const { return false; }
+	constexpr bool operator!=(const Nil&) const { return false; }
 
 	constexpr std::size_t hash() const { return Ab::hash(Kind::NIL); }
 };

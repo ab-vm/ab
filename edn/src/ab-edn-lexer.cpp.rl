@@ -6,6 +6,14 @@
 #include <cstdint>
 #include <cmath>
 
+// The lexer generator creates some unused locals, so we disable the warning
+// for this one file.
+#if defined(__clang__)
+#pragma clang diagnostic ignored "-Wunused-variable"
+#elif defined(__GNUC__)
+#pragma GCC diagnostic ignored "-Wunused-variable"
+#endif
+
 /// TODO: UTF-8
 /// https://git.wincent.com/wikitext.git/blob/HEAD:/ext/wikitext/wikitext_ragel.rl
 

@@ -22,11 +22,11 @@ std::vector<std::uint8_t> parseFunctionInstructions() {
 	return bytecodes;
 }
 
-FunctionParser::FunctionParser(Location start) {
-}
+FunctionParser::FunctionParser() {}
 
 ParseError FunctionParser::parse(Alph* p, Alph* pe, Alph* eof) {
 	Lexer lexer;
+	lexer.lex(p, pe, eof);
 	return ParseError();
 }
 
