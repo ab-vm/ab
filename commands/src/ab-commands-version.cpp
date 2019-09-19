@@ -4,7 +4,7 @@
 
 namespace Ab {
 
-int cmd_version(int argc, char** argv) {
+int cmd_version([[maybe_unused]] int argc, [[maybe_unused]] char** argv) {
 	fmt::print("ab version {}", Ab::Version::STRING);
 	return 0;
 }
