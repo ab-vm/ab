@@ -527,7 +527,11 @@ void Interpreter::do_interpret() {
     @( begin_handler('i32_div_s') ) {
         auto rhs = pop<std::int32_t>(sp);
         auto lhs = pop<std::int32_t>(sp);
-        push<std::int32_t>(sp, lhs / rhs);
+        if (rhs != 0) {
+            push<std::int32_t>(sp, lhs / rhs);
+        } else {
+            AB_ASSERT_UNREACHABLE();
+        }
         pc += XEXPR_I32_DIV_S_SIZE;
         @( dispatch )
     }
@@ -535,7 +539,11 @@ void Interpreter::do_interpret() {
     @( begin_handler('i32_div_u') ) {
         auto rhs = pop<std::uint32_t>(sp);
         auto lhs = pop<std::uint32_t>(sp);
-        push<std::uint32_t>(sp, lhs / rhs);
+        if (rhs != 0) {
+            push<std::uint32_t>(sp, lhs / rhs);
+        } else {
+            AB_ASSERT_UNREACHABLE();
+        }
         pc += XEXPR_I32_DIV_U_SIZE;
         @( dispatch )
     }
