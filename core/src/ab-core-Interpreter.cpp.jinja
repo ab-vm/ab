@@ -205,18 +205,17 @@ void Interpreter::do_interpret() {
 
     @(begin_handler('return')) {
         pc += sizeof(XExprReturn);
-        @( commit_state )
-        
+        @(commit_state)
         return;
     }
 
     @(begin_handler('call')) {
-
-        @( dispatch )
+        @(dispatch)
     }
 
     @(begin_handler('call_indirect')) {
         pc += sizeof(XExprCallIndirect);
+        @(commit_state)
         return;
     }
 
