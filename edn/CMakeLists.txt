@@ -33,5 +33,9 @@ target_compile_features(ab-edn
 		cxx_std_17
 )
 
+install(
+	TARGETS
+		ab-edn
+)
+
 add_subdirectory(test)
- 

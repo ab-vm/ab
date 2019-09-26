@@ -10,7 +10,7 @@ elseif()
 endif()
 
 add_subdirectory(fmt)
-add_subdirectory(googletest)
+add_subdirectory(googletest EXCLUDE_FROM_ALL)
 
 if(AB_USE_OMR)
 	add_subdirectory(omr)

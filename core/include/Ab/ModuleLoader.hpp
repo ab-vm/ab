@@ -7,6 +7,12 @@ namespace Ab {
 
 class Module;
 
+/// The resolver maps module names to 
+///
+class ModuleResolver {
+
+};
+
 class ModuleLoader {
 public:
 	ModuleLoader() {

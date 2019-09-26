@@ -23,8 +23,13 @@ target_link_libraries(ab-util
 
 target_include_directories(ab-util
 	PUBLIC
-		$<BUILD_INTERFACE: include>
-		$<BUILD_INTERFACE: ${CMAKE_CURRENT_BINARY_DIR}/include>
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
+)
+
+install(
+	TARGETS
+		ab-util
 )
 
 add_subdirectory(test)

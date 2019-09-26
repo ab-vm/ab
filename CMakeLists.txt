@@ -20,6 +20,7 @@ project(abigail
 
 # Module Imports
 
+include(CPack)
 include(FindClangTidy)
 include(AbUtilities)
 
@@ -91,8 +92,12 @@ add_subdirectory(core)
 add_subdirectory(disasm)
 add_subdirectory(doc)
 add_subdirectory(edn)
+add_subdirectory(help)
 add_subdirectory(interpreter)
+add_subdirectory(man)
 add_subdirectory(parse)
+add_subdirectory(run)
 add_subdirectory(test)
 add_subdirectory(util)
 add_subdirectory(wast)
+add_subdirectory(version)

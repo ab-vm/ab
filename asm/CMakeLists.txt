@@ -12,7 +12,7 @@ target_link_libraries(ab-asm
 		ab-edn
 )
 
-target_compile_features(ab-asm
-	PUBLIC
-		cxx_std_17
+install(
+	TARGETS
+		ab-asm
 )

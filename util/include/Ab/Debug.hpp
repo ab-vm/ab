@@ -60,4 +60,11 @@ inline void trace(const char* function) { fmt::print(stderr, "TRACE!>{}\n", func
 #define AB_DBG_MSG(...)  // nothing
 #endif
 
+/// @macro AB_DBG
+#ifdef AB_DEBUG
+#define AB_DBG(...) ::ab::dbg(__AB_LOCATION_STR(), __VA__ARGS__)
+#else
+#define AB_DBG(...) __VA__ARGS__
+#endif
+
 #endif  // AB_DEBUG_HPP_

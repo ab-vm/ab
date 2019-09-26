@@ -18,3 +18,8 @@ target_link_libraries(ab-interpreter
 	PUBLIC
 		ab-core
 )
+
+install(
+	TARGETS
+		ab-interpreter
+)

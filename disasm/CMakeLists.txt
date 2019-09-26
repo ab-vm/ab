@@ -9,3 +9,8 @@ target_link_libraries(ab-disasm
 		ab-commands
 		ab-util
 )
+
+install(
+	TARGETS
+		ab-disasm
+)

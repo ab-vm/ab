@@ -93,4 +93,9 @@ target_link_libraries(ab-core
 	ab-util
 )
 
+install(
+	TARGETS
+		ab-core
+)
+
 add_subdirectory(test)

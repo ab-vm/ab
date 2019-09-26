@@ -75,4 +75,9 @@ check(bool value, const char* location, const char* function, const char* messag
 #define AB_ASSERT_UNREACHABLE_MSG(message)                                                         \
 	::Ab::fail(AB_LOCATION_STR(), AB_FUNCTION_STR(), (message), nullptr)
 
+/// Unconditional crash. No-return.
+///
+#define AB_ASSERT_UNIMPLEMENTED()                                                                  \
+	::Ab::fail(AB_LOCATION_STR(), AB_FUNCTION_STR(), "Unimplemented function called", nullptr)
+
 #endif  // AB_ASSERT_HPP_

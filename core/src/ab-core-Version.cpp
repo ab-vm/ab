@@ -9,8 +9,8 @@ const unsigned int Version::PATCH = AB_VERSION_PATCH;
 const char Version::STRING[]      = AB_VERSION;
 const char Version::COMMIT[]      = AB_COMMIT;
 const char Version::ABIGAIL[] =
-	"  /__/\n"
-	">|'.' |<\n"
-	" `----  ";
+	"  /__/'\n"
+	">|'.' <\n"
+	" `---'";
 
 }  // namespace Ab

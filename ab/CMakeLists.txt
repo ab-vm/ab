@@ -14,3 +14,8 @@ target_link_libraries(ab
 		ab-commands
 		fmt::fmt
 )
+
+install(
+	TARGETS
+		ab
+)

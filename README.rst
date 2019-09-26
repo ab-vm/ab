@@ -12,11 +12,8 @@ For building instructions, see `Building Ab VM`_.
 
 Ab is built on `Eclipse OMR`_
 
-.. |Travis Build Status| image:: https://travis-ci.org/ab-vm/ab.svg?branch=master
-   :target: https://travis-ci.org/ab-vm/ab
-
-.. |Appveyor Build Status| image:: https://ci.appveyor.com/api/projects/status/github/ab-vm/ab?svg=true&branch=master
-   :target: https://ci.appveyor.com/project/ab-vm/ab
+.. | Build Status| image:: https://github.com/ab-vm/ab/workflows/build%20ab/badge.svg
+   :target: https://launch-editor.github.com/actions?workflowID=build%20ab&event=push&nwo=ab-vm%2Fab
 
 .. _Read the Docs: https://ab-vm.readthedocs.org
 .. _Building Ab VM: https://ab-vm.readthedocs.org/en/latest/Building_Ab_VM.html

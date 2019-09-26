@@ -8,8 +8,12 @@ Requirements
 ============
 
 - CMake version 3.2 or greater
+- Clang or GCC with support for C++17
 - Git
-
+- Ragel
+- Python 3
+- PyYaml
+- Jinja2
 
 The Basics
 ==========
