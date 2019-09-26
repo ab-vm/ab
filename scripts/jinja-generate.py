@@ -64,7 +64,7 @@ def load_data(data_dir):
 		for filename in filenames:
 			f = os.path.join(dirname, filename)
 			e = os.path.splitext(filename)[0]
-			data[e] = yaml.load(open(f, "r"))
+			data[e] = yaml.safe_load(open(f, "r"))
 	return data
 
 def parse_args():
