@@ -87,7 +87,6 @@ add_subdirectory(external)
 
 add_subdirectory(ab)
 add_subdirectory(asm)
-add_subdirectory(commands)
 add_subdirectory(core)
 add_subdirectory(disasm)
 add_subdirectory(doc)

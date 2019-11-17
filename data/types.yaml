@@ -29,13 +29,13 @@ i32:
   ctype: "std::int32_t"
   csizeof: 4
 u32:
-  ctype: "std::int32_t"
+  ctype: "std::uint32_t"
   csizeof: 4
 i64:
   ctype: "std::int64_t"
   csizeof: 8
 u64:
-  ctype: "std::int64_t"
+  ctype: "std::uint64_t"
   csizeof: 8
 f32:
   ctype: "float"
@@ -43,3 +43,30 @@ f32:
 f64:
   ctype: "double"
   csizeof: 8
+x32:
+  ctype: "std::uint32_t"
+  csizeof: 4
+x64:
+  ctype: "std::uint64_t"
+  csizeof: 8
+reg_x32:
+  ctype: "std::uint32_t"
+  csizeof: 4
+  doc: A register index. Register holds a 32-bit value of any type.
+reg_x64:
+  ctype: "std::uint32_t"
+  csizeof: 4
+  doc: A register index. Register holds a 64-bit value of any type.
+reg_i32:
+  ctype: "std::int32_t"
+  csizeof: 4
+  doc: A register index. Register holds a 32-bit integer.
+reg_i64:
+  ctype: "std::int32_t"
+  csizeof: 4
+  doc: A register index. Register holds a 64-bit integer.
+reg_f32:
+  ctype: "std::int32_t"
+  csizeof: 4
+reg_f64:
+  ctype: "std::int32_t"

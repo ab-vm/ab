@@ -22,35 +22,33 @@
 - name: unreachable
   code: 0x00
   doc: Trap immediately
-  signature: "() : ()"
 - name: nop
   code: 0x01
   doc:  no operation
 - name: call_primitive
   code: 0x02
   doc:  dispatch to primitive
-  signature: "() : ()"
   immediates:
-    - name: target
+    - name: tgt
       type: ptr
 - name: halt
   code: 0x04
   doc: stop execution immediately and return.
-  signature: "() : ()"
 - name: goto
   code: 0x0c
-  doc:  Break that targets an outer nested block 
-  signature: "() : ()"
+  doc:  Jump to a relative offset.
   immediates:
-    - name: offset
+    - name: "off"
       type: i32
       doc:  relative, signed bytecode target. Must be within current function.
 - name: goto_if
   code: 0x0d
   doc:  Conditional jump
-  signature: "(int32) : ()"
   immediates:
-    - name: offset
+    - name: tst
+      type: reg_i32
+      doc:  The register holding the test condition.
+    - name: "off"
       type: i32
       doc:  relative, signed bytecode target. Must be within current function.
 - name: goto_unless
@@ -58,7 +56,10 @@
   doc: Conditional jump.
   signature: "(bool) : ()"
   immediates:
-    - name: offset
+    - name: tst
+      type: reg_i32
+      doc:  The register holding the test condition.
+    - name: "off"
       type: i32
       doc:  relative, signed target. Must be within current function.
 # - name: br_table
@@ -84,30 +85,52 @@
       type: u32
 - name: call_indirect
   code: 0x11
-  doc: Call a function indirect with an expected signature.
+  doc:
+    Call a function indirect with an expected signature.
     This operator takes a list of function arguments.
   immediates:
     - name: type_index
       type: u32
-    
+
 ## 32-bit untyped operators
 
-- name: x32_drop
-  code: 0x1a
-  doc:  Discard a 32-bit value from the top of the stack.
-- name: x32_select
-  code: 0x1b
-  doc: Select one of two values based on condition
+- name: move_x32
+  code: 0x20
+  doc: Move values between register locations.
+  immediates:
+    - name: dst
+      type: reg_x32
+      doc:  Destination register. 32 bits.
+    - name: src
+      type: reg_x32
+      doc:  Source register. 32 bits.
 
-  ## 64-bit untyped operators
+- name: move_x64
+  code: 0x21
+  doc: Move values between register locations.
+  immediates:
+    - name: dst
+      type: reg_x64
+      doc:  Destination register. 64 bits.
+    - name: src
+      type: reg_x64
+      doc:  Source register. 64 bits.
 
-- name: x64_drop
-  code: 0x1c
-  doc:  Discard any 64-bit value from the top of the stack.
-- name: x64_select
-  code: 0x1d
-  doc:  Select one of two values based on condition.
-  signature: "(x64 x64 i32) : (x64)"
+- name: load_result_x32
+  code: 0x22
+  doc:  Move the result of a call into a register
+  immediates:
+    - name: dst
+      type: reg_x32
+      doc:  Destination register. 32 bits.
+
+- name: load_result_x64
+  code: 0x23
+  doc:  Move the result of a call into a register
+  immediates:
+    - name: dst
+      type: reg_x64
+      doc:  Destination register. 64 bits.
 
 # gap: [0x1e, 0x1f]
 
@@ -346,51 +369,51 @@
 
 # ## Comparison Operators
 
-- name: i32_eqz
-  code: 0x45
-- name: i32_eq
-  code: 0x46
-- name: i32_ne
-  code: 0x47
-- name: i32_lt_s
-  code: 0x48
-- name: i32_lt_u
-  code: 0x49
-- name: i32_gt_s
-  code: 0x4a
-- name: i32_gt_u
-  code: 0x4b
-- name: i32_le_s
-  code: 0x4c
-- name: i32_le_u
-  code: 0x4d
-- name: i32_ge_s
-  code: 0x4e
-- name: i32_ge_u
-  code: 0x4f
+# - name: i32_eqz
+#   code: 0x45
+# - name: i32_eq
+#   code: 0x46
+# - name: i32_ne
+#   code: 0x47
+# - name: i32_lt_s
+#   code: 0x48
+# - name: i32_lt_u
+#   code: 0x49
+# - name: i32_gt_s
+#   code: 0x4a
+# - name: i32_gt_u
+#   code: 0x4b
+# - name: i32_le_s
+#   code: 0x4c
+# - name: i32_le_u
+#   code: 0x4d
+# - name: i32_ge_s
+#   code: 0x4e
+# - name: i32_ge_u
+#   code: 0x4f
 
-- name: i64_eqz
-  code: 0x50
-- name: i64_eq
-  code: 0x51
-- name: i64_ne
-  code: 0x52
-- name: i64_lt_s
-  code: 0x53
-- name: i64_lt_u
-  code: 0x54
-- name: i64_gt_s
-  code: 0x55
-- name: i64_gt_u
-  code: 0x56
-- name: i64_le_s
-  code: 0x57
-- name: i64_le_u
-  code: 0x58
-- name: i64_ge_s
-  code: 0x59
-- name: i64_ge_u
-  code: 0x5a
+# - name: i64_eqz
+#   code: 0x50
+# - name: i64_eq
+#   code: 0x51
+# - name: i64_ne
+#   code: 0x52
+# - name: i64_lt_s
+#   code: 0x53
+# - name: i64_lt_u
+#   code: 0x54
+# - name: i64_gt_s
+#   code: 0x55
+# - name: i64_gt_u
+#   code: 0x56
+# - name: i64_le_s
+#   code: 0x57
+# - name: i64_le_u
+#   code: 0x58
+# - name: i64_ge_s
+#   code: 0x59
+# - name: i64_ge_u
+#   code: 0x5a
 
 # - name: f32_eq
 #   code: 0x5b
@@ -426,37 +449,37 @@
 #   code: 0x68
 # - name: i32_popcnt
 #   code: 0x69
-- name: i32_add
-  code: 0x6a
-  signature: "(i32 i32) : (i32)"
-- name: i32_sub
-  code: 0x6b
-- name: i32_mul
-  code: 0x6c
-- name: i32_div_s
-  code: 0x6d
-- name: i32_div_u
-  code: 0x6e
-- name: i32_rem_s
-  code: 0x6f
-- name: i32_rem_u
-  code: 0x70
-- name: i32_and
-  code: 0x71
-- name: i32_or
-  code: 0x72
-- name: i32_xor
-  code: 0x73
-- name: i32_shl
-  code: 0x74
-- name: i32_shr_s
-  code: 0x75
-- name: i32_shr_u
-  code: 0x76
-- name: i32_rotl
-  code: 0x77
-- name: i32_rotr
-  code: 0x78
+# - name: i32_add
+#   code: 0x6a
+#   signature: "(i32 i32) : (i32)"
+# - name: i32_sub
+#   code: 0x6b
+# - name: i32_mul
+#   code: 0x6c
+# - name: i32_div_s
+#   code: 0x6d
+# - name: i32_div_u
+#   code: 0x6e
+# - name: i32_rem_s
+#   code: 0x6f
+# - name: i32_rem_u
+#   code: 0x70
+# - name: i32_and
+#   code: 0x71
+# - name: i32_or
+#   code: 0x72
+# - name: i32_xor
+#   code: 0x73
+# - name: i32_shl
+#   code: 0x74
+# - name: i32_shr_s
+#   code: 0x75
+# - name: i32_shr_u
+#   code: 0x76
+# - name: i32_rotl
+#   code: 0x77
+# - name: i32_rotr
+#   code: 0x78
 
 # - name: i64_clz
 #   code: 0x79

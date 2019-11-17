@@ -1,0 +1,84 @@
+#ifndef AB_XDISASM_HPP_
+#define AB_XDISASM_HPP_
+
+///
+/// Disassembling and code-to-text conversion of expressions.
+///
+
+#include <Ab/Opcode.hpp>
+#include <fmt/format.h>
+#include <iostream>
+#include <string_view>
+
+namespace Ab {
+
+template <Opcode>
+constexpr const char* const XOPCODE_NAME = "unknown";
+
+@[for operator in data.abx_operators]
+	template <> constexpr const char* const XOPCODE_NAME<Opcode::@(operator.name | constify)> = "@(operator.name)";
+@[endfor]
+
+constexpr const char* cstring(Opcode code) {
+	switch(code) {
+	@[ for operator in data.abx_operators ]
+		case Opcode::@( operator.name | constify ):
+			return XOPCODE_NAME<Opcode::@( operator.name | constify )>;
+	@[ endfor ]
+	default:
+		return "unknown";
+	}
+}
+
+constexpr std::string_view name(Opcode code) {
+	return std::string_view(cstring(code));
+}
+
+inline std::ostream& operator<<(std::ostream& out, const Opcode& code) {
+	return out << cstring(code);
+}
+
+}  // namespace Ab
+
+#if 0
+
+template <>
+struct fmt::formatter<Ab::Opcode> : fmt::formatter<const char*> {
+	template <typename FormatContext>
+	constexpr auto format(const Ab::Opcode& code, FormatContext& cx) {
+		return formatter<const char*>::format(Ab::cstring(code), cx);
+	}
+};
+
+struct BaseXOpFormatter {
+	template <typename ParseContext>
+	constexpr auto parse(ParseContext& cx) { return cx.begin(); }
+};
+
+@[ for operator in data.abx_operators ]
+
+	@[ set expr_typename = ("x_op_" + operator.name) | typeify ]
+
+	template <>
+	struct fmt::formatter<Ab::@( expr_typename )> : BaseXOpFormatter {
+		template <typename FormatContext>
+		constexpr auto format([[maybe_unused]] const Ab::@( expr_typename )& expr, FormatContext& cx) {
+			return format_to(
+				cx.out(),
+				"(@( operator.name )@[ for imm in operator.immediates ] :@( imm.name ) {}@[ endfor ])"
+				@[ for imm in operator.immediates ]
+					, expr.@( imm.name | varify )
+				@[ endfor ]
+			);
+		}
+	};
+
+	inline std::ostream& operator<<(std::ostream& out, const Ab::@( expr_typename )& expr) {
+		return out << fmt::format("{}", expr);
+	}
+
+@[ endfor ]
+
+#endif ///////////////// 0
+
+#endif  // AB_XDISASM_HPP_

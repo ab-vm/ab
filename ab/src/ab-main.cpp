@@ -1,6 +1,5 @@
 #include <Ab/Config.hpp>
 #include <Ab/Assert.hpp>
-#include <Ab/Commands.hpp>
 #include <Ab/Version.hpp>
 
 #include <fmt/format.h>

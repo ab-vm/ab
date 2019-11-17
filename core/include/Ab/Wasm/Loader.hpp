@@ -116,7 +116,7 @@ enum class LoaderError { UNKNOWN_ERROR };
 // class InstructionIterator {}
 
 
-// using XModuleTable = std::unordered_map<std::string, std::shared_ptr<XModule>>;
+// using ModuleTable = std::unordered_map<std::string, std::shared_ptr<Module>>;
 
 // class BasicLoader {};
 
@@ -151,7 +151,7 @@ public:
 	// 	}
 	// }
 
-	// auto load(const std::string& name) -> std::shared_ptr<XModule> {
+	// auto load(const std::string& name) -> std::shared_ptr<Module> {
 	// 	auto rname = resolve(name);
 	// 	Linker linker(modules_);
 
@@ -166,7 +166,7 @@ public:
 
 private:
 	std::vector<std::string> ldpath_;
-	// XModuleTable modules_;
+	// ModuleTable modules_;
 };
 
 }  // namespace Ab::Wasm

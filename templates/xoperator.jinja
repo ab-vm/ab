@@ -1,15 +1,15 @@
-@[- macro xoperator_const_base(op) -]
-	@( op.name | constify )
-@[- endmacro -]
+@[macro xoperator_const_base(op)]
+	@(op.name | constify)
+@[endmacro]
 
-@[- macro xoperator_const(op) -]
-	XOpCode::@( xoperator_const_base(op) )
-@[- endmacro -]
+@[macro xoperator_const(op)]
+	Opcode::@(xoperator_const_base(op))
+@[endmacro]
 
-@[ macro xoperator_name(op) ]
-	XOPCODE_NAME<@( xoperator_const(op) )>
-@[ endmacro ]
+@[macro xoperator_name(op)]
+	XOPCODE_NAME<@(xoperator_const(op))>
+@[endmacro]
 
-@[ macro xexpr_typename(op) ]
-	@( ("x_expr_" + op.name) | typeify )
-@[ endmacro ]
+@[macro xexpr_typename(op)]
+	@(("x_expr_" + op.name) | typeify)
+@[endmacro]

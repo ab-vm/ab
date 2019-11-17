@@ -32,32 +32,32 @@ public:
 	static std::size_t size() noexcept { return Process::properties().page_size(); }
 
 	/// Will bring a page into memory, with no permissions.
-	static Address
-	map(Address address, std::size_t size, int permissions = PagePermission::NONE) {
-		auto p = mmap(to_ptr(address), size, permissions, MAP_ANON | MAP_PRIVATE, 0, 0);
+	static MutAddress
+	map(MutAddress address, std::size_t size, int permissions = PagePermission::NONE) {
+		auto p = mmap(to_mut_ptr(address), size, permissions, MAP_ANON | MAP_PRIVATE, 0, 0);
 		if (p == nullptr) {
 			throw PageError{"Failed to map pages"};
 		}
-		return to_address(p);
+		return to_mut_address(p);
 	}
 
 	/// Will bring a page into memory, with no permissions.
-	static Address map(const std::size_t size, const int permissions = PagePermission::NONE) {
+	static MutAddress map(const std::size_t size, const int permissions = PagePermission::NONE) {
 		return map(nullptr, size, permissions);
 	}
 
 	/// Unmap a page from memory.
 	/// Returns 0 on success.
-	static void unmap(const Address address, const std::size_t size) {
-		auto e = munmap(to_ptr(address), size);
+	static void unmap(const MutAddress address, const std::size_t size) {
+		auto e = munmap(to_mut_ptr(address), size);
 		if (e != 0) {
 			throw PageError{"Failed to unmap pages"};
 		}
 	}
 
 	static void
-	set_permissions(const Address address, const std::size_t size, const int permissions) {
-		auto e = mprotect(to_ptr(address), size, permissions);
+	set_permissions(const MutAddress address, const std::size_t size, const int permissions) {
+		auto e = mprotect(to_mut_ptr(address), size, permissions);
 		if (e != 0) {
 			throw PageError{"Failed to set page permissions"};
 		}

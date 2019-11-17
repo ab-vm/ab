@@ -12,21 +12,10 @@ namespace Test {
 /// Process-wide initialization. Not mt-safe.
 class BasicTest : public ::testing::Test {
 public:
-	static auto SetUpTestCase() -> void {
-		ASSERT_EQ(runtime.init(), 0);
-		ASSERT_TRUE(runtime.initialized());
-	}
+	static void SetUpTestCase() {}
 
-	static auto TearDownTestCase() -> void {
-		ASSERT_TRUE(runtime.initialized());
-		runtime.kill();
-		ASSERT_FALSE(runtime.initialized());
-	}
-
-	static Runtime runtime;
+	static void TearDownTestCase() {}
 };
-
-Runtime BasicTest::runtime;
 
 }  // namespace Test
 }  // namespace Ab

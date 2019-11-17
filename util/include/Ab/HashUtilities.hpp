@@ -6,14 +6,18 @@
 
 namespace Ab {
 
+static_assert(sizeof(std::size_t) == 8, "Ab::hash(std::size_t) assumes 64bit");
+
 /// A prime number seed that can be used as an initial hash for mixing.
 ///
 constexpr std::size_t HASH_SEED = 17;
 
-/// Mix two or more hashes together.
+/// Mix two hashes together.
 ///
 constexpr std::size_t mix(std::size_t a, std::size_t b) { return (a * 37) + b; }
 
+/// Mix more than two hashes together.
+///
 template <typename... Ts>
 constexpr std::size_t mix(std::size_t a, std::size_t b, Ts... xs) {
 	return mix(mix(a, b), xs...);
@@ -49,6 +53,13 @@ constexpr std::size_t hash(T x) {
 template <typename... Ts>
 constexpr std::size_t hash(Ts... xs) {
 	return combine_hashes(Ab::hash(xs)...);
+}
+
+/// Hash each value, mixing each hash with the base hash input.
+///
+template <typename... Ts>
+constexpr std::size_t mix_hash(std::size_t h, Ts&&... xs) {
+	return mix(h, hash(xs)...);
 }
 
 }  // namespace Ab

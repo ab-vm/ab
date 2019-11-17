@@ -8,16 +8,20 @@
 #define AB_COMMIT "@AB_COMMIT@"
 
 /// Enable debug code.
+///
 #cmakedefine AB_DEBUG
 
 /// Enable very slow debug code.
+///
 #cmakedefine AB_DEBUG_SLOW
 
 /// Abort the process in the event of an error
 /// Essentially enabling "disgraceful" error handling.
+///
 #cmakedefine AB_FAIL_FAST
 
 /// Never define this. Used to guard permanently-disabled code.
+///
 #undef AB_DISABLE
 
 #endif  // AB_CONFIG_HPP_

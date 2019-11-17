@@ -6,7 +6,6 @@ target_link_libraries(ab-disasm
 	PUBLIC
 		ab-base
 		ab-core
-		ab-commands
 		ab-util
 )
 

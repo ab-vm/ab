@@ -3,21 +3,24 @@ primary:
   - name: pc
     type: const Byte*
     doc:  pointer to current position in program.
-  - name: sp
+  - name: fp
     type: Byte*
-    doc:  Address of top of stack. One past the end.
-  - name: bp
+    doc:  Pointer to base of frame, start of register file.
+  - name: cp
+    doc:  Pointer to a table of constants for the current method.
     type: Byte*
-    doc:  Pointer to the base of frame. locals are located at bp.
+  - name: result
+    doc:  Special result register
+    type: AnyValue
 
 # State that is always stored in the interpreter struct.
 secondary:
   - name: function
-    type: const XFunction*
+    type: const Func*
   - name: stack
     type: Byte*
   - name: condition
-    type: InterpreterCondition
+    type: ExecCond
   - name: flags
     type: Flags
 

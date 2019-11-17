@@ -1,0 +1,353 @@
+#ifndef AB_FuncBUILDER_HPP_
+#define AB_FuncBUILDER_HPP_
+
+#if 0
+
+#include <Ab/Config.hpp>
+#include <Ab/Assert.hpp>
+#include <Ab/Bytes.hpp>
+#include <Ab/ByteBuffer.hpp>
+#include <Ab/Debug.hpp>
+#include <Ab/Func.hpp>
+#include <Ab/Opcode.hpp>
+#include <fmt/core.h>
+#include <cstdint>
+#include <cstddef>
+#include <cstring>
+#include <vector>
+
+namespace Ab {
+
+using LabelId = std::size_t;
+
+constexpr auto INVALID_LABEL_ID = SIZE_MAX;
+
+/// Lightweight handle to a label record.
+///
+struct Label {
+	LabelId id;
+};
+
+constexpr Label INVALID_LABEL = Label{INVALID_LABEL_ID};
+
+/// Data associated with a label.
+///
+struct LabelRecord {
+	unsigned offset  = 0; //< offset into the function.
+	LabelId id       = INVALID_LABEL_ID;
+	bool placed      = false;
+};
+
+class LabelTable {
+public:
+	/// allocate an unplaced label.
+	///
+	Label alloc() {
+		LabelRecord record;
+		record.id = next();
+		records_.push_back(record);
+		return Label{record.id};
+	}
+
+	/// allocate a label and place it immediately.
+	///
+	Label alloc(unsigned offset) {
+		auto label = alloc();
+		place(label, offset);
+		return label;
+	}
+
+	/// Place a label. Associate an offset with a label.
+	///
+	void place(Label label, std::int32_t offset) {
+		AB_ASSERT(label.id < next());
+		auto& record = records_[label.id];
+		AB_ASSERT(!record.placed);
+		AB_ASSERT(record.id == label.id);
+		record.offset = offset;
+		record.placed = true;
+	}
+
+	/// Get the offset a label refers to. The label must have been placed.
+	///
+	unsigned target_of(Label label) {
+		AB_ASSERT(label.id < next());
+		const auto& record = records_[label.id];
+		AB_ASSERT(record.id == label.id);
+		AB_ASSERT(record.placed);
+		return record.offset;
+	}
+
+private:
+	/// get the next unallocated label id.
+	LabelId next() const { return records_.size(); }
+
+	std::vector<LabelRecord> records_;
+};
+
+class FuncBuilder;
+
+enum class FixupKind { GOTO };
+
+/// Fix up the target of a goto instruction, which has been tracked by the label table.
+///
+class FixupGoto {
+public:
+	FixupGoto() noexcept = default;
+
+	constexpr FixupGoto(std::int32_t offset, Label label)
+		: offset_(offset), label_(label) {}
+
+	inline void apply(FuncBuilder& builder) const;
+
+private:
+	std::int32_t offset_; //< the goto instruction position.
+	Label label_; //< the label corresponding to the jump target.
+};
+
+class Fixup {
+public:
+	Fixup() = default;
+
+	explicit constexpr Fixup(const FixupGoto& as_goto)
+		: kind_(FixupKind::GOTO), as_goto_(as_goto) {}
+
+	void apply(FuncBuilder& builder) const {
+		switch(kind_) {
+		case FixupKind::GOTO:
+			as_goto_.apply(builder);
+			break;
+		default:
+			AB_ASSERT_UNREACHABLE();
+		}
+	}
+
+private:
+	FixupKind kind_;
+	union {
+		FixupGoto as_goto_;
+	};
+};
+
+inline Fixup fixup_goto(std::int32_t offset, Label label) {
+	return Fixup(FixupGoto(offset, label));
+}
+
+/// ABX function definition utility.
+/// This is an extremely simplified API for defining function bytecodes.
+/// There is no register assignment, but a simple label/fixup mechanism exists for control flow.
+///
+class FuncBuilder {
+public:
+	FuncBuilder() {
+		buffer_.append(FuncHeader{0, 0});
+		AB_ASSERT(current_offset() == sizeof(FuncHeader));
+	}
+
+	/// Direct access to the underlying buffer.
+	///
+	ByteBuffer& buffer() noexcept { return buffer_; }
+
+	const ByteBuffer& buffer() const noexcept { return buffer_; }
+
+	/// Direct access to the underlying buffer, as a function.
+	///
+	Func& function() noexcept { return buffer_.template reinterpret<Func>(); }
+
+	const Func& function() const noexcept { return buffer_.template reinterpret<Func>(); }
+
+	/// Direct access to function header, which is stored in the underlying buffer.
+	///
+	FuncHeader& function_header() noexcept { return function().header; }
+
+	const FuncHeader& function_header() const noexcept { return function().header; }
+
+	/// finalize the byte stream and release it.
+	/// The function builder gives up ownership of the buffer.
+	/// It is up to the caller to delete the buffer.
+	///
+	Func* finalize() {
+		do_fixups();
+		return reinterpret_cast<Func*>(buffer_.release());
+	}
+
+	Byte* data() { return buffer_.data(); }
+
+	const Byte* data() const { return buffer_.data(); }
+
+	Byte* begin() { return buffer_.begin(); }
+
+	Byte* end() { return buffer_.end(); }
+
+	std::size_t decl_x32_param() {
+		auto& header = function_header();
+		const auto index = header.nparams;
+		header.nparams += 1;
+		return index;
+	}
+
+	std::size_t decl_x64_param() {
+		auto& header = function_header();
+		const auto index = header.nparams;
+		header.nparams += 2;
+		return index;
+	}
+
+	std::size_t decl_x32_local() {
+		auto& header = function_header();
+		const auto index = header.nparams + header.nlocals;
+		header.nlocals += 1;
+		return index;
+	}
+
+	std::size_t decl_x64_local() {
+		auto& header = function_header();
+		const auto index = header.nparams + header.nlocals;
+		header.nparams += 2;
+		return index;
+	}
+
+	/// Direct access to the label table.
+	///
+	LabelTable& labels() { return labels_; }
+
+	const LabelTable& labels() const { return labels_; }
+
+	/// Associate the label with an offset into the function.
+	/// The associated offset can later be used by fixups.
+	///
+	void place(Label label, std::size_t offset) { labels_.place(label, offset); }
+
+	/// Associate the label with the current offset into the function.
+	///
+	void place(Label label) { place(label, current_offset()); }
+
+	/// Allocate a label and place it immediately.
+	/// Synonym for `make_label(offset)`.
+	///
+	Label place(std::size_t offset) { return make_label(offset); }
+
+	/// Allocate a label and place it immediately.
+	///
+	Label place() { return place(current_offset()); }
+
+	/// Allocate an unplaced label.
+	/// The label can later be associated with an offset via `place`.
+	/// Placed labels can be used in fixups during finalization.
+	///
+	Label make_label() { return labels_.alloc(); }
+
+	/// Allocate a label and place it immediately.
+	/// Synonym for `place(offset)`.
+	///
+	Label make_label(std::size_t offset) { return labels_.alloc(offset); }
+
+	@[for op in data.abx_operators]
+		@[set args]
+			@[if op.immediates is defined]
+				@[for immediate in op.immediates]
+					@( data.types[immediate.type].ctype ) @( immediate.name | varify )@( "," if not loop.last )
+				@[endfor]
+			@[endif]
+		@[endset]
+
+		void @(("emit_" + op.name) | varify)(@(args)) {
+			emit_opcode(Opcode::@( op.name | constify ));
+			@[for immediate in op.immediates]
+				@(("emit_" + immediate.type) | varify)(@(immediate.name | varify));
+			@[endfor]
+		}
+	@[endfor]
+
+	void emit_goto(Label label) {
+		fixups_.push_back(fixup_goto(current_offset(), label));
+		emit_opcode(Opcode::GOTO);
+		emit_i32(0);  // offset placeholder.
+	}
+
+#if 0
+	void emit_goto_if(Label label) {
+		fixups_.push_back(fixup_goto_if(current_offset(), label));
+		emit_opcode(Opcode::GOTO_IF);
+		emit_i32(0);      // offset placeholder.
+		emit_reg_i32(0);  // test register.
+	}
+
+	void emit_goto_unless(std::int16_t tst, Label label) {
+		fixups_.push_back(fixup_goto_unless(current_offset(), label));
+		emit_opcode(Opcode::GOTO_UNLESS);
+		emit_i32(0);        // offset placeholder
+		emit_reg_i32(tst);  // test register.
+	}
+#endif
+
+private:
+	void emit_opcode(Opcode op) { emit_data(op); }
+
+	void emit_i32(std::int32_t x) { emit_data(x); }
+
+	void emit_u32(std::uint32_t x) { emit_data(x); }
+
+	void emit_i64(std::int64_t x) { emit_data(x); }
+
+	void emit_u64(std::uint64_t x) { emit_data(x); }
+
+	void emit_ptr(std::uintptr_t x) { emit_data(x); }
+
+	void emit_reg_x32(std::uint16_t x) { emit_data(x); }
+
+	/// @group Register Indices
+	/// emit constants for indexing registers.
+	/// The type of the register isn't actually needed.
+	/// @{
+	///
+
+	void emit_reg_x64(std::uint16_t x) { emit_data(x); }
+
+	void emit_reg_i32(std::uint16_t x) { emit_data(x); }
+
+	void emit_reg_i64(std::uint16_t x) { emit_data(x); }
+
+	void emit_reg_f32(std::uint16_t x) { emit_data(x); }
+
+	void emit_reg_f64(std::uint16_t x) { emit_data(x); }
+
+	/// @}
+	///
+
+	template <typename T>
+	void emit_data(T x) { buffer_.append(x); }
+
+	Byte* addr() { return buffer_.end(); }
+
+	/// current offset into the function.
+	///
+	std::int32_t current_offset() const {
+		auto bytes = buffer_.size();
+		AB_ASSERT(bytes <= INT32_MAX);
+		return static_cast<std::int32_t>(bytes);
+	}
+
+	void do_fixups() {
+		for (const auto& fixup : fixups_) {
+			fixup.apply(*this);
+		}
+	}
+
+	ByteBuffer buffer_;
+	std::vector<Fixup> fixups_;
+	LabelTable labels_;
+};
+
+inline void FixupGoto::apply(FuncBuilder& builder) const {
+	auto abs_target = builder.labels().target_of(label_);
+	auto rel_target =  abs_target - offset_ - GOTO_SIZE;
+	AB_DBG_MSG("relocating goto: label-id={}, location={}, target={}\n", label_.id, offset_, rel_target);
+	builder.buffer().write<std::int32_t>(offset_ + GOTO_IMM_OFF, rel_target);
+}
+
+} // namespace Ab
+
+#endif // 0
+
+#endif // AB_FuncBUILDER_HPP_

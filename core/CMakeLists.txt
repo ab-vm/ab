@@ -14,15 +14,15 @@ ab_add_jinja_cxx_template(
 )
 
 ab_add_jinja_cxx_template(
-	INPUT  include/Ab/XOpCode.hpp.jinja
-	OUTPUT include/Ab/XOpCode.hpp
+	INPUT  include/Ab/Opcode.hpp.jinja
+	OUTPUT include/Ab/Opcode.hpp
 	DATA_FILES
 		${CMAKE_SOURCE_DIR}/data/abx_operators.yaml
 )
 
 ab_add_jinja_cxx_template(
-	INPUT  include/Ab/XFunctionBuilder.hpp.jinja
-	OUTPUT include/Ab/XFunctionBuilder.hpp
+	INPUT  include/Ab/FuncBuilder.hpp.jinja
+	OUTPUT include/Ab/FuncBuilder.hpp
 	DATA_FILES
 		${CMAKE_SOURCE_DIR}/data/abx_operators.yaml
 		${CMAKE_SOURCE_DIR}/data/types.yaml
@@ -49,15 +49,8 @@ ab_add_jinja_cxx_template(
 )
 
 ab_add_jinja_cxx_template(
-	INPUT  include/Ab/XExpr.hpp.jinja
-	OUTPUT include/Ab/XExpr.hpp
-	DATA_FILES
-		${CMAKE_SOURCE_DIR}/data/abx_operators.yaml
-)
-
-ab_add_jinja_cxx_template(
-	INPUT  include/Ab/XExprDisasm.hpp.jinja
-	OUTPUT include/Ab/XExprDisasm.hpp
+	INPUT  include/Ab/XDisasm.hpp.jinja
+	OUTPUT include/Ab/XDisasm.hpp
 	DATA_FILES
 		${CMAKE_SOURCE_DIR}/data/abx_operators.yaml
 )
@@ -65,16 +58,14 @@ ab_add_jinja_cxx_template(
 add_library(ab-core
 	include/Ab/Wasm/OpCode.hpp
 	include/Ab/Wasm/ExprDispatch.hpp
-	include/Ab/XOpCode.hpp
-	include/Ab/XExpr.hpp
-	include/Ab/XExprDisasm.hpp
-	include/Ab/XFunctionBuilder.hpp
+	include/Ab/XDisasm.hpp
+	include/Ab/Opcode.hpp
+	include/Ab/FuncBuilder.hpp
 	include/Ab/Interpreter.hpp
 	src/ab-core-Interpreter.cpp
 	src/ab-core-Process.cpp
 	src/ab-core-Version.cpp
-	src/Wasm/ab-core-wasm-Loader.cpp
-	src/Wasm/ab-core-wasm-Reader.cpp
+	src/ab-core-VirtualMachine.cpp
 )
 
 target_compile_features(ab-core

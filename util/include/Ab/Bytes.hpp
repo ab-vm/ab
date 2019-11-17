@@ -10,39 +10,39 @@ namespace Ab {
 using Byte = unsigned char;
 
 template <typename T>
-inline constexpr auto bytes(const T n) -> T {
+constexpr T bytes(const T n) noexcept {
 	return n;
 }
 
 template <typename T>
-inline constexpr auto kibibytes(const T n) -> T {
+constexpr T kibibytes(const T n) noexcept {
 	return 1024 * n;
 }
 
 template <typename T>
-inline constexpr auto mebibytes(const T n) -> T {
+constexpr T mebibytes(const T n) noexcept {
 	return 1024 * kibibytes(n);
 }
 
 template <typename T>
-inline constexpr auto gibibytes(const T n) -> T {
+constexpr T gibibytes(const T n) noexcept {
 	return 1024 * mebibytes(n);
 }
 
 template <typename T>
-inline constexpr auto tebibytes(const T n) -> T {
+constexpr T tebibytes(const T n) noexcept {
 	return 1024 * gibibytes(n);
 }
 
-constexpr int popcount(unsigned int x) {
+constexpr int popcount(unsigned int x) noexcept {
 	return __builtin_popcount(x);
 }
 
-constexpr int popcount(unsigned long x) {
+constexpr int popcount(unsigned long x) noexcept {
 	return __builtin_popcountl(x);
 }
 
-constexpr int popcount(unsigned long long x) {
+constexpr int popcount(unsigned long long x) noexcept {
 	return __builtin_popcountll(x);
 }
 
@@ -50,24 +50,23 @@ constexpr int popcount(unsigned long long x) {
 ///
 inline namespace ByteLiterals {
 
-constexpr auto operator"" _B(const unsigned long long int x) -> unsigned long long int {
+constexpr unsigned long long int  operator"" _B(unsigned long long int x) {
 	return ::Ab::bytes(x);
 }
 
-constexpr auto operator"" _KiB(const unsigned long long int x) -> unsigned long long int {
+constexpr unsigned long long int  operator"" _KiB(unsigned long long int x) {
 	return ::Ab::kibibytes(x);
 }
 
-constexpr auto operator"" _MiB(const unsigned long long int x) -> unsigned long long int {
+constexpr unsigned long long int  operator"" _MiB(unsigned long long int x) {
 	return ::Ab::mebibytes(x);
 }
 
-constexpr auto operator"" _GiB(const unsigned long long int x) -> unsigned long long int {
+constexpr unsigned long long int  operator"" _GiB(unsigned long long int x) {
 	return ::Ab::gibibytes(x);
 }
 
 }  // namespace ByteLiterals
-
 }  // namespace Ab
 
 #endif  // AB_BYTES_HPP_

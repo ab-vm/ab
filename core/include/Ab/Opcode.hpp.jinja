@@ -1,0 +1,57 @@
+#ifndef AB_XOPCODE_HPP_
+#define AB_XOPCODE_HPP_
+
+#include <cstddef>
+#include <cstdint>
+
+namespace Ab {
+
+using RawOpcode = std::uint8_t;
+
+/// Bytecode operator codes.
+///
+enum class Opcode : RawOpcode {
+	@[for operator in data.abx_operators]
+		@(operator.name | constify) = @("0x%02x" % operator.code)@(",\n"  if not loop.last)
+	@[-endfor]
+};
+
+/// Datastructure representing expressions (or statements) in internal programs.
+/// @{
+///
+
+@[for operator in data.abx_operators]
+	/// @(operator.name): @(operator.doc)
+	///
+	struct @(("x_op_" + operator.name) | typeify) {
+		static constexpr Opcode CODE = Opcode::@(operator.name | constify);
+	
+		@[- set ns = namespace(found=false) -]
+		@[- set ns.offset = 1 -] @# aka the size of the initial byte. #
+	
+		@[for imm in operator.immediates]
+			@[set type = data.types[imm.type]]
+			static constexpr std::size_t @((imm.name + "_imm") | constify) = @(ns.offset);
+			@[set ns.offset = ns.offset + type.csizeof]
+		@[endfor]
+		static constexpr std::size_t SIZEOF = @(ns.offset);
+	};
+
+	@[for imm in operator.immediates]
+		constexpr std::size_t @((operator.name + "_imm_" + imm.name) | constify) =
+			@(("x_op_" + operator.name) | typeify)::@((imm.name + "_imm") | constify);
+	@[endfor]
+
+	constexpr std::size_t @((operator.name + "_size") | constify) = @(ns.offset);
+
+	@("\n" if not loop.last)
+@[endfor]
+
+/// @}
+///
+
+using Opcode = Opcode;
+
+}  // namespace Ab
+
+#endif  // AB_XOPCODE_HPP_

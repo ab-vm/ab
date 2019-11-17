@@ -17,7 +17,7 @@ class LinearMemoryError : public std::runtime_error {
 };
 
 struct LinearMemoryConfig {
-	Address address            = nullptr;
+	MutAddress address         = nullptr;
 	std::size_t page_count_min = 1;
 	std::size_t page_count_max = 4;
 
@@ -30,10 +30,12 @@ struct LinearMemoryConfig {
 	}
 };
 
-/// The WASM contiguous raw memory subsystem.
+/// The contiguous memory subsystem.
+///
 /// web assembly gives programs low level access to a contiguous region of memory.
 /// The LinearMemory class manages that giant blob of memory. Per the spec, LinearMemory can be
-/// grown, but does not shrink. Each call
+/// grown, but does not shrink.
+///
 class LinearMemory {
 public:
 	/// The size of a memory page.
@@ -55,8 +57,9 @@ public:
 	~LinearMemory() { release(address_, max_size()); }
 
 	/// The address.
+
 	///
-	Address address() const noexcept { return address_; }
+	MutAddress address() const noexcept { return address_; }
 
 	/// The size of the currently allocated memory.
 	///
@@ -88,26 +91,28 @@ public:
 	const LinearMemoryConfig& config() const noexcept { return config_; }
 
 private:
-	Address reserve(const Address address, std::size_t n) { return Page::map(address, n); }
+	MutAddress reserve(const MutAddress address, std::size_t n) {
+		return Page::map(address, n);
+	}
 
-	void activate(const Address address, const std::size_t n) {
+	void activate(const MutAddress address, const std::size_t n) {
 		// activate the memory region by requesting read/write permissions.
 		auto permissions = PagePermission::READ | PagePermission::WRITE;
 		Page::set_permissions(address, n * Page::size(), permissions);
 	}
 
-	void deactivate(const Address address, const std::size_t n) {
+	void deactivate(const MutAddress address, const std::size_t n) {
 		// deactivate the memory region by disabling all permissions. this should hopefully
 		// cause the OS to unmap the memory.
 		auto permissions = PagePermission::NONE;
 		Page::set_permissions(address, n * Page::size(), permissions);
 	}
 
-	void release(const Address address, const std::size_t n) {
+	void release(const MutAddress address, const std::size_t n) {
 		Page::unmap(address, n * Page::size());
 	}
 
-	Address address_;
+	MutAddress address_;
 	std::size_t page_count_;
 	const LinearMemoryConfig config_;
 };

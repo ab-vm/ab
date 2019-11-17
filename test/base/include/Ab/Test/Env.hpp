@@ -33,6 +33,9 @@ inline std::string env_or(const char* var, std::string_view fallback) {
 
 #define AB_TEST_GET_CONFIG(name) env_or(AB_STRINGIFY_RAW(name), name)
 
+/// The generic testing environment for Ab.
+/// This class defines only the most basic testing facilities.
+///
 class Env : public ::testing::Environment {
 public:
 	Env() = default;

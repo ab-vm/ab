@@ -2,122 +2,196 @@
 #define AB_INTERPRETER_HPP_
 
 #include <Ab/Config.hpp>
-#include <Ab/Instruction.hpp>
-#include <Ab/Assert.hpp>
 #include <Ab/Address.hpp>
+#include <Ab/Assert.hpp>
 #include <Ab/Bytes.hpp>
-#include <Ab/XFunction.hpp>
-
+#include <Ab/Func.hpp>
 #include <iostream>
 
 namespace Ab {
 
+/// Handle to stack memory.
+///
+class Stack {
+public:
+	/// Default stack size.
+	///
+	static constexpr std::size_t DEFAULT_SIZE = kibibytes(8);
+
+	Stack(std::size_t size) noexcept {
+		address_ = new(std::nothrow) Byte[size];
+		AB_ASSERT(address_ != nullptr);
+	}
+
+	Stack(const Stack&) = delete;
+
+	Stack(Stack&& other) {
+		address_ = other.address_;
+		other.address_ = nullptr;
+	}
+
+	Stack() : Stack(DEFAULT_SIZE) {}
+
+	~Stack() noexcept {
+		if (address_ != nullptr) {
+			delete[] address_;
+		}
+	}
+
+	Byte* address() noexcept { return address_; }
+
+	const Byte* address() const noexcept { return address_; }
+
+	Stack& operator=(const Stack&) = delete;
+
+private:
+	Byte* address_;
+};
+
+/// Special 1-word struct embedded in the interpreter frame.
+///
+class FrameFlags {
+public:
+	constexpr FrameFlags() noexcept : value_(0) {}
+
+	constexpr FrameFlags(const FrameFlags&) noexcept = default;
+
+	constexpr std::uintptr_t value() const noexcept { return value_; }
+
+private:
+	std::uintptr_t value_;
+};
+
+/// Storage for saved-state embedded in the interpreter frame.
+///
+struct FrameSaveArea {
+	Address pc;  ///< Saved instruction pointer.
+	Address fp;  ///< Saved frame pointer.
+	Address cp;  ///< Saved Constants/literals pointer/
+};
+
+/// Generic frame.
+///
+struct Frame {
+	FrameFlags flags;
+	FrameSaveArea save_area;
+};
+
+/// Call-in / toplevel frame.
+///
+struct EntryFrame {
+	FrameFlags flags;
+	FrameSaveArea save_area;
+};
+
+union AnyFrame {
+	Frame as_frame;
+	EntryFrame as_entry_frame;
+};
+
 enum class ValueKind {
 	@[for entry in data.types]
-		@(entry | upper)@(",\n" if not loop.last)
+		@(entry | upper)@(",\n" if not loop.last -)
 	@[endfor]
 };
 
-union AnyValueData {
-	@[ for key in data.types ]
-		@( data.types[key].ctype ) as@( key | typeify );
-	@[ endfor ]
+union AnyValue {
+	@[for key in data.types]
+		@(data.types[key].ctype) @("as_" + key | varify);
+	@[endfor]
 };
 
-struct AnyValue {
-	ValueKind kind;
-	AnyValueData data;
-};
+enum class ExecCond { UNDEFINED, RUNNING, HALTED, TRAPPED, ERRORED };
 
-enum class InterpreterCondition {
-	UNDEFINED, RUNNING, HALTED, TRAPPED, ERRORED
-};
-
-struct PrimaryState;
-struct SecondaryState;
-struct State;
-
-/// Primary state is cached in the interpreter, and kept in local variables.
-/// The state is only reflected back into the struct explicitly, when needed.
-struct PrimaryState {
-	@[ for state in data.interpreter_state.primary ]
-		@( state.type ) @( state.name | varify );
-	@[ endfor ]
-};
+enum class ExecAction { EXIT = 0, INTERPRET = 1, HALT = 2, CRASH = 3 };
 
 /// Flags are runtime conditions located in secondary state.
+///
 struct Flags {
-	@[ for flag in data.interpreter_state.flags ]
-		@( flag.type ) @( flag.name | varify );
-	@[ endfor ]
+	@[for flag in data.interpreter_state.flags]
+		@(flag.type) @(flag.name | varify);
+	@[endfor]
+};
+
+/// Primary state is cached in the interpreter, and kept in registers if possible.
+/// The state is only reflected back into the struct explicitly, when needed.
+///
+struct ExecStateA {
+	@[for state in data.interpreter_state.primary]
+		@(state.type) @(state.name | varify);
+	@[endfor]
 };
 
 /// Secondary state is kept in memory and up-to-date. Frequently accessed data
-/// should be placed in the primary state and cached.
-struct SecondaryState {
-	@[ for state in data.interpreter_state.secondary ]
-		@( state.type ) @( state.name | varify );
-	@[ endfor ]
+/// should be placed in the primary state and cached in registers during execution.
+/// Infrequently accessed state can be stored here.
+///
+struct ExecStateB {
+	@[for state in data.interpreter_state.secondary]
+		@(state.type) @(state.name | varify);
+	@[endfor]
 };
 
 /// Interpreter state is divided into primary and secondary state.
 /// primary state is frequently accessed, and typically cached in local registers.
 /// Secondary state is less frequently accessed, and normally kept up to date in memory.
-struct State {
-	PrimaryState primary;
-	SecondaryState secondary;
+///
+struct ExecState {
+	ExecStateA st_a;  ///< primary execution state.
+	ExecStateB st_b;  ///< secondary execution state.
 };
+
+/// Blow away the execution state.
+///
+inline void clear(ExecState* state) {
+	state->st_b.stack       = nullptr;
+	state->st_b.function    = nullptr;
+	state->st_b.flags.trap  = false;
+	state->st_b.flags.error = false;
+	state->st_b.condition   = ExecCond::HALTED;
+
+	state->st_a.fp = state->st_b.stack;
+	state->st_a.pc = nullptr;
+}
 
 class Interpreter;
 
-using PrimitiveFn = void(*)(Interpreter*);
+using PrimitiveFn = void (*)(ExecState*);
+
+void interpret(ExecState* state, Func* function);
 
 class Interpreter {
 public:
-	Interpreter() {
-		state_.secondary.stack = new Byte[2048];
-		state_.secondary.function = nullptr;
-		state_.secondary.flags.trap = false;
-		state_.secondary.flags.error = false;
-		state_.secondary.condition = InterpreterCondition::HALTED;
-
-		state_.primary.sp = state_.secondary.stack;
-		state_.primary.bp = state_.secondary.stack;
-		state_.primary.pc = nullptr;
-	}
+	Interpreter();
 
 	Interpreter(const Interpreter&) = delete;
 
-	~Interpreter() {
-		delete[] state_.secondary.stack;
-	}
+	Interpreter(Interpreter&&) = default;
 
-	/// Interpret any function. The return result is calculated from the target's type signature.
-	AnyValue interpret_any(const XFunction* target);
+	~Interpreter();
 
-	/// Interpret a function which returns an int32.
-	std::int32_t interpret_i32(const XFunction* target);
+	ExecState& exec_state() noexcept { return state_; }
 
-	/// interpret a function returning no value.
-	void interpret_nil(const XFunction* target);
+	const ExecState& exec_state() const noexcept { return state_; }
 
-	template <typename T>
-	void push_parameter(const T& value) {
-		*reinterpret_cast<T*>(state_.primary.sp) = value;
-		state_.primary.sp += sizeof(T);
+	/// initialize interpreter state and execute interpreter.
+	///
+	void interpret(const Func* target);
+
+	/// Read from the result register.
+	///
+	AnyValue result() const noexcept { return state_.st_a.result; }
+
+	/// Read a u32 from the result register.
+	///
+	std::uint32_t result_u32() const {
+		return state_.st_a.result.as_u32;
 	}
 
 private:
-	/// initialize interpreter state and execute interpreter.
-	///
-	void interpret(const XFunction* target);
-
-	/// run interpretation, assuming state has been pre-initialized.
-	///
-	void do_interpret();
-
-	State state_;
-}; 
+	ExecState state_;
+	Stack stack_;
+};
 
 }  // namespace Ab
 

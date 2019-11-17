@@ -1,12 +1,26 @@
-include(AbTest)
+add_executable(ab-core-test
+	ab-core-test-interpreter.cpp
+	ab-core-test-linear-memory.cpp
+	ab-core-test-main.cpp
+	ab-core-test-process.cpp
+	ab-core-test-runtime-env.cpp
+	ab-core-test-func-builder.cpp
+)
 
-include_directories(include)
+target_include_directories(ab-core-test
+	PRIVATE
+		include/
+)
 
-add_ab_test(ab-test-linear-memory ab-core)
-add_ab_test(ab-test-InterpreterTest ab-core)
-add_ab_test(ab-test-ProcessTest ab-core)
-add_ab_test(TestXFunctionBuilder ab-core)
+target_link_libraries(ab-core-test
+	PRIVATE
+		ab-core
+		ab-test-base
+		gtest
+)
 
-#add_ab_test(ab-test-ReaderTest ab-core)
+add_test(run-ab-core-test
+	COMMAND ab-core-test
+)
 
-add_subdirectory(Wasm)
+# TODO: Move WASM Reader test out of core.

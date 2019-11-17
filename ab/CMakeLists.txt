@@ -10,8 +10,8 @@ target_compile_features(ab
 target_link_libraries(ab
 	PUBLIC
 		ab-base
+		ab-core
 		ab-util
-		ab-commands
 		fmt::fmt
 )
 
