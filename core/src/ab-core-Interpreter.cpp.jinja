@@ -119,7 +119,9 @@ Interpreter::Interpreter() {
 	state_.st_a.pc = nullptr;
 }
 
-Interpreter::~Interpreter() {}
+Interpreter::~Interpreter() {
+	delete[] state_.st_b.stack;
+}
 
 ///
 /// Call frame helpers
