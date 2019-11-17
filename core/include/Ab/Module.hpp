@@ -7,6 +7,7 @@
 #include <Ab/Context.hpp>
 #include <Ab/Func.hpp>
 #include <cstddef>
+#include <memory>
 #include <string>
 #include <vector>
 

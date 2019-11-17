@@ -8,6 +8,7 @@
 #include <Ab/LinearMemory.hpp>
 #include <Ab/Module.hpp>
 #include <Ab/Runtime.hpp>
+#include <memory>
 #include <string>
 #include <string_view>
 #include <vector>
