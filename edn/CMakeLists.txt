@@ -30,7 +30,7 @@ target_link_libraries(ab-edn
 
 target_compile_features(ab-edn
 	PUBLIC
-		cxx_std_17
+		cxx_std_20
 )
 
 install(

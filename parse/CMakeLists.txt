@@ -2,7 +2,7 @@ add_library(ab-parse INTERFACE)
 
 target_compile_features(ab-parse
 	INTERFACE
-		cxx_std_17
+		cxx_std_20
 )
 
 target_include_directories(ab-parse

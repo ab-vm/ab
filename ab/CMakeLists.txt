@@ -4,7 +4,7 @@ add_executable(ab
 
 target_compile_features(ab
 	PUBLIC
-		cxx_std_17
+		cxx_std_20
 )
 
 target_link_libraries(ab

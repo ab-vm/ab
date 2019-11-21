@@ -70,7 +70,7 @@ add_library(ab-core
 
 target_compile_features(ab-core
 	PUBLIC
-		cxx_std_17
+		cxx_std_20
 )
 
 target_include_directories(ab-core

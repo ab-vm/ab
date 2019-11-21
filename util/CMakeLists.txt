@@ -7,7 +7,7 @@ add_library(ab-util
 
 target_compile_features(ab-util
 	PUBLIC
-		cxx_std_17
+		cxx_std_20
 )
 
 target_compile_options(ab-util

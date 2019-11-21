@@ -59,7 +59,7 @@ add_library(ab-base INTERFACE)
 
 target_compile_features(ab-base
 	INTERFACE
-		cxx_std_17
+		cxx_std_20
 )
 
 target_compile_options(ab-base
