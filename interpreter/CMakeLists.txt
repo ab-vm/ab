@@ -5,7 +5,7 @@ add_library(ab-interpreter
 
 target_compile_features(ab-interpreter
 	PUBLIC
-		cxx_std_17
+		cxx_std_20
 )
 
 target_include_directories(ab-interpreter
