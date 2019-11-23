@@ -22,13 +22,13 @@ struct ReaderInput {
 
 	ReaderInput(const ReaderInput& other) : ReaderInput{other.in_} {}
 
-	auto get() -> std::uint8_t {
+	std::uint8_t get() {
 		std::uint8_t x = in_.get();
 		offset_ += in_.gcount();
 		return x;
 	}
 
-	auto read(char* buffer, std::streamsize bytes) -> void {
+	void read(char* buffer, std::streamsize bytes) {
 		in_.read(buffer, bytes);
 
 		if (in_.gcount() != bytes)
@@ -38,9 +38,9 @@ struct ReaderInput {
 		offset_ += bytes;
 	}
 
-	auto offset() const -> std::size_t { return offset_; }
+	std::size_t offset() const { return offset_; }
 
-	auto stream() -> std::istream& { return in_; }
+	std::istream& stream() const { return in_; }
 
 private:
 	std::istream& in_;
@@ -48,14 +48,14 @@ private:
 };
 
 template <typename Integer, std::size_t bytes = sizeof(Integer)>
-inline auto readNumber(ReaderInput& in) -> Integer {
+Integer readNumber(ReaderInput& in) {
 	Integer result = 0;
 	auto buffer    = (char*)&result;
 	in.read(buffer, bytes);
 	return result;
 }
 
-inline auto leb128(ReaderInput& in) -> std::int64_t {
+inline std::int64_t leb128(ReaderInput& in) {
 	const std::uint8_t FLAG = 0b1000'0000;
 	const std::uint8_t MASK = 0b0111'1111;
 	const std::uint8_t SIGN = 0b0100'0000;
@@ -81,13 +81,13 @@ inline auto leb128(ReaderInput& in) -> std::int64_t {
 	return result;
 }
 
-inline auto leb128(std::istream& s) -> std::int64_t {
+inline std::int64_t leb128(std::istream& s) {
 	ReaderInput in(s);
 	return leb128(in);
 }
 
 /// Read a uleb128 from a buffer. Reads up to n characters
-inline auto uleb128(ReaderInput& in) -> std::uint64_t {
+inline std::uint64_t uleb128(ReaderInput& in) {
 	constexpr std::uint8_t FLAG = 0b1000'0000;
 	constexpr std::uint8_t MASK = 0b0111'1111;
 
@@ -107,12 +107,12 @@ inline auto uleb128(ReaderInput& in) -> std::uint64_t {
 	return result;
 }
 
-inline auto uleb128(std::istream& s) -> std::int64_t {
+inline std::int64_t uleb128(std::istream& s) {
 	ReaderInput in(s);
 	return uleb128(in);
 }
 
-inline auto varuint32(ReaderInput& in) -> std::uint64_t { return uleb128(in); }
+inline std::uint64_t varuint32(ReaderInput& in) { return uleb128(in); }
 
 }  // namespace Ab
 
