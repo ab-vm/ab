@@ -19,7 +19,8 @@ def identifier_subwords(identifier):
 
 # convert abc_def to abc_def (left alone for var.)
 def varify(name):
-	return name
+	return "_".join(identifier_subwords(name))
+
 	# subwords = identifier_subwords(name)
 	# if 0 == len(subwords):
 	# 	return ""
