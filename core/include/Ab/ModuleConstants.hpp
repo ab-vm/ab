@@ -8,7 +8,7 @@ namespace Ab {
 /// The magic constant at the beginning of every ab module.
 /// In LE, it's the string literal "abab".
 ///
-constexpr std::uint32_t MODULE_MAGIC = 0x61626162;
+constexpr std::uint32_t MODULE_MAGIC = 0x62616261;
 
 constexpr std::uint32_t MODULE_VERSION = 1;
 
