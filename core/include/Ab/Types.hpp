@@ -93,13 +93,9 @@ public:
 	bool has_max;
 };
 
-struct FuncType final : public Type {
+struct FuncType final {
 public:
-	virtual ~FuncType() noexcept = default;
-
-	virtual TypeKind kind() const noexcept override { return TypeKind::FUNC; }
-
-	virtual std::size_t hash() const noexcept override {
+	std::size_t hash() const noexcept {
 		std::size_t h = Ab::hash(args.size(), rets.size());
 		for (auto ty : args) {
 			h = mix_hash(h, ty);
@@ -109,17 +105,6 @@ public:
 		}
 		return h;
 	}
-
-	/// Deep comparison against an unknown kind of type.
-	///
-	virtual bool operator==(const Type& rhs) const noexcept override {
-		if (rhs.kind() != TypeKind::FUNC) {
-			return false;
-		}
-		return *this == rhs.as_func();
-	}
-
-	virtual bool operator!=(const Type& rhs) const noexcept override { return !(*this == rhs); }
 
 	/// Deep comparison of two func types.
 	///
@@ -154,22 +139,7 @@ public:
 	std::vector<ValType> rets;
 };
 
-inline FuncType& Type::as_func() noexcept {
-	AB_ASSERT(kind() == TypeKind::FUNC);
-	return *static_cast<FuncType*>(this);
-}
-
-inline const FuncType& Type::as_func() const noexcept {
-	AB_ASSERT(kind() == TypeKind::FUNC);
-	return *static_cast<const FuncType*>(this);
-}
-
 }  // namespace Ab
-
-template <>
-struct std::hash<Ab::Type> {
-	std::size_t operator()(const Ab::Type& type) const noexcept { return type.hash(); }
-};
 
 template <>
 struct std::hash<Ab::FuncType> {
