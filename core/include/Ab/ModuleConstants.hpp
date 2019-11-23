@@ -24,7 +24,8 @@ enum class SectionCode : std::uint8_t {
 	START   = 0x8,
 	ELEMENT = 0x9,
 	CODE    = 0xa,
-	DATA    = 0xb
+	DATA    = 0xb,
+	LAST    = DATA
 };
 
 enum class ValType : std::uint8_t {
