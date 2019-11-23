@@ -3,31 +3,65 @@
 
 #include <Ab/HashUtilities.hpp>
 #include <Ab/ModuleConstants.hpp>
+#include <array>
 #include <vector>
 
 namespace Ab {
 
-enum class TypeKind { FUNC };
+template <ValType V>
+struct ValTypeConst : public std::integral_constant<ValType, V> {};
 
-struct FuncType;
-struct Limits;
+template <typename T>
+struct ToValType {};
 
-struct Type {
-public:
-	virtual ~Type() noexcept = default;
+template <typename T>
+struct ToValType<const T> : public ToValType<T> {};
 
-	virtual TypeKind kind() const noexcept = 0;
+template <>
+struct ToValType<std::uint64_t> : public ValTypeConst<ValType::I64> {};
 
-	virtual std::size_t hash() const noexcept = 0;
+template <>
+struct ToValType<std::int64_t> : public ValTypeConst<ValType::I64> {};
 
-	virtual bool operator==(const Type& rhs) const noexcept = 0;
+template <>
+struct ToValType<std::uint32_t> : public ValTypeConst<ValType::I32> {};
 
-	virtual bool operator!=(const Type& rhs) const noexcept = 0;
+template <>
+struct ToValType<std::int32_t> : public ValTypeConst<ValType::I32> {};
 
-	FuncType& as_func() noexcept;
+template <>
+struct ToValType<float> : public ValTypeConst<ValType::F32> {};
 
-	const FuncType& as_func() const noexcept;
-};
+template <>
+struct ToValType<double> : public ValTypeConst<ValType::F64> {};
+
+/// Convert a C-Type to an equivalent ValType.
+///
+template <typename T>
+constexpr ValType VAL_TYPE = ToValType<T>::value;
+
+/// convert a static sequence of c-types to a static array of vm-types.
+///
+template <typename... Ts>
+constexpr std::array<ValType, sizeof...(Ts)> VAL_TYPE_ARRAY{VAL_TYPE<Ts>...};
+
+/// Check that a static sequence of c-types matches a dynamic vector of vm-types.
+/// The C-types are specified as type parameter pack, while the vm-types are
+/// specified by a vector of ValTypes.
+///
+template <typename... Ts>
+bool types_match(const std::vector<ValType>& vm_types) {
+	constexpr auto C_TYPES = VAL_TYPE_ARRAY<Ts...>;
+	if (C_TYPES.size() != vm_types.size()) {
+		return false;
+	}
+	for (std::size_t i = 0; i < C_TYPES.size(); ++i) {
+		if (C_TYPES[i] != vm_types[i]) {
+			return false;
+		}
+	}
+	return true;
+}
 
 struct Limits {
 public:
