@@ -138,6 +138,18 @@ public:
 		return result;
 	}
 
+	std::span<Byte> release_span() noexcept {
+		shrink_to_fit();
+
+		std::span<Byte> result(data_, size_);
+
+		data_ = nullptr;
+		size_ = 0;
+		capa_ = 0;
+
+		return result;
+	}
+
 	Byte* data() noexcept { return data_; }
 
 	const Byte* data() const noexcept { return data_; }
