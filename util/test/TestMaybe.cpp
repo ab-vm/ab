@@ -28,6 +28,9 @@ struct MyDefaultConstructibleType : public Int {
 
 struct NonDefaultConstructibleInt {
 	NonDefaultConstructibleInt() = delete;
+
+	NonDefaultConstructibleInt(int x ) : x_(x) {}
+
 	int x_;
 };
 
