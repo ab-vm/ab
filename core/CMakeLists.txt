@@ -63,6 +63,7 @@ add_library(ab-core
 	include/Ab/FuncBuilder.hpp
 	include/Ab/Interpreter.hpp
 	src/ab-core-Interpreter.cpp
+	src/ab-core-Loading.cpp
 	src/ab-core-Process.cpp
 	src/ab-core-Version.cpp
 	src/ab-core-VirtualMachine.cpp

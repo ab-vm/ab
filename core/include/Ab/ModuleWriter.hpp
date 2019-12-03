@@ -1,14 +1,16 @@
 #ifndef AB_MODULEWRITER_HPP_
 #define AB_MODULEWRITER_HPP_
 
+#include <Ab/Config.hpp>
 #include <Ab/ByteBuffer.hpp>
 #include <Ab/Bytes.hpp>
 #include <Ab/ModuleVisitation.hpp>
 #include <Ab/Opcode.hpp>
 #include <Ab/Types.hpp>
 #include <Ab/VarInt.hpp>
+#include <Ab/VectorUtilities.hpp>
 #include <limits>
-#include <unordered_set>
+#include <span>
 #include <utility>
 #include <vector>
 
@@ -44,13 +46,32 @@ public:
 
 	virtual void on_halt() override { body_.append(Opcode::HALT); }
 
+	virtual void on_i32_add(std::uint32_t dst, std::uint32_t lhs, std::uint32_t rhs) override {
+		body_.append(Opcode::I32_ADD);
+		body_.append(dst);
+		body_.append(lhs);
+		body_.append(rhs);
+	}
+
+	virtual void on_return() override { body_.append(Opcode::RETURN); }
+
+	virtual void on_x32_return(std::uint32_t src) override {
+		body_.append(Opcode::X32_RETURN);
+		body_.append(src);
+	}
+
+	virtual void on_x64_return(std::uint32_t src) override {
+		body_.append(Opcode::X64_RETURN);
+		body_.append(src);
+	}
+
 	void append_to(ByteBuffer& buffer) const {
 		ByteBuffer content;
 
 		append_varuint32(content, nregs_);
 		content.append(body_);
 
-		buffer.append(content.size());
+		append_varuint32(buffer, content.size());
 		buffer.append(content);
 	}
 
@@ -67,10 +88,10 @@ public:
 
 	/// Create the module.
 	///
-	Byte* finalize() {
+	std::span<Byte> finalize() {
 		ByteBuffer buffer;
 		append_module(buffer);
-		return buffer.release();
+		return buffer.release_span();
 	}
 
 	// General
@@ -153,8 +174,20 @@ private:
 	}
 
 	void append_code_section(ByteBuffer& buffer) const {
-		(void)buffer;
-		return;
+		if (code_entries_.size() == 0) {
+			return;
+		}
+
+		ByteBuffer content;
+
+		append_varuint32(content, code_entries_.size());
+		for (auto& code : code_entries_) {
+			code.append_to(content);
+		}
+
+		buffer.append(SectionCode::CODE);
+		append_varuint32(buffer, content.size());
+		buffer.append(content);
 	}
 
 	std::vector<FuncType> type_entries_;
@@ -163,7 +196,7 @@ private:
 };
 
 template <typename M>
-inline Byte* write(M& model) {
+inline std::span<Byte> write(M& model) {
 	static_assert(std::is_base_of_v<ModuleModel, M>);
 	ModuleWriter writer;
 	model.accept(writer);

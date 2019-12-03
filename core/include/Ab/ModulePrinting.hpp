@@ -30,4 +30,4 @@ private:
 
 } // namespace Ab
 
-#ifndef AB_MODULEPRINTING_HPP_
+#endif // AB_MODULEPRINTING_HPP_

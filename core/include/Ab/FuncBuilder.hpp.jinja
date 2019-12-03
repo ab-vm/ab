@@ -1,7 +1,7 @@
-#ifndef AB_FuncBUILDER_HPP_
-#define AB_FuncBUILDER_HPP_
+#ifndef AB_FUNCBUILDER_HPP_
+#define AB_FUNCBUILDER_HPP_
 
-#if 0
+#if 0 //////////////////////////////////////////////////////////////////////////
 
 #include <Ab/Config.hpp>
 #include <Ab/Assert.hpp>
@@ -10,6 +10,7 @@
 #include <Ab/Debug.hpp>
 #include <Ab/Func.hpp>
 #include <Ab/Opcode.hpp>
+#include <Ab/Label.hpp>
 #include <fmt/core.h>
 #include <cstdint>
 #include <cstddef>
@@ -17,73 +18,6 @@
 #include <vector>
 
 namespace Ab {
-
-using LabelId = std::size_t;
-
-constexpr auto INVALID_LABEL_ID = SIZE_MAX;
-
-/// Lightweight handle to a label record.
-///
-struct Label {
-	LabelId id;
-};
-
-constexpr Label INVALID_LABEL = Label{INVALID_LABEL_ID};
-
-/// Data associated with a label.
-///
-struct LabelRecord {
-	unsigned offset  = 0; //< offset into the function.
-	LabelId id       = INVALID_LABEL_ID;
-	bool placed      = false;
-};
-
-class LabelTable {
-public:
-	/// allocate an unplaced label.
-	///
-	Label alloc() {
-		LabelRecord record;
-		record.id = next();
-		records_.push_back(record);
-		return Label{record.id};
-	}
-
-	/// allocate a label and place it immediately.
-	///
-	Label alloc(unsigned offset) {
-		auto label = alloc();
-		place(label, offset);
-		return label;
-	}
-
-	/// Place a label. Associate an offset with a label.
-	///
-	void place(Label label, std::int32_t offset) {
-		AB_ASSERT(label.id < next());
-		auto& record = records_[label.id];
-		AB_ASSERT(!record.placed);
-		AB_ASSERT(record.id == label.id);
-		record.offset = offset;
-		record.placed = true;
-	}
-
-	/// Get the offset a label refers to. The label must have been placed.
-	///
-	unsigned target_of(Label label) {
-		AB_ASSERT(label.id < next());
-		const auto& record = records_[label.id];
-		AB_ASSERT(record.id == label.id);
-		AB_ASSERT(record.placed);
-		return record.offset;
-	}
-
-private:
-	/// get the next unallocated label id.
-	LabelId next() const { return records_.size(); }
-
-	std::vector<LabelRecord> records_;
-};
 
 class FuncBuilder;
 
@@ -340,14 +274,11 @@ private:
 };
 
 inline void FixupGoto::apply(FuncBuilder& builder) const {
-	auto abs_target = builder.labels().target_of(label_);
-	auto rel_target =  abs_target - offset_ - GOTO_SIZE;
-	AB_DBG_MSG("relocating goto: label-id={}, location={}, target={}\n", label_.id, offset_, rel_target);
-	builder.buffer().write<std::int32_t>(offset_ + GOTO_IMM_OFF, rel_target);
+
 }
 
 } // namespace Ab
 
-#endif // 0
+#endif // 0 ////////////////////////////////////////////////////////////////////
 
-#endif // AB_FuncBUILDER_HPP_
+#endif // AB_FUNCBUILDER_HPP_

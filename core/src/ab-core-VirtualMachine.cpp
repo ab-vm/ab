@@ -28,7 +28,7 @@ ModuleInst* instantiate_file(Context& cx, const std::string& filename) {
 	AB_ASSERT_UNIMPLEMENTED();
 }
 
-void run_func(Context& cx, Func* func) {
+void run_func(Context& cx, FuncInst* func) {
 	(void)cx;
 	(void)func;
 	AB_ASSERT_UNIMPLEMENTED();

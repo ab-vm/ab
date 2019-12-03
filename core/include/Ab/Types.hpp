@@ -84,7 +84,7 @@ struct sum_slots_for;
 
 template <std::size_t... Is, typename... Ts>
 struct sum_slots_for<std::index_sequence<Is...>, Ts...>
-	: public sum_sizes<slot_sizeof_v<nth_type_t<Is, Ts>>...> {};
+	: public sum_sizes<slot_sizeof_v<element_type_t<Is, type_sequence<Ts...>>>...> {};
 
 template <typename I, typename... Ts>
 constexpr std::size_t sum_slots_for_v = sum_slots_for<I, Ts...>::value;
@@ -100,13 +100,13 @@ constexpr auto sum_slots_up_to_v = sum_slots_up_to<N, Ts...>::value;
 /// Given a sequence of types Ts, get the stack position of the Nth element.
 ///
 template <std::size_t N, typename... Ts>
-struct nth_slot_index : public sum_slots_up_to<N - 1, Ts...> {};
-
-template <typename... Ts>
-struct nth_slot_index<0, Ts...> : public size_constant<0> {};
+struct nth_slot_index : public sum_slots_up_to<N, Ts...> {};
 
 template <std::size_t N, typename... Ts>
 constexpr std::size_t nth_slot_index_v = nth_slot_index<N, Ts...>::value;
+
+template <std::size_t N, typename... Ts>
+constexpr std::size_t nth_slot_offset_v = nth_slot_index_v<N, Ts...> * SIZEOF_SLOT;
 
 /// Given a tuple of type T, get the slots consumed by the Nth element.
 ///
@@ -115,20 +115,14 @@ constexpr std::size_t slots_taken_by_element_v = slot_sizeof_v<std::tuple_elemen
 
 /// Given a tuple of type T, get the stack position (in slots) for the Nth element of the tuple.
 ///
-template <std::size_t N, typename T>
-struct element_slot_index;
-
 template <std::size_t N, typename... Ts>
-struct element_slot_index<N, std::tuple<Ts...>> : public sum_slots_up_to<N - 1, Ts...> {};
-
-template <typename... Ts>
-struct element_slot_index<0, std::tuple<Ts...>> : public size_constant<0> {};
+struct element_slot_index : public sum_slots_up_to<N, Ts...> {};
 
 template <std::size_t N, typename T>
 constexpr std::size_t element_slot_index_v = element_slot_index<N, T>::value;
 
 /// The number of stack slots consumed by a sequence of vm-types.
-///
+/// 
 template <ValType... Vs>
 constexpr std::size_t slots_taken_by = sum_sizes_v<slots_taken_v<Vs>...>;
 

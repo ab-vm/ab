@@ -7,10 +7,11 @@
 
 #include <Ab/Wasm/OpCode.hpp>
 
+#include <cstdint>
 #include <memory>
+#include <span>
 #include <unordered_map>
 #include <vector>
-#include <cstdint>
 
 namespace Ab::Wasm {
 
@@ -91,8 +92,6 @@ enum class LoaderError { UNKNOWN_ERROR };
 
 // 	/// convert a label to an offset by rewriting the byte stream.
 
-
-
 // 	compileBlock
 
 // 	bool compileExpression(std::uint8_t* expr) {
@@ -114,7 +113,6 @@ enum class LoaderError { UNKNOWN_ERROR };
 // };
 
 // class InstructionIterator {}
-
 
 // using ModuleTable = std::unordered_map<std::string, std::shared_ptr<Module>>;
 
@@ -158,7 +156,7 @@ public:
 	// 	Span<Byte> mapped_mod = map(rname);
 
 	// 	linker.link(mapped_mod);
-		
+
 	// }
 
 	/// Load a module from a mmap'd input.

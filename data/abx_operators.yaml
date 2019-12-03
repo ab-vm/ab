@@ -4,20 +4,11 @@
 
 ## WASM expressions are rewritten to an internal representation to facilitate
 ## execution. This document lists the internal operators in Ab. The operators
-## are closely related their WaSM
-
-## - no nop, block, or end operator
-## - branches are translated to relative gotos
-## - table based branches are rewritten to 
-
-### Standard Opcodes
+## are closely related their WASM equivalents.
 
 ## Control Flow
 
-###############################################################
-##
-## |  8 byte | operator
-## | 16 byte | op
+### Fundamental
 
 - name: unreachable
   code: 0x00
@@ -34,47 +25,22 @@
 - name: halt
   code: 0x04
   doc: stop execution immediately and return.
-- name: goto
-  code: 0x0c
-  doc:  Jump to a relative offset.
-  immediates:
-    - name: "off"
-      type: i32
-      doc:  relative, signed bytecode target. Must be within current function.
-- name: goto_if
-  code: 0x0d
-  doc:  Conditional jump
-  immediates:
-    - name: tst
-      type: reg_i32
-      doc:  The register holding the test condition.
-    - name: "off"
-      type: i32
-      doc:  relative, signed bytecode target. Must be within current function.
-- name: goto_unless
-  code: 0x0e
-  doc: Conditional jump.
-  signature: "(bool) : ()"
-  immediates:
-    - name: tst
-      type: reg_i32
-      doc:  The register holding the test condition.
-    - name: "off"
-      type: i32
-      doc:  relative, signed target. Must be within current function.
-# - name: br_table
-#   code: 0x0e
-#   doc: Branch table control flow construct
-#   immediates:
-#     - name: target_count
-#       type: varuint32
-#     - name: target_table
-#       type: varuint32*
-#     - name: default_target
-#       type: varuint32
+
+### Inter-Func
+
 - name: return
-  code: 0x0f
-  doc:  Return 0 or 1 value from this function
+  code: 0x0c
+  doc:  Return from a function without returning any values.
+  signature: ()
+- name: x32.return
+  code: 0x0d
+  doc:  Return a 32-bit value from a function.
+  signature: ()
+  immediates:
+    - name: src
+      type: reg_x32
+- name: x64.return
+  code: 0x0e
   signature: ()
 - name: call
   code: 0x10
@@ -91,6 +57,37 @@
   immediates:
     - name: type_index
       type: u32
+
+### Intra-Func
+
+- name: goto
+  code: 0x16
+  doc:  Jump to a relative offset.
+  immediates:
+    - name: "off"
+      type: i32
+      doc:  relative, signed bytecode target. Must be within current function.
+- name: goto_if
+  code: 0x17
+  doc:  Conditional jump
+  immediates:
+    - name: tst
+      type: reg_i32
+      doc:  The register holding the test condition.
+    - name: "off"
+      type: i32
+      doc:  relative, signed bytecode target. Must be within current function.
+- name: goto_unless
+  code: 0x18
+  doc: Conditional jump.
+  signature: "(bool) : ()"
+  immediates:
+    - name: tst
+      type: reg_i32
+      doc:  The register holding the test condition.
+    - name: "off"
+      type: i32
+      doc:  relative, signed target. Must be within current function.
 
 ## 32-bit untyped operators
 
@@ -449,8 +446,16 @@
 #   code: 0x68
 # - name: i32_popcnt
 #   code: 0x69
-# - name: i32_add
-#   code: 0x6a
+- name: i32.add
+  code: 0x6a
+  doc: Add two I32 values.
+  immediates:
+    - name: dst
+      type: reg_x32
+    - name: lhs
+      type: reg_x32
+    - name: rhs
+      type: reg_x32
 #   signature: "(i32 i32) : (i32)"
 # - name: i32_sub
 #   code: 0x6b

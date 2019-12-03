@@ -15,8 +15,8 @@ primary:
 
 # State that is always stored in the interpreter struct.
 secondary:
-  - name: function
-    type: const Func*
+  - name: func
+    type: FuncInst*
   - name: stack
     type: Byte*
   - name: condition

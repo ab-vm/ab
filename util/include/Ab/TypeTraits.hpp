@@ -59,6 +59,18 @@ struct nth_type : public nth_type_impl<N, std::index_sequence_for<Ts...>, Ts...>
 template <std::size_t N, typename... Ts>
 using nth_type_t = typename nth_type<N, Ts...>::type;
 
+template <typename... Ts>
+struct type_sequence {};
+
+template <std::size_t N, typename T>
+struct element_type;
+
+template <std::size_t N, typename... Ts>
+struct element_type<N, type_sequence<Ts...>> : nth_type<N, Ts...> {};
+
+template <std::size_t N, typename T>
+using element_type_t = typename element_type<N, T>::type;
+
 }  // namespace Ab
 
 #endif  // AB_TYPETRAITS_HPP_

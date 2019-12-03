@@ -48,45 +48,57 @@ private:
 	Byte* address_;
 };
 
-/// Special 1-word struct embedded in the interpreter frame.
+enum class FrameKind : std::uint8_t {
+	/// A top level call-in frame. native->interpreter.
+	///
+	NATIVE,
+
+	/// A normal frame. interpreter->interpreter.
+	///
+	NORMAL,
+};
+
+/// Special 1-word struct embedded in the interpreter frame. Contains enough
+/// information about the frame to identify it's type.
 ///
-class FrameFlags {
+class FrameTag {
 public:
-	constexpr FrameFlags() noexcept : value_(0) {}
+	constexpr FrameTag(FrameKind k) : value_(std::uint32_t(k)) {}
 
-	constexpr FrameFlags(const FrameFlags&) noexcept = default;
+	constexpr FrameTag(const FrameTag&) noexcept = default;
 
-	constexpr std::uintptr_t value() const noexcept { return value_; }
+	constexpr std::uint32_t value() const noexcept { return value_; }
+
+	constexpr FrameKind frame_kind() const noexcept { return FrameKind(value_); }
 
 private:
-	std::uintptr_t value_;
+	std::uint32_t value_;
 };
 
 /// Storage for saved-state embedded in the interpreter frame.
 ///
 struct FrameSaveArea {
-	Address pc;  ///< Saved instruction pointer.
-	Address fp;  ///< Saved frame pointer.
-	Address cp;  ///< Saved Constants/literals pointer/
-};
-
-/// Generic frame.
-///
-struct Frame {
-	FrameFlags flags;
-	FrameSaveArea save_area;
+	Address pc;     ///< Saved instruction pointer.
+	MutAddress fp;  ///< Saved frame pointer.
+	MutAddress cp;  ///< Saved Constants/literals pointer/
 };
 
 /// Call-in / toplevel frame.
 ///
-struct EntryFrame {
-	FrameFlags flags;
+struct NativeFrame {
+	NativeFrame() noexcept : tag(FrameKind::NATIVE) {}
+
 	FrameSaveArea save_area;
+	FrameTag tag;
 };
 
-union AnyFrame {
-	Frame as_frame;
-	EntryFrame as_entry_frame;
+/// An interpreter frame.
+///
+struct NormalFrame {
+	NormalFrame() noexcept : tag(FrameKind::NORMAL) {}
+
+	FrameSaveArea save_area;
+	FrameTag tag;
 };
 
 enum class ValueKind {
@@ -101,9 +113,24 @@ union AnyValue {
 	@[endfor]
 };
 
+/// The current state of execution in the virtual machine.
+///
+/// This is a global property that can be asked of the VM. Under normal circumstances, the vm will
+/// be in the RUNNING state. When an uncaught exception or other error is triggered, the VM is
+/// brought down and enters the ERRORED state.
+///
+/// If the virtual machine hasn't been fully initialized, possibly due to a startup error, the vm
+/// will be in the UNDEFINED state.
+///
+/// After complete and successful execution of a program, the vm is placed into 
 enum class ExecCond { UNDEFINED, RUNNING, HALTED, TRAPPED, ERRORED };
 
-enum class ExecAction { EXIT = 0, INTERPRET = 1, HALT = 2, CRASH = 3 };
+enum class ExecAction {
+	CRASH     = 0,
+	INTERPRET = 1,
+	HALT      = 2,
+	EXIT      = 3
+};
 
 /// Flags are runtime conditions located in secondary state.
 ///
@@ -145,7 +172,7 @@ struct ExecState {
 ///
 inline void clear(ExecState* state) {
 	state->st_b.stack       = nullptr;
-	state->st_b.function    = nullptr;
+	state->st_b.func        = nullptr;
 	state->st_b.flags.trap  = false;
 	state->st_b.flags.error = false;
 	state->st_b.condition   = ExecCond::HALTED;
@@ -158,7 +185,7 @@ class Interpreter;
 
 using PrimitiveFn = void (*)(ExecState*);
 
-void interpret(ExecState* state, Func* function);
+void interpret(ExecState* state, FuncInst* func);
 
 class Interpreter {
 public:
@@ -178,19 +205,19 @@ public:
 	///
 	void interpret(const Func* target);
 
-	/// Read from the result register.
-	///
-	AnyValue result() const noexcept { return state_.st_a.result; }
+	Byte* reserve_stack_slots(std::size_t nslots) {
+		state_.st_a.fp -= nslots * SIZEOF_SLOT;
+		return state_.st_a.fp;
+	}
 
-	/// Read a u32 from the result register.
-	///
-	std::uint32_t result_u32() const {
-		return state_.st_a.result.as_u32;
+	Byte* release_stack_slots(std::size_t nslots) {
+		state_.st_a.fp += nslots * SIZEOF_SLOT;
+		return state_.st_a.fp;
 	}
 
 private:
 	ExecState state_;
-	Stack stack_;
+	// Stack stack_;
 };
 
 }  // namespace Ab
