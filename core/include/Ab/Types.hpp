@@ -214,6 +214,10 @@ public:
 
 struct FuncType final {
 public:
+	FuncType() = default;
+
+	FuncType(std::vector<ValType> args, std::vector<ValType> rets) : args(args), rets(rets) {}
+
 	std::size_t hash() const noexcept {
 		std::size_t h = Ab::hash(args.size(), rets.size());
 		for (auto ty : args) {
@@ -248,6 +252,30 @@ public:
 	}
 
 	bool operator!=(const FuncType& rhs) const noexcept { return !(*this == rhs); }
+
+	/// Number of argument registers required by type signature.
+	///
+	std::uint32_t arg_nregs() const noexcept {
+		std::uint32_t n = 0;
+		for (auto ty : args) {
+			n += nreg(ty);
+		}
+		return n;
+	}
+
+	std::uint32_t arg_nbytes() const noexcept { return arg_nregs() * SIZEOF_SLOT; }
+
+	/// Number of return-value registers required by type signature.
+	///
+	std::uint32_t ret_nregs() const noexcept {
+		std::uint32_t n = 0;
+		for (auto ty : rets) {
+			n += nreg(ty);
+		}
+		return n;
+	}
+
+	std::uint32_t ret_nbytes() const noexcept { return ret_nregs() * SIZEOF_SLOT; }
 
 	/// The types of the arguments.
 	///
