@@ -11,14 +11,10 @@
 
 namespace Ab {
 
-/// Crash the process. This call should be catchable by a native debugger.
+/// Crash the process. This call should result in a process signal that can be caught by a native
+/// debugger.
 ///
-[[noreturn]] inline void trap() { __builtin_trap(); }
-
-/// Designate a statement as unreachable. It is undefined behaviour to execute
-/// this statement.
-///
-[[noreturn]] inline void unreachable() { __builtin_unreachable(); }
+[[noreturn]] inline void trap() noexcept { __builtin_trap(); }
 
 /// Output an error message to stderr and trap.
 /// Message format:
@@ -54,6 +50,12 @@ check(bool value, const char* location, const char* function, const char* messag
 }
 
 }  // namespace Ab
+
+/// Designate a statement as unreachable. This pseudo-function acts as a hint to the compiler
+/// that a point in the program cannot be reached. It is undefined behaviour to execute this
+/// function. If you just want to trigger a crash, use AB_ASSERT_UNREACHABLE instead.
+///
+#define AB_UNREACHABLE() __builtin_unreachable();
 
 /// Assert that x is true.
 ///
