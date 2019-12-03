@@ -7,7 +7,6 @@
 #include <Ab/Bytes.hpp>
 #include <Ab/Page.hpp>
 #include <Ab/Result.hpp>
-#include <Ab/Span.hpp>
 #include <cstdint>
 
 namespace Ab {
