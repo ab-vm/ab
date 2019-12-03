@@ -10,6 +10,7 @@
 #include <Ab/VectorUtilities.hpp>
 
 #include <cstddef>
+#include <memory>
 #include <span>
 #include <string>
 #include <vector>

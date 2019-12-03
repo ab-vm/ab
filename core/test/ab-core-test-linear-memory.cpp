@@ -7,7 +7,11 @@ namespace Ab::Test {
 TEST(LinearMemoryTest, InitAndKill) { LinearMemory m; }
 
 TEST(LinearMemoryTest, GrowThreeTimes) {
-	LinearMemory m;
+	LinearMemoryConfig cfg;
+	cfg.page_count_min = 0;
+	cfg.page_count_max = 3;
+
+	LinearMemory m(cfg);
 	for (std::size_t i = 0; i < 3; i++) {
 		m.grow();
 	}

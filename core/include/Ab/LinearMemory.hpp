@@ -75,7 +75,8 @@ public:
 		if (config_.page_count_max - page_count_ < n) {
 			throw LinearMemoryError("Failed to grow, not enough reserved pages.");
 		}
-		// TODO: Activate new region
+		activate(address_ + (page_count_ * page_size()), n);
+		page_count_ += n;
 	}
 
 	/// Shrink the memory by n pages.
@@ -91,7 +92,7 @@ public:
 
 private:
 	MutAddress reserve(const MutAddress address, std::size_t n) {
-		return Page::map(address, n);
+		return Page::map(address, n * page_size());
 	}
 
 	void activate(const MutAddress address, const std::size_t n) {
