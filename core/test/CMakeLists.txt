@@ -19,7 +19,8 @@ target_link_libraries(ab-core-test
 		gtest
 )
 
-add_test(run-ab-core-test
+add_test(
+	NAME ab-core-test
 	COMMAND ab-core-test
 )
 

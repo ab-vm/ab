@@ -9,6 +9,6 @@ target_link_libraries(ab-parse-test
 )
 
 add_test(
-	NAME run-ab-parse-test
+	NAME ab-parse-test
 	COMMAND ab-parse-test --gtest_color=yes
 )
