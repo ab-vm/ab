@@ -6,7 +6,6 @@
 #include <Ab/Assert.hpp>
 #include <Ab/Bytes.hpp>
 #include <Ab/Func.hpp>
-#include <iostream>
 
 namespace Ab {
 
@@ -19,14 +18,14 @@ public:
 	static constexpr std::size_t DEFAULT_SIZE = kibibytes(8);
 
 	Stack(std::size_t size) noexcept {
-		address_ = new(std::nothrow) Byte[size];
+		address_ = new (std::nothrow) Byte[size];
 		AB_ASSERT(address_ != nullptr);
 	}
 
 	Stack(const Stack&) = delete;
 
 	Stack(Stack&& other) {
-		address_ = other.address_;
+		address_       = other.address_;
 		other.address_ = nullptr;
 	}
 
@@ -78,9 +77,9 @@ private:
 /// Storage for saved-state embedded in the interpreter frame.
 ///
 struct FrameSaveArea {
-	Address pc;     ///< Saved instruction pointer.
-	MutAddress fp;  ///< Saved frame pointer.
-	MutAddress cp;  ///< Saved Constants/literals pointer/
+	Address ip;     ///< Saved instruction pointer.
+	MutAddress sp;  ///< Saved stack pointer.
+	MutAddress fn;  ///< Saved function pointer.
 };
 
 /// Call-in / toplevel frame.
@@ -101,16 +100,12 @@ struct NormalFrame {
 	FrameTag tag;
 };
 
-enum class ValueKind {
-	@[for entry in data.types]
-		@(entry | upper)@(",\n" if not loop.last -)
-	@[endfor]
-};
-
-union AnyValue {
-	@[for key in data.types]
-		@(data.types[key].ctype) @("as_" + key | varify);
-	@[endfor]
+/// Storage for saving machine registers at interpreter entry.
+/// NOTE: THIS CLASS IS WIP AND NOT USED
+///
+struct EntrySaveArea {
+	MutAddress sp;
+	MutAddress bp;
 };
 
 /// The current state of execution in the virtual machine.
@@ -122,22 +117,17 @@ union AnyValue {
 /// If the virtual machine hasn't been fully initialized, possibly due to a startup error, the vm
 /// will be in the UNDEFINED state.
 ///
-/// After complete and successful execution of a program, the vm is placed into 
+/// After complete and successful execution of a program, the vm is placed into
 enum class ExecCond { UNDEFINED, RUNNING, HALTED, TRAPPED, ERRORED };
 
-enum class ExecAction {
-	CRASH     = 0,
-	INTERPRET = 1,
-	HALT      = 2,
-	EXIT      = 3
-};
+enum class ExecAction { CRASH = 0, INTERPRET = 1, HALT = 2, EXIT = 3 };
 
 /// Flags are runtime conditions located in secondary state.
 ///
 struct Flags {
 	@[for flag in data.interpreter_state.flags]
 		@(flag.type) @(flag.name | varify);
-	@[endfor]
+	@[ endfor ]
 };
 
 /// Primary state is cached in the interpreter, and kept in registers if possible.
@@ -146,7 +136,7 @@ struct Flags {
 struct ExecStateA {
 	@[for state in data.interpreter_state.primary]
 		@(state.type) @(state.name | varify);
-	@[endfor]
+	@[ endfor ]
 };
 
 /// Secondary state is kept in memory and up-to-date. Frequently accessed data
@@ -166,6 +156,7 @@ struct ExecStateB {
 struct ExecState {
 	ExecStateA st_a;  ///< primary execution state.
 	ExecStateB st_b;  ///< secondary execution state.
+	EntrySaveArea entry_save_area;
 };
 
 /// Blow away the execution state.
@@ -177,8 +168,9 @@ inline void clear(ExecState* state) {
 	state->st_b.flags.error = false;
 	state->st_b.condition   = ExecCond::HALTED;
 
-	state->st_a.fp = state->st_b.stack;
-	state->st_a.pc = nullptr;
+	state->st_a.sp = state->st_b.stack;
+	state->st_a.ip = nullptr;
+	state->st_a.fn = nullptr;
 }
 
 class Interpreter;
@@ -204,16 +196,6 @@ public:
 	/// initialize interpreter state and execute interpreter.
 	///
 	void interpret(const Func* target);
-
-	Byte* reserve_stack_slots(std::size_t nslots) {
-		state_.st_a.fp -= nslots * SIZEOF_SLOT;
-		return state_.st_a.fp;
-	}
-
-	Byte* release_stack_slots(std::size_t nslots) {
-		state_.st_a.fp += nslots * SIZEOF_SLOT;
-		return state_.st_a.fp;
-	}
 
 private:
 	ExecState state_;

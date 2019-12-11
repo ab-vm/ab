@@ -17,13 +17,13 @@ public:
 
 	virtual void on_halt() = 0;
 
-	virtual void on_i32_add(std::uint32_t dst, std::uint32_t lhs, std::uint32_t rhs) = 0;
+	virtual void on_i32_add(std::uint8_t dst, std::uint8_t lhs, std::uint8_t rhs) = 0;
 
 	virtual void on_return() = 0;
 
-	virtual void on_x32_return(std::uint32_t src) = 0;
+	virtual void on_x32_return(std::uint8_t ret) = 0;
 
-	virtual void on_x64_return(std::uint32_t src) = 0;
+	virtual void on_x64_return(std::uint8_t ret) = 0;
 };
 
 class BasicInstructionListVisitor : public InstructionListVisitor {
@@ -36,13 +36,13 @@ public:
 
 	virtual void on_halt() override {}
 
-	virtual void on_i32_add(std::uint32_t, std::uint32_t, std::uint32_t) override {}
+	virtual void on_i32_add(std::uint8_t, std::uint8_t, std::uint8_t) override {}
 
 	virtual void on_return() override {}
 
-	virtual void on_x32_return(std::uint32_t) override {}
+	virtual void on_x32_return(std::uint8_t) override {}
 
-	virtual void on_x64_return(std::uint32_t) override {}
+	virtual void on_x64_return(std::uint8_t) override {}
 };
 
 class InstructionListModel {
@@ -72,13 +72,13 @@ public:
 
 	virtual void on_halt() = 0;
 
-	virtual void on_i32_add(std::uint32_t dst, std::uint32_t lhs, std::uint32_t rhs) = 0;
+	virtual void on_i32_add(std::uint8_t dst, std::uint8_t lhs, std::uint8_t rhs) = 0;
 
 	virtual void on_return() = 0;
 
-	virtual void on_x32_return(std::uint32_t src) = 0;
+	virtual void on_x32_return(std::uint8_t src) = 0;
 
-	virtual void on_x64_return(std::uint32_t src) = 0;
+	virtual void on_x64_return(std::uint8_t src) = 0;
 };
 
 /// A function visitor that does nothing--useful as a base class.
@@ -101,13 +101,13 @@ public:
 
 	virtual void on_halt() override {}
 
-	virtual void on_i32_add(std::uint32_t, std::uint32_t, std::uint32_t) override {}
+	virtual void on_i32_add(std::uint8_t, std::uint8_t, std::uint8_t) override {}
 
 	virtual void on_return() override {}
 
-	virtual void on_x32_return(std::uint32_t) override {}
+	virtual void on_x32_return(std::uint8_t) override {}
 
-	virtual void on_x64_return(std::uint32_t) override {}
+	virtual void on_x64_return(std::uint8_t) override {}
 };
 
 class CodeModel {

@@ -46,7 +46,7 @@ public:
 
 	virtual void on_halt() override { body_.append(Opcode::HALT); }
 
-	virtual void on_i32_add(std::uint32_t dst, std::uint32_t lhs, std::uint32_t rhs) override {
+	virtual void on_i32_add(std::uint8_t dst, std::uint8_t lhs, std::uint8_t rhs) override {
 		body_.append(Opcode::I32_ADD);
 		body_.append(dst);
 		body_.append(lhs);
@@ -55,12 +55,12 @@ public:
 
 	virtual void on_return() override { body_.append(Opcode::RETURN); }
 
-	virtual void on_x32_return(std::uint32_t src) override {
+	virtual void on_x32_return(std::uint8_t src) override {
 		body_.append(Opcode::X32_RETURN);
 		body_.append(src);
 	}
 
-	virtual void on_x64_return(std::uint32_t src) override {
+	virtual void on_x64_return(std::uint8_t src) override {
 		body_.append(Opcode::X64_RETURN);
 		body_.append(src);
 	}

@@ -4,7 +4,7 @@ AccessModifierOffset: -8
 AlignAfterOpenBracket: AlwaysBreak
 AlignConsecutiveAssignments: true
 AlignConsecutiveDeclarations: false
-AlignEscapedNewlinesLeft: false
+AlignEscapedNewlines: DontAlign
 AlignOperands: false
 AlignTrailingComments: true
 AllowAllParametersOfDeclarationOnNextLine: true
@@ -20,6 +20,7 @@ AlwaysBreakTemplateDeclarations: true
 BinPackArguments: true
 BinPackParameters: true
 BraceWrapping:
+  AfterCaseLabel:  false
   AfterClass:      false
   AfterControlStatement: false
   AfterEnum:       false
@@ -102,3 +103,4 @@ SpacesInSquareBrackets: false
 Standard:        Auto
 TabWidth:        8
 UseTab:          ForContinuationAndIndentation
+

@@ -1,5 +1,5 @@
-#ifndef AB_XOPCODE_HPP_
-#define AB_XOPCODE_HPP_
+#ifndef AB_OPCODE_HPP_
+#define AB_OPCODE_HPP_
 
 #include <cstddef>
 #include <cstdint>
@@ -8,50 +8,67 @@ namespace Ab {
 
 using RawOpcode = std::uint8_t;
 
-/// Bytecode operator codes.
-///
 enum class Opcode : RawOpcode {
-	@[for operator in data.abx_operators]
-		@(operator.name | constify) = @("0x%02x" % operator.code)@(",\n"  if not loop.last)
-	@[-endfor]
+	UNREACHABLE     = 0x00,
+	NOP             = 0x01,
+	CALL_PRIMITIVE  = 0x02,
+	HALT            = 0x04,
+	RETURN          = 0x0c,
+	X32_RETURN      = 0x0d,
+	X64_RETURN      = 0x0e,
+	CALL            = 0x10,
+	CALL_INDIRECT   = 0x11,
+	GOTO            = 0x16,
+	GOTO_IF         = 0x17,
+	GOTO_UNLESS     = 0x18,
+	MOVE_X32        = 0x20,
+	MOVE_X64        = 0x21,
+	LOAD_RESULT_X32 = 0x22,
+	LOAD_RESULT_X64 = 0x23,
+	GET_GLOBAL      = 0x26,
+	SET_GLOBAL      = 0x27,
+	I32_ADD         = 0x6a
 };
 
-/// Datastructure representing expressions (or statements) in internal programs.
-/// @{
-///
+constexpr std::size_t UNREACHABLE_SIZEOF = 1;
 
-@[for operator in data.abx_operators]
-	/// @(operator.name): @(operator.doc)
-	///
-	struct @(("x_op_" + operator.name) | typeify) {
-		static constexpr Opcode CODE = Opcode::@(operator.name | constify);
-	
-		@[- set ns = namespace(found=false) -]
-		@[- set ns.offset = 1 -] @# aka the size of the initial byte. #
-	
-		@[for imm in operator.immediates]
-			@[set type = data.types[imm.type]]
-			static constexpr std::size_t @((imm.name + "_imm") | constify) = @(ns.offset);
-			@[set ns.offset = ns.offset + type.csizeof]
-		@[endfor]
-		static constexpr std::size_t SIZEOF = @(ns.offset);
-	};
+constexpr std::size_t NOP_SIZEOF = 1;
 
-	@[for imm in operator.immediates]
-		constexpr std::size_t @((operator.name + "_imm_" + imm.name) | constify) =
-			@(("x_op_" + operator.name) | typeify)::@((imm.name + "_imm") | constify);
-	@[endfor]
+constexpr std::size_t HALT_SIZEOF = 1;
 
-	constexpr std::size_t @((operator.name + "_size") | constify) = @(ns.offset);
+constexpr std::size_t CALL_PRIMITIVE_SIZEOF = 4;
 
-	@("\n" if not loop.last)
-@[endfor]
+constexpr std::size_t GOTO_OFF_OFFSET = 1;
+constexpr std::size_t GOTO_SIZEOF     = 2;
 
-/// @}
-///
+constexpr std::size_t GOTO_IF_TST_OFFSET = 1;
+constexpr std::size_t GOTO_IF_OFF_OFFSET = 2;
+constexpr std::size_t GOTO_IF_SIZEOF     = 3;
 
-using Opcode = Opcode;
+constexpr std::size_t GOTO_UNLESS_TST_OFFSET = 1;
+constexpr std::size_t GOTO_UNLESS_OFF_OFFSET = 2;
+constexpr std::size_t GOTO_UNLESS_SIZEOF     = 3;
+
+constexpr std::size_t X32_RETURN_RET_OFFSET = 1;
+constexpr std::size_t X32_RETURN_SIZEOF     = 2;
+
+constexpr std::size_t X64_RETURN_RET_OFFSET = 1;
+constexpr std::size_t X64_RETURN_SIZEOF     = 2;
+
+constexpr std::size_t VEC_RETURN_BASE_OFFSET = 1;
+constexpr std::size_t VEC_RETURN_SIZE_OFFSET = 2;
+constexpr std::size_t VEC_RETURN_SIZEOF      = 3;
+
+constexpr std::size_t I32_ADD_DST_OFFSET = 1;
+constexpr std::size_t I32_ADD_LHS_OFFSET = 2;
+constexpr std::size_t I32_ADD_RHS_OFFSET = 3;
+constexpr std::size_t I32_ADD_SIZEOF     = 4;
+
+constexpr std::size_t I32_SUB_DST_OFFSET = 1;
+constexpr std::size_t I32_SUB_LHS_OFFSET = 2;
+constexpr std::size_t I32_SUB_RHS_OFFSET = 3;
+constexpr std::size_t I32_SUB_SIZEOF     = 4;
 
 }  // namespace Ab
 
-#endif  // AB_XOPCODE_HPP_
+#endif  // AB_OPCODE_HPP_

@@ -19,10 +19,10 @@ namespace Ab {
  * Value                             | Address         | Notes
  * ----------------------------------|-----------------|--------------------------------------------
  * - frame                           |                 | frame end
- *   - caller state                  |                 | Pushed despite 
- *     - pc                          |                 |
- *     - fp                          |                 |
- *     - cp                          |                 |
+ *   - caller state                  |                 | Pushed despite
+ *     - ip                          |                 |
+ *     - sp                          |                 |
+ *     - fn                          |                 |
  *   - flags                         | sp[nvar + narg] | tagged as native frame
  * - registers                       |                 |
  *   - variables                     |                 |
@@ -35,12 +35,14 @@ namespace Ab {
  *     - arg 0                       | sp[0]           | register pointer
  *
  * low address (grows down)
- * 
+ *
  * In a native call-in, the arguments are written directly in-place by the caller, and the return
  * values will be manually copied out. Thus, the call-in has no register slots in it's frame.
  */
 
 /*
+ * Call-out Layout
+ *
  * high address (grows down)
  *
  * Value                             | Address         | Notes
@@ -55,9 +57,9 @@ namespace Ab {
  *   - flags <end>                   |
  * - frame                           | rp + register-end + frame-size     <----- frame end
  *   - caller state                  |
- *     - pc                          |
- *     - fp                          |
- *     - cp                          |
+ *     - ip                          |
+ *     - sp                          |
+ *     - fn                          |
  *   - flags <normal>                | rp[nregs] = rp + nregs * 4         <----- register end
  * - registers                       |
  *   - variables                     |
@@ -73,89 +75,26 @@ namespace Ab {
  * low address (grows down)
  */
 
-@#  State Declarations, Commit and Reload #
+///
+/// Interpreter Typedefs (TODO: should these move?)
+///
 
-@[set decl_state_vars]
-	@[for var in data.interpreter_state.primary]
-		@(- var.type) @(var.name);
-	@[endfor]
-@[endset]
-
-@[set commit_state]
-	// commit state
-	@[for var in data.interpreter_state.primary]
-		state->st_a.@(var.name) = @(var.name);
-	@[endfor]
-@[endset]
-
-@[set reload_state]
-	// reload_state
-	@[for var in data.interpreter_state.primary]
-		@(var.name) = state->st_a.@(var.name);
-	@[endfor]
-@[endset]
-
-@# Helpers for implementing bytecode handlers #
-
-@[macro trace(name)]
-	fprintf(stderr, "executing: pc=%p op=%d name=@(name)\n", pc, (int)*pc);
-@[endmacro]
-
-@# mangle an operator name to the handlers name #
-@[macro handler_name(op_name)]
-	@(("do_" + op_name) | varify)
-@[endmacro]
-
-@[macro begin_handler(op_name)]
-
-@[endmacro]
-
-@[macro handle(op_name)]
-	@(handler_name(op_name)): {
-		@(trace(op_name))
-		@(caller())
-	}
-@[endmacro]
-
-@[set dispatch]
-	// dispatch
-	fprintf(stderr, "dispatch: pc=%p op=%d\n", pc, (int)*pc);
-	goto *INSTRUCTION_TABLE[*pc];
-@[endset]
-
-@# Register Access #
-
-@[macro reg(type, index)]
-	*(@(type)*)(fp + (@(index)*SIZEOF_SLOT))
-@[endmacro]
-
-@[macro get_reg(type, index)]
-	*(@(type)*)(fp + (@(index)*SIZEOF_SLOT))
-@[endmacro]
-
-@[macro set_reg(type, index, value)]
-	*((@(type))(fp + (@(index)*SIZEOF_SLOT)) = @(value);
-@[endmacro]
-
-@# Instruction Decoding #
-
-@[macro imm(type, offset)]
-	*(const @(type)*)(pc + @(offset))
-@[endmacro]
-
-#define REG_PTR(idx) (fp + ((idx)*SIZEOF_SLOT))
-
-#define I32_REG_PTR(idx) ((std::uint32_t*)REG_PTR(idx))
-#define I64_REG_PTR(idx) ((std::uint64_t*)REG_PTR(idx))
-#define F32_REG_PTR(idx) ((float*)REG_PTR(idx))
-#define F64_REG_PTR(idx) ((double*)REG_PTR(idx))
-
-#define REG(idx) (*REG_PTR(idx))
-
-#define I32_REG(idx) (*I32_REG_PTR(idx))
-#define I64_REG(idx) (*I64_REG_PTR(idx))
-#define F32_REG(idx) (*F32_REG_PTR(idx))
-#define F64_REG(idx) (*F64_REG_PTR(idx))
+using r8  = std::uint8_t;
+using r16 = std::uint16_t;
+using r32 = std::uint32_t;
+using u8  = std::uint8_t;
+using u16 = std::uint16_t;
+using u32 = std::uint32_t;
+using u64 = std::uint64_t;
+using i8  = std::int8_t;
+using i16 = std::int16_t;
+using i32 = std::int32_t;
+using i64 = std::int64_t;
+using f32 = float;
+using f64 = double;
+using x32 = std::uint32_t;
+using x64 = std::uint64_t;
+using ref = std::uint64_t;
 
 ///
 /// Forward Declarations
@@ -166,41 +105,89 @@ static Byte* act(ExecState* state, ExecAction action);
 static std::pair<ExecAction, Byte*> do_interpret(ExecState* state);
 
 ///
-/// Interpreter method calls
+/// Register Accessors.
 ///
 
-Interpreter::Interpreter() {
-	std::size_t stack_size = 2048;
-
-	state_.st_b.stack = new Byte[stack_size];
-	state_.st_b.func = nullptr;
-	state_.st_b.flags.trap = false;
-	state_.st_b.flags.error = false;
-	state_.st_b.condition = ExecCond::HALTED;
-
-	state_.st_a.fp = state_.st_b.stack + stack_size;
-	state_.st_a.pc = nullptr;
-	state_.st_a.cp = nullptr;
+template <typename T>
+T& reg_at(Byte* sp, std::size_t index) noexcept {
+	return *reinterpret_cast<T*>(sp + (index * SIZEOF_SLOT));
 }
 
-Interpreter::~Interpreter() {
-	delete[] state_.st_b.stack;
+u32& u32_reg_at(Byte* sp, std::size_t index) noexcept { return reg_at<u32>(sp, index); }
+
+u64& u64_reg_at(Byte* sp, std::size_t index) noexcept { return reg_at<u64>(sp, index); }
+
+i32& i32_reg_at(Byte* sp, std::size_t index) noexcept { return reg_at<i32>(sp, index); }
+
+i64& i64_reg_at(Byte* sp, std::size_t index) noexcept { return reg_at<i64>(sp, index); }
+
+f32& f32_reg_at(Byte* sp, std::size_t index) noexcept { return reg_at<f32>(sp, index); }
+
+f64& f64_reg_at(Byte* sp, std::size_t index) noexcept { return reg_at<f64>(sp, index); }
+
+x32& x32_reg_at(Byte* sp, std::size_t index) noexcept { return reg_at<x32>(sp, index); }
+
+x64& x64_reg_at(Byte* sp, std::size_t index) noexcept { return reg_at<x64>(sp, index); }
+
+///
+/// Instruction Stream Decoding
+///
+
+template <typename T>
+T operand(const Byte* ip, std::size_t offset) noexcept {
+	return *reinterpret_cast<const T*>(ip + offset);
+}
+
+r8 r8_operand(const Byte* ip, std::size_t offset) noexcept { return operand<r8>(ip, offset); }
+
+r16 r16_operand(const Byte* ip, std::size_t offset) noexcept { return operand<r16>(ip, offset); }
+
+r32 r32_operand(const Byte* ip, std::size_t offset) noexcept { return operand<r32>(ip, offset); }
+
+i8 i8_operand(const Byte* ip, std::size_t offset) noexcept { return operand<i8>(ip, offset); }
+
+i16 i16_operand(const Byte* ip, std::size_t offset) noexcept { return operand<i16>(ip, offset); }
+
+i32 i32_operand(const Byte* ip, std::size_t offset) noexcept { return operand<i32>(ip, offset); }
+
+u8 u8_operand(const Byte* ip, std::size_t offset) noexcept { return operand<u8>(ip, offset); }
+
+u16 u16_operand(const Byte* ip, std::size_t offset) noexcept { return operand<u16>(ip, offset); }
+
+u32 u32_operand(const Byte* ip, std::size_t offset) noexcept { return operand<u32>(ip, offset); }
+
+f32 f32_operand(const Byte* ip, std::size_t offset) noexcept { return operand<f32>(ip, offset); }
+
+f64 f64_operand(const Byte* ip, std::size_t offset) noexcept { return operand<f64>(ip, offset); }
+
+///
+/// Indirect register accessors
+///
+
+template <typename T, typename U>
+T& reg_at_operand(Byte* sp, const Byte* ip, std::size_t offset) noexcept {
+	return reg_at<T>(sp, operand<U>(ip, offset));
+}
+
+template <typename T>
+T& reg_at_r8_operand(Byte* sp, const Byte* ip, std::size_t offset) noexcept {
+	return reg_at<T>(sp, r8_operand(ip, offset));
 }
 
 ///
-/// Call frame helpers
+/// Call Frame Helpers
 ///
 
 template <typename T, typename... Args>
 T* push_value(Byte*& stack, Args&&... args) {
 	static_assert(std::is_trivially_destructible_v<T>);
 	stack -= sizeof(T);
-	return new(stack) T(std::forward<Args>(args)...);
+	return new (stack) T(std::forward<Args>(args)...);
 }
 
 template <typename T, typename... Args>
 T* push_value(ExecState& state, Args&&... args) {
-	return push(state.st_a.fp, std::forward<Args>(args)...);
+	return push(state.st_a.sp, std::forward<Args>(args)...);
 }
 
 template <typename T, typename... Args>
@@ -218,7 +205,7 @@ T* pop_value(Byte*& stack) {
 
 template <typename T>
 T* pop_value(ExecState& state) {
-	pop<T>(state.st_a.fp);
+	pop<T>(state.st_a.sp);
 }
 
 template <typename T>
@@ -231,13 +218,9 @@ Byte* push_regs(Byte*& stack, std::size_t nregs) {
 	return stack;
 }
 
-Byte* push_regs(ExecState& state, std::size_t nregs) {
-	return push_regs(state.st_a.fp, nregs);
-}
+Byte* push_regs(ExecState& state, std::size_t nregs) { return push_regs(state.st_a.sp, nregs); }
 
-Byte* push_regs(Context& cx, std::size_t nregs) {
-	return push_regs(cx.exec_state(), nregs);
-}
+Byte* push_regs(Context& cx, std::size_t nregs) { return push_regs(cx.exec_state(), nregs); }
 
 Byte* pop_regs(Byte*& stack, std::size_t nregs) {
 	auto copy = stack;
@@ -245,13 +228,9 @@ Byte* pop_regs(Byte*& stack, std::size_t nregs) {
 	return copy;
 }
 
-Byte* pop_regs(ExecState& state, std::size_t nregs) {
-	return pop_regs(state.st_a.fp, nregs);
-}
+Byte* pop_regs(ExecState& state, std::size_t nregs) { return pop_regs(state.st_a.sp, nregs); }
 
-Byte* pop_regs(Context& cx, std::size_t nregs) {
-	return pop_regs(cx.exec_state(), nregs);
-}
+Byte* pop_regs(Context& cx, std::size_t nregs) { return pop_regs(cx.exec_state(), nregs); }
 
 template <typename T>
 T* peek_value(Byte* stack, std::size_t offset = 0) {
@@ -259,26 +238,78 @@ T* peek_value(Byte* stack, std::size_t offset = 0) {
 }
 
 ///
+/// Debug Helpers
+///
+
+#ifdef AB_DEBUG
+
+#define TRACE_ENTER(insn) fmt::print(stderr, "  * " insn " @{}\n", (void*)ip)
+#define TRACE_PRINT(msg, ...) fmt::print(stderr, "    " msg, __VA_ARGS__)
+#define TRACE_LEAVE(insn) fmt::print(stderr, "\n")
+
+#else  // AB_DEBUG
+
+#define TRACE_ENTER(insn)      // nothing
+#define TRACE_PRINT(msg, ...)  // nothing
+#define TRACE_LEAVE(str)       // nothing
+
+#endif  // AB_DEBUG
+
+#define COMMIT_STATE() \
+	do { \
+		state->st_a.sp = sp; \
+		state->st_a.ip = ip; \
+		state->st_a.fn = fn; \
+	} while (0)
+
+#define RELOAD_STATE() \
+	do { \
+		sp = state->st_a.sp; \
+		ip = state->st_a.ip; \
+		fn = state->st_a.fn; \
+	} while (0)
+
+///
+/// Interpreter method calls
+///
+
+Interpreter::Interpreter() {
+	std::size_t stack_size = 2048;
+
+	state_.st_b.stack       = new Byte[stack_size];
+	state_.st_b.func        = nullptr;
+	state_.st_b.flags.trap  = false;
+	state_.st_b.flags.error = false;
+	state_.st_b.condition   = ExecCond::HALTED;
+
+	state_.st_a.sp = state_.st_b.stack + stack_size;
+	state_.st_a.ip = nullptr;
+	state_.st_a.fn = nullptr;
+}
+
+Interpreter::~Interpreter() { delete[] state_.st_b.stack; }
+
+///
 /// Public API: calling into the interpreter
 ///
 
 Byte* enter_native_frame(Context& cx, std::size_t nregs) {
 	ExecState& state = cx.exec_state();
-	Byte* stack = state.st_a.fp;
+	Byte* stack      = state.st_a.sp;
 
 #ifdef AB_DEBUG
 	push_value<std::uint64_t>(stack, 0xdeadbeef);
-#endif 
+#endif
 
 	NativeFrame* frame = push_value<NativeFrame>(stack);
 	AB_DBG_MSG("frame @{}\n", (void*)frame);
-	frame->save_area.fp = state.st_a.fp;
-	frame->save_area.pc = state.st_a.pc;
-	frame->save_area.cp = state.st_a.cp;
+	frame->save_area.sp = state.st_a.sp;
+	frame->save_area.ip = state.st_a.ip;
+	frame->save_area.fn = state.st_a.fn;
 
 	push_regs(stack, nregs);
 
-	state.st_a.fp = stack;
+	state.st_a.sp = stack;
 
 	AB_DBG_MSG("enter_native_frame: stack={}\n", (void*)stack);
 
@@ -287,27 +318,27 @@ Byte* enter_native_frame(Context& cx, std::size_t nregs) {
 
 Byte* leave_native_frame(Context& cx, std::size_t nregs) {
 	ExecState& state = cx.exec_state();
-	Byte* stack = state.st_a.fp;
+	Byte* stack      = state.st_a.sp;
 
 	pop_regs(stack, nregs);
 	auto* frame = pop_value<NativeFrame>(stack);
 
-	state.st_a.cp = frame->save_area.cp;
-	state.st_a.pc = frame->save_area.pc;
-	state.st_a.fp = frame->save_area.fp;
+	state.st_a.sp = frame->save_area.sp;
+	state.st_a.ip = frame->save_area.ip;
+	state.st_a.fn = frame->save_area.fn;
 
 #ifdef AB_DEBUG
 	auto* eyecatcher = pop_value<std::uint64_t>(stack);
 	AB_ASSERT(*eyecatcher == 0xdeadbeef);
 #endif
 
-	return state.st_a.fp;
+	return state.st_a.sp;
 }
 
 static Byte* interpret_func(ExecState* state, FuncInst* func) {
 	state->st_b.func = func;
-	state->st_a.pc = func->body();
-	state->st_a.cp = nullptr; // TODO: func->constants();
+	state->st_a.ip   = func->body();
+	state->st_a.fn   = nullptr;  // TODO: func->constants();
 	return act(state, ExecAction::INTERPRET);
 }
 
@@ -315,13 +346,9 @@ static Byte* interpret_func(Context& cx, FuncInst* func) {
 	return interpret_func(&cx.exec_state(), func);
 }
 
-Byte* enter_interpreter(Context& cx, FuncInst* func_inst) {
-	return interpret_func(cx, func_inst);
-}
+Byte* enter_interpreter(Context& cx, FuncInst* func_inst) { return interpret_func(cx, func_inst); }
 
-void interpret(ExecState* state, FuncInst* func) {
-	interpret_func(state, func);
-}
+void interpret(ExecState* state, FuncInst* func) { interpret_func(state, func); }
 
 void interpret(ExecState* state, ModuleInst* mod, std::size_t index) {
 	interpret_func(state, mod->func_inst(index));
@@ -331,16 +358,16 @@ void interpret(ExecState* state, ModuleInst* mod, std::size_t index) {
 /// Interpreter Action Handling
 ///
 
-#define DO_ACTION(action) goto *ACTION_TABLE[std::size_t(action)]
+#define DO_ACTION(action) goto* ACTION_TABLE[std::size_t(action)]
 
 /// The main interpreter action trampoline.
 ///
 static Byte* act(ExecState* state, ExecAction action) {
 	constexpr static void* const ACTION_TABLE[4] = {
-		&&do_crash,     // 0
-		&&do_interpret, // 1
-		&&do_halt,      // 2
-		&&do_exit       // 3
+		&&do_crash,      // 0
+		&&do_interpret,  // 1
+		&&do_halt,       // 2
+		&&do_exit        // 3
 	};
 
 	Byte* ret = nullptr;
@@ -370,583 +397,423 @@ do_crash:
 /// Core Bytecode Interpreter
 ///
 
-static std::pair<ExecAction, Byte*> do_interpret(ExecState* state) {
+#define DO_INSN(insn) goto* INSTRUCTION_TABLE[(Byte)(insn)];
+#define DISPATCH_INSN() DO_INSN(*(Byte*)ip)
 
+static std::pair<ExecAction, Byte*> do_interpret(ExecState* state) {
 	static void* const INSTRUCTION_TABLE[256] = {
-		@[for i in range(0, 256)-]
-			@[- set operators = data.abx_operators | selectattr('code', 'equalto', i) | list]
-			@[- if operators | count != 0]
-				@[- set operator = operators[0] -]
-				&&@(handler_name(operator.name))
-			@[- else -]
-				&&do_unimplemented
-			@[-endif]@("," if not loop.last) // @(i)
-		@[endfor]
+		&&do_unreachable,     // 00
+		&&do_nop,             // 01
+		&&do_call_primitive,  // 02
+		&&do_unimplemented,   // 03
+		&&do_halt,            // 04
+		&&do_unimplemented,   // 05
+		&&do_unimplemented,   // 06
+		&&do_unimplemented,   // 07
+		&&do_unimplemented,   // 08
+		&&do_unimplemented,   // 09
+		&&do_unimplemented,   // 10
+		&&do_unimplemented,   // 11
+		&&do_return,          // 12
+		&&do_x32_return,      // 13
+		&&do_unimplemented,   // 14
+		&&do_unimplemented,   // 15
+		&&do_unimplemented,   // 16
+		&&do_unimplemented,   // 17
+		&&do_unimplemented,   // 18
+		&&do_unimplemented,   // 19
+		&&do_unimplemented,   // 20
+		&&do_unimplemented,   // 21
+		&&do_goto,            // 22
+		&&do_goto_if,         // 23
+		&&do_goto_unless,     // 24
+		&&do_unimplemented,   // 25
+		&&do_unimplemented,   // 26
+		&&do_unimplemented,   // 27
+		&&do_unimplemented,   // 28
+		&&do_unimplemented,   // 29
+		&&do_unimplemented,   // 30
+		&&do_unimplemented,   // 31
+		&&do_unimplemented,   // 32
+		&&do_unimplemented,   // 33
+		&&do_unimplemented,   // 34
+		&&do_unimplemented,   // 35
+		&&do_unimplemented,   // 36
+		&&do_unimplemented,   // 37
+		&&do_unimplemented,   // 38
+		&&do_unimplemented,   // 39
+		&&do_unimplemented,   // 40
+		&&do_unimplemented,   // 41
+		&&do_unimplemented,   // 42
+		&&do_unimplemented,   // 43
+		&&do_unimplemented,   // 44
+		&&do_unimplemented,   // 45
+		&&do_unimplemented,   // 46
+		&&do_unimplemented,   // 47
+		&&do_unimplemented,   // 48
+		&&do_unimplemented,   // 49
+		&&do_unimplemented,   // 50
+		&&do_unimplemented,   // 51
+		&&do_unimplemented,   // 52
+		&&do_unimplemented,   // 53
+		&&do_unimplemented,   // 54
+		&&do_unimplemented,   // 55
+		&&do_unimplemented,   // 56
+		&&do_unimplemented,   // 57
+		&&do_unimplemented,   // 58
+		&&do_unimplemented,   // 59
+		&&do_unimplemented,   // 60
+		&&do_unimplemented,   // 61
+		&&do_unimplemented,   // 62
+		&&do_unimplemented,   // 63
+		&&do_unimplemented,   // 64
+		&&do_unimplemented,   // 65
+		&&do_unimplemented,   // 66
+		&&do_unimplemented,   // 67
+		&&do_unimplemented,   // 68
+		&&do_unimplemented,   // 69
+		&&do_unimplemented,   // 70
+		&&do_unimplemented,   // 71
+		&&do_unimplemented,   // 72
+		&&do_unimplemented,   // 73
+		&&do_unimplemented,   // 74
+		&&do_unimplemented,   // 75
+		&&do_unimplemented,   // 76
+		&&do_unimplemented,   // 77
+		&&do_unimplemented,   // 78
+		&&do_unimplemented,   // 79
+		&&do_unimplemented,   // 80
+		&&do_unimplemented,   // 81
+		&&do_unimplemented,   // 82
+		&&do_unimplemented,   // 83
+		&&do_unimplemented,   // 84
+		&&do_unimplemented,   // 85
+		&&do_unimplemented,   // 86
+		&&do_unimplemented,   // 87
+		&&do_unimplemented,   // 88
+		&&do_unimplemented,   // 89
+		&&do_unimplemented,   // 90
+		&&do_unimplemented,   // 91
+		&&do_unimplemented,   // 92
+		&&do_unimplemented,   // 93
+		&&do_unimplemented,   // 94
+		&&do_unimplemented,   // 95
+		&&do_unimplemented,   // 96
+		&&do_unimplemented,   // 97
+		&&do_unimplemented,   // 98
+		&&do_unimplemented,   // 99
+		&&do_unimplemented,   // 100
+		&&do_unimplemented,   // 101
+		&&do_unimplemented,   // 102
+		&&do_unimplemented,   // 103
+		&&do_unimplemented,   // 104
+		&&do_unimplemented,   // 105
+		&&do_i32_add,         // 106
+		&&do_i32_sub,         // 107
+		&&do_unimplemented,   // 108
+		&&do_unimplemented,   // 109
+		&&do_unimplemented,   // 110
+		&&do_unimplemented,   // 111
+		&&do_unimplemented,   // 112
+		&&do_unimplemented,   // 113
+		&&do_unimplemented,   // 114
+		&&do_unimplemented,   // 115
+		&&do_unimplemented,   // 116
+		&&do_unimplemented,   // 117
+		&&do_unimplemented,   // 118
+		&&do_unimplemented,   // 119
+		&&do_unimplemented,   // 120
+		&&do_unimplemented,   // 121
+		&&do_unimplemented,   // 122
+		&&do_unimplemented,   // 123
+		&&do_unimplemented,   // 124
+		&&do_unimplemented,   // 125
+		&&do_unimplemented,   // 126
+		&&do_unimplemented,   // 127
+		&&do_unimplemented,   // 128
+		&&do_unimplemented,   // 129
+		&&do_unimplemented,   // 130
+		&&do_unimplemented,   // 131
+		&&do_unimplemented,   // 132
+		&&do_unimplemented,   // 133
+		&&do_unimplemented,   // 134
+		&&do_unimplemented,   // 135
+		&&do_unimplemented,   // 136
+		&&do_unimplemented,   // 137
+		&&do_unimplemented,   // 138
+		&&do_unimplemented,   // 139
+		&&do_unimplemented,   // 140
+		&&do_unimplemented,   // 141
+		&&do_unimplemented,   // 142
+		&&do_unimplemented,   // 143
+		&&do_unimplemented,   // 144
+		&&do_unimplemented,   // 145
+		&&do_unimplemented,   // 146
+		&&do_unimplemented,   // 147
+		&&do_unimplemented,   // 148
+		&&do_unimplemented,   // 149
+		&&do_unimplemented,   // 150
+		&&do_unimplemented,   // 151
+		&&do_unimplemented,   // 152
+		&&do_unimplemented,   // 153
+		&&do_unimplemented,   // 154
+		&&do_unimplemented,   // 155
+		&&do_unimplemented,   // 156
+		&&do_unimplemented,   // 157
+		&&do_unimplemented,   // 158
+		&&do_unimplemented,   // 159
+		&&do_unimplemented,   // 160
+		&&do_unimplemented,   // 161
+		&&do_unimplemented,   // 162
+		&&do_unimplemented,   // 163
+		&&do_unimplemented,   // 164
+		&&do_unimplemented,   // 165
+		&&do_unimplemented,   // 166
+		&&do_unimplemented,   // 167
+		&&do_unimplemented,   // 168
+		&&do_unimplemented,   // 169
+		&&do_unimplemented,   // 170
+		&&do_unimplemented,   // 171
+		&&do_unimplemented,   // 172
+		&&do_unimplemented,   // 173
+		&&do_unimplemented,   // 174
+		&&do_unimplemented,   // 175
+		&&do_unimplemented,   // 176
+		&&do_unimplemented,   // 177
+		&&do_unimplemented,   // 178
+		&&do_unimplemented,   // 179
+		&&do_unimplemented,   // 180
+		&&do_unimplemented,   // 181
+		&&do_unimplemented,   // 182
+		&&do_unimplemented,   // 183
+		&&do_unimplemented,   // 184
+		&&do_unimplemented,   // 185
+		&&do_unimplemented,   // 186
+		&&do_unimplemented,   // 187
+		&&do_unimplemented,   // 188
+		&&do_unimplemented,   // 189
+		&&do_unimplemented,   // 190
+		&&do_unimplemented,   // 191
+		&&do_unimplemented,   // 192
+		&&do_unimplemented,   // 193
+		&&do_unimplemented,   // 194
+		&&do_unimplemented,   // 195
+		&&do_unimplemented,   // 196
+		&&do_unimplemented,   // 197
+		&&do_unimplemented,   // 198
+		&&do_unimplemented,   // 199
+		&&do_unimplemented,   // 200
+		&&do_unimplemented,   // 201
+		&&do_unimplemented,   // 202
+		&&do_unimplemented,   // 203
+		&&do_unimplemented,   // 204
+		&&do_unimplemented,   // 205
+		&&do_unimplemented,   // 206
+		&&do_unimplemented,   // 207
+		&&do_unimplemented,   // 208
+		&&do_unimplemented,   // 209
+		&&do_unimplemented,   // 210
+		&&do_unimplemented,   // 211
+		&&do_unimplemented,   // 212
+		&&do_unimplemented,   // 213
+		&&do_unimplemented,   // 214
+		&&do_unimplemented,   // 215
+		&&do_unimplemented,   // 216
+		&&do_unimplemented,   // 217
+		&&do_unimplemented,   // 218
+		&&do_unimplemented,   // 219
+		&&do_unimplemented,   // 220
+		&&do_unimplemented,   // 221
+		&&do_unimplemented,   // 222
+		&&do_unimplemented,   // 223
+		&&do_unimplemented,   // 224
+		&&do_unimplemented,   // 225
+		&&do_unimplemented,   // 226
+		&&do_unimplemented,   // 227
+		&&do_unimplemented,   // 228
+		&&do_unimplemented,   // 229
+		&&do_unimplemented,   // 230
+		&&do_unimplemented,   // 231
+		&&do_unimplemented,   // 232
+		&&do_unimplemented,   // 233
+		&&do_unimplemented,   // 234
+		&&do_unimplemented,   // 235
+		&&do_unimplemented,   // 236
+		&&do_unimplemented,   // 237
+		&&do_unimplemented,   // 238
+		&&do_unimplemented,   // 239
+		&&do_unimplemented,   // 240
+		&&do_unimplemented,   // 241
+		&&do_unimplemented,   // 242
+		&&do_unimplemented,   // 243
+		&&do_unimplemented,   // 244
+		&&do_unimplemented,   // 245
+		&&do_unimplemented,   // 246
+		&&do_unimplemented,   // 247
+		&&do_unimplemented,   // 248
+		&&do_unimplemented,   // 249
+		&&do_unimplemented,   // 250
+		&&do_unimplemented,   // 251
+		&&do_unimplemented,   // 252
+		&&do_unimplemented,   // 253
+		&&do_unimplemented,   // 254
+		&&do_unimplemented    // 255
 	};
 
-	@(decl_state_vars)
-	@(reload_state)
-	@(dispatch)
+	Byte* fn;
+	const Byte* ip;
+	Byte* sp;
 
-	///////////// Special Handlers
+	RELOAD_STATE();
+	DISPATCH_INSN();
 
-	@[call handle('unimplemented')]
-		@(commit_state)
-		AB_ASSERT_UNREACHABLE();
-	@[endcall]
+do_unimplemented:
+	TRACE_ENTER("unimplemented");
+	AB_ASSERT_UNREACHABLE();
 
-	@[call handle('unreachable')]
-		@(commit_state)
-		state->st_b.flags.error = true;
-		return {ExecAction::EXIT, nullptr};
-	@[endcall]
+do_unreachable:
+	TRACE_ENTER("unreachable");
+	COMMIT_STATE();
+	state->st_b.flags.error = true;
+	return {ExecAction::EXIT, nullptr};
 
-	@[call handle('nop')]
-		pc += NOP_SIZE;
-		@(dispatch)
-	@[endcall]
+do_nop:
+	TRACE_ENTER("nop");
+	ip += NOP_SIZEOF;
+	DISPATCH_INSN();
 
-	@[call handle('halt')]
-		@(commit_state)
-		return {ExecAction::HALT, nullptr};
-	@[endcall]
+do_halt:
+	TRACE_ENTER("halt");
+	COMMIT_STATE();
+	return {ExecAction::HALT, nullptr};
 
-	@[call handle('call_primitive')]
-		@(commit_state)
-		auto target = @(imm('void*', 'CALL_PRIMITIVE_IMM_TGT'));
-		// TODO: target(state);
-		@(reload_state)
-		pc += CALL_PRIMITIVE_SIZE;
-		@(dispatch)
-	@[endcall]
+do_call_primitive:
+	TRACE_ENTER("call_primitive");
+	COMMIT_STATE();
+	AB_ASSERT_UNREACHABLE();
 
-	@[call handle('goto')]
-		auto off = @(imm('std::uint32_t', 'GOTO_IMM_OFF'));
-		fprintf(stderr, "offset=%d\n", off);
-		pc += off + GOTO_SIZE;
-		@(dispatch)
-	@[endcall]
+do_goto:
+	TRACE_ENTER("goto");
+	{
+		i8 off = i8_operand(ip, GOTO_OFF_OFFSET);
+		ip += off + GOTO_SIZEOF;
+		DISPATCH_INSN();
+	}
 
-	@[call handle('goto_if')]
-		auto reg = @(imm('std::int32_t',  'GOTO_IF_IMM_TST'));
-		auto off = @(imm('std::uint32_t', 'GOTO_IF_IMM_OFF'));
-		auto tst = @(reg('std::uint32_t', 'reg'));
-		pc += GOTO_IF_SIZE;
-		if (tst) {
-			pc += off;
+do_goto_if:
+	TRACE_ENTER("goto_if");
+	{
+		r8 idx  = r8_operand(ip, GOTO_IF_TST_OFFSET);
+		i8 off  = i8_operand(ip, GOTO_IF_OFF_OFFSET);
+		u32 val = u32_reg_at(sp, idx);
+		if (val) {
+			ip += off;
 		}
-		@(dispatch)
-	@[endcall]
+		ip += GOTO_IF_SIZEOF;
+		DISPATCH_INSN();
+	}
 
-	@[call handle('goto_unless')]
-		auto reg = @(imm('std::uint32_t', 'GOTO_UNLESS_IMM_TST'));
-		auto off = @(imm('std::int32_t',  'GOTO_UNLESS_IMM_OFF'));
-		auto tst = @(reg('std::uint32_t', 'reg'));
-		fprintf(stderr, "offset=%d\n", off);
-		pc += GOTO_UNLESS_SIZE;
-		if (!tst) {
-			pc += off;
+do_goto_unless:
+	TRACE_ENTER("goto_unless");
+	{
+		r8 idx  = r8_operand(ip, GOTO_UNLESS_TST_OFFSET);
+		i8 off  = i8_operand(ip, GOTO_UNLESS_OFF_OFFSET);
+		u32 val = u32_reg_at(sp, idx);
+		if (!val) {
+			ip += off;
 		}
-		@(dispatch)
-	@[endcall]
+		ip += GOTO_IF_SIZEOF;
+		DISPATCH_INSN();
+	}
 
-	@[call handle('return')]
-		FuncInst* func = state->st_b.func;
-		const FrameTag* tag = reinterpret_cast<FrameTag*>(fp + func->nreg_bytes());
+do_return:
+	TRACE_ENTER("return");
+	{
+		FuncInst* func      = state->st_b.func;
+		const FrameTag* tag = reinterpret_cast<FrameTag*>(sp + func->nreg_bytes());
+
+		if (tag->frame_kind() == FrameKind::NORMAL) {
+			
+		}
 	
 		if (tag->frame_kind() == FrameKind::NATIVE) {
-			@(commit_state)
+			COMMIT_STATE();
 			return {ExecAction::EXIT, nullptr};
 		}
 
-		@(commit_state)
+		COMMIT_STATE();
 		AB_ASSERT_UNREACHABLE();
-	@[endcall]
+	}
 
-	@[call handle('x32.return')]
-		auto reg_ptr = REG_PTR(@(imm('std::uint32_t', 'X32_RETURN_IMM_SRC')));
-		FuncInst* func = state->st_b.func;
-		const FrameTag* tag = reinterpret_cast<FrameTag*>(fp + func->nreg_bytes());
-	
-		AB_DBG_MSG("reg_ptr={}\n", (void*)reg_ptr);
-		AB_DBG_MSG("val={}\n", *(std::uint32_t*)reg_ptr);
+do_x32_return:
+	TRACE_ENTER("x32.return");
+	{
+		r8 idx   = r8_operand(ip, X32_RETURN_RET_OFFSET);
+		x32& reg = x32_reg_at(sp, idx);
+
+		TRACE_PRINT("ret idx={} ptr={} val={}\n", idx, (void*)&reg, reg);
+
+		FuncInst* func      = state->st_b.func;
+		const FrameTag* tag = reinterpret_cast<FrameTag*>(sp + func->nreg_bytes());
 
 		if (tag->frame_kind() == FrameKind::NATIVE) {
-			@(commit_state)
-			return {ExecAction::EXIT, reg_ptr};
+			COMMIT_STATE();
+			return {ExecAction::EXIT, (Byte*)&reg};
 		}
 
-		@(commit_state)
+		COMMIT_STATE();
 		AB_ASSERT_UNREACHABLE();
-	@[endcall]
+	}
 
-	@[call handle('x64.return')]
-		@(commit_state)
+do_call:
+	TRACE_ENTER("call");
+	{
+		COMMIT_STATE();
 		AB_ASSERT_UNREACHABLE();
-	@[endcall]
-
-	@[call handle('call')]
-		pc += CALL_SIZE;
-		@(commit_state)
-		return {ExecAction::CRASH, nullptr};
-	@[endcall]
-
-	@[call handle('call_indirect')]
-		pc += CALL_INDIRECT_SIZE;
-		return {ExecAction::CRASH, nullptr};
-	@[endcall]
-
-	@[call handle('get_global')]
-		// TODO
-		pc += GET_GLOBAL_SIZE;
-		@(dispatch)
-	@[endcall]
-
-	@[call handle('set_global')]
-		// TODO
-		pc += SET_GLOBAL_SIZE;
-		@(dispatch)
-	@[endcall]
-
-	@[call handle('move_x32')]
-		auto dst = @(imm('std::uint32_t', 'MOVE_X32_IMM_DST'));
-		auto src = @(imm('std::uint32_t', 'MOVE_X32_IMM_SRC'));
-
-		@(reg('std::uint32_t', 'dst')) = @(reg('std::uint32_t', 'src'));
-		pc += MOVE_X32_SIZE;
-		@(dispatch)
-	@[endcall]
-
-	@[call handle('move_x64')]
-		auto dst = @(imm('std::uint32_t', 'MOVE_X32_IMM_DST'));
-		auto src = @(imm('std::uint32_t', 'MOVE_X32_IMM_SRC'));
-
-		@(reg('std::uint64_t', 'dst')) = @(reg('std::uint64_t', 'src'));
-		pc += MOVE_X64_SIZE;
-		@(dispatch)
-	@[endcall]
-
-	@[call handle('load_result_x32')]
-		auto dst = @(imm('std::uint32_t', 'LOAD_RESULT_X32_IMM_DST'));
-		@(reg('std::uint32_t', 'dst')) = result.as_x32;
-	@[endcall]
-
-	@[call handle('load_result_x64')]
-		auto dst = @(imm('std::uint64_t', 'LOAD_RESULT_X64_IMM_DST'));
-		@(reg('std::uint64_t', 'dst')) = result.as_x32;
-	@[endcall]
-
-#if 0
-	@(begin_handler("x32_get_arg")) {
-		const auto expr = decode<XExprX32GetArg>(pc);
-		push<std::uint32_t>(sp, localAt<std::uint32_t>(bp, expr.offset));
-		pc += XEXPR_X32_GET_LOCAL_SIZE;
-		@(dispatch)
+#if 0  /////////////////////////////////////////////////////////////////////////
+		f8 tgt_idx = f8_operand(ip, CALL_TGT_OFFSET);
+		r8 arg_idx = r8_operand(ip, CALL_ARG_IDX_OFFSET);
+		u8 len_idx = r8_operand(ip, CALL_ARG_LEN_OFFSET);
+		r8 ret_idx = r8_operand(ip, CALL_RET_IDX_OFFSET);
+#endif  ////////////////////////////////////////////////////////////////////////
 	}
 
-	@(begin_handler("x32_set_loca")) {
-		const auto expr = decode<XExprX32SetLocal>(pc);
-		localAt<std::uint32_t>(bp, expr.offset) = pop<std::uint32_t>(sp);
-		pc += XEXPR_X32_SET_LOCAL_SIZE;
-		@(dispatch)
+do_i32_add:
+	TRACE_ENTER("i32.add");
+	{
+		r8 dst_idx = r8_operand(ip, I32_ADD_DST_OFFSET);
+		r8 lhs_idx = r8_operand(ip, I32_ADD_LHS_OFFSET);
+		r8 rhs_idx = r8_operand(ip, I32_ADD_RHS_OFFSET);
+		i32& dst   = i32_reg_at(sp, dst_idx);
+		i32& lhs   = i32_reg_at(sp, lhs_idx);
+		i32& rhs   = i32_reg_at(sp, rhs_idx);
+		dst        = lhs + rhs;
+		TRACE_PRINT("rhs idx={} ptr={} val={}\n", rhs_idx, (void*)&rhs, rhs);
+		TRACE_PRINT("lhs idx={} ptr={} val={}\n", lhs_idx, (void*)&lhs, lhs);
+		TRACE_PRINT("dst idx={} ptr={} val={}\n", dst_idx, (void*)&dst, dst);
+		ip += I32_ADD_SIZEOF;
+		DISPATCH_INSN();
 	}
 
-	@(begin_handler("x32_tee_local")) {
-		const auto expr = decode<XExprX32TeeLocal>(pc);
-		localAt<std::uint32_t>(bp, expr.offset) = peek<std::uint32_t>(sp);
-		pc += XEXPR_X32_TEE_LOCAL_SIZE;
-		@(dispatch)
+do_i32_sub:
+	TRACE_ENTER("i32.sub");
+	{
+		r8 dst_idx = r8_operand(ip, I32_SUB_DST_OFFSET);
+		r8 lhs_idx = r8_operand(ip, I32_SUB_LHS_OFFSET);
+		r8 rhs_idx = r8_operand(ip, I32_SUB_RHS_OFFSET);
+		i32& dst   = i32_reg_at(sp, dst_idx);
+		i32& lhs   = i32_reg_at(sp, lhs_idx);
+		i32& rhs   = i32_reg_at(sp, rhs_idx);
+		dst        = lhs - rhs;
+		TRACE_PRINT("rhs idx={} ptr={} val={}\n", rhs_idx, (void*)&rhs, rhs);
+		TRACE_PRINT("lhs idx={} ptr={} val={}\n", lhs_idx, (void*)&lhs, lhs);
+		TRACE_PRINT("dst idx={} ptr={} val={}\n", dst_idx, (void*)&dst, dst);
+		ip += I32_SUB_SIZEOF;
+		DISPATCH_INSN();
 	}
-
-	@(begin_handler("x64_get_local")) {
-		const auto expr = decode<XExprX64GetLocal>(pc);
-		push<std::uint64_t>(sp, localAt<std::uint64_t>(bp, expr.offset));
-		pc += XEXPR_X64_GET_LOCAL_SIZE;
-		@(dispatch)
-	}
-
-	@(begin_handler("x64_set_local")) {
-		const auto expr = decode<XExprX64SetLocal>(pc);
-		localAt<std::uint64_t>(bp, expr.offset) = pop<std::uint64_t>(sp);
-		pc += XEXPR_X64_SET_LOCAL_SIZE;
-		@(dispatch)
-	}
-
-	@(begin_handler("x64_tee_local")) {
-		const auto expr = decode<XExprX64TeeLocal>(pc);
-		localAt<std::uint64_t>(bp, expr.offset) = peek<std::uint64_t>(sp);
-		pc += XEXPR_X64_TEE_LOCAL_SIZE;
-		@(dispatch)
-	}
-
-	@(begin_handler('get_global')) {
-		@(commit_state)
-		state.st_b.flags.error = true;
-		return;
-	}
-
-	@(begin_handler('set_global')) {
-		@(commit_state)
-		state.st_b.flags.error = true;
-		return;
-	}
-
-	@(begin_handler('i32_const')) {
-		const auto& expr = *reinterpret_cast<const XExprI32Const*>(pc);
-		push<std::int32_t>(sp, expr.value);
-		pc += XEXPR_I32_CONST_SIZE;
-		@(dispatch)
-	}
-
-	@(begin_handler('i64_const')) {
-		const auto& expr = *reinterpret_cast<const XExprI32Const*>(pc);
-		push<std::int32_t>(sp, expr.value);
-		pc += XEXPR_I64_CONST_SIZE;
-		@(dispatch)
-	}
-
-	@(begin_handler('i32_eqz')) {
-		const auto x = pop<std::uint32_t>(sp);
-		push<std::uint32_t>(sp, x == 0);
-		pc += XOpI32Eqz::SIZEOF;
-		@(dispatch)
-	}
-
-	@(begin_handler('i32_eq')) {
-		const auto rhs = pop<std::uint32_t>(sp);
-		const auto lhs = pop<std::uint32_t>(sp);
-		push<std::uint32_t>(sp, lhs == rhs);
-		pc += XEXPR_I32_EQ_SIZE;
-		@(dispatch)
-	}
-
-	@(begin_handler('i32_ne')) {
-		const auto rhs = pop<std::uint32_t>(sp);
-		const auto lhs = pop<std::uint32_t>(sp);
-		push<std::uint32_t>(sp, lhs != rhs);
-		pc += XEXPR_I32_NE_SIZE;
-		@(dispatch)
-	}
-
-	@(begin_handler('i32_lt_s')) {
-		const auto rhs = pop<std::int32_t>(sp);
-		const auto lhs = pop<std::int32_t>(sp);
-		push<std::uint32_t>(sp, lhs < rhs);
-		pc += XEXPR_I32_LT_S_SIZE;
-		@(dispatch)
-	}
-
-	@(begin_handler('i32_lt_u')) {
-		auto rhs = pop<std::uint32_t>(sp);
-		auto lhs = pop<std::uint32_t>(sp);
-		push<std::uint32_t>(sp, lhs < rhs);
-		pc += XEXPR_I32_LT_U_SIZE;
-		@(dispatch)
-	}
-
-	@(begin_handler('i32_gt_s')) {
-		const auto rhs = pop<std::int32_t>(sp);
-		const auto lhs = pop<std::int32_t>(sp);
-		push<std::uint32_t>(sp, lhs > rhs);
-		pc += XEXPR_I32_GT_S_SIZE;
-		@(dispatch)
-	}
-
-	@(begin_handler('i32_gt_u')) {
-		auto rhs = pop<std::uint32_t>(sp);
-		auto lhs = pop<std::uint32_t>(sp);
-		push<std::uint32_t>(sp, lhs > rhs);
-		pc += XEXPR_I32_GT_U_SIZE;
-		@(dispatch)
-	}
-
-	@(begin_handler('i32_le_s')) {
-		const auto rhs = pop<std::int32_t>(sp);
-		const auto lhs = pop<std::int32_t>(sp);
-		push<std::uint32_t>(sp, lhs <= rhs);
-		pc += XEXPR_I32_LE_S_SIZE;
-		@(dispatch)
-	}
-
-	@(begin_handler('i32_le_u')) {
-		auto rhs = pop<std::uint32_t>(sp);
-		auto lhs = pop<std::uint32_t>(sp);
-		push<std::uint32_t>(sp, lhs <= rhs);
-		pc += XEXPR_I32_LE_U_SIZE;
-		@(dispatch)
-	}
-
-	@(begin_handler('i32_ge_s')) {
-		const auto rhs = pop<std::int32_t>(sp);
-		const auto lhs = pop<std::int32_t>(sp);
-		push<std::uint32_t>(sp, lhs >= rhs);
-		pc += XEXPR_I32_GE_S_SIZE;
-		@(dispatch)
-	}
-
-	@(begin_handler('i32_ge_u')) {
-		auto rhs = pop<std::uint32_t>(sp);
-		auto lhs = pop<std::uint32_t>(sp);
-		push<std::uint32_t>(sp, lhs >= rhs);
-		pc += XEXPR_I32_GE_U_SIZE;
-		@(dispatch)
-	}
-
-	@(begin_handler('i64_eqz')) {
-		const auto x = pop<std::uint64_t>(sp);
-		push<std::uint64_t>(sp, x == 0);
-		pc += XEXPR_I64_EQZ_SIZE;
-		@(dispatch)
-	}
-
-	@(begin_handler('i64_eq')) {
-		const auto rhs = pop<std::uint64_t>(sp);
-		const auto lhs = pop<std::uint64_t>(sp);
-		push<std::uint64_t>(sp, lhs == rhs);
-		pc += XEXPR_I64_EQ_SIZE;
-		@(dispatch)
-	}
-
-	@(begin_handler('i64_ne')) {
-		const auto rhs = pop<std::uint64_t>(sp);
-		const auto lhs = pop<std::uint64_t>(sp);
-		push<std::uint64_t>(sp, lhs != rhs);
-		pc += XEXPR_I64_NE_SIZE;
-		@(dispatch)
-	}
-
-	@(begin_handler('i64_lt_s')) {
-		const auto rhs = pop<std::int64_t>(sp);
-		const auto lhs = pop<std::int64_t>(sp);
-		push<std::uint64_t>(sp, lhs < rhs);
-		pc += XEXPR_I64_LT_S_SIZE;
-		@(dispatch)
-	}
-
-	@(begin_handler('i64_lt_u')) {
-		auto rhs = pop<std::uint64_t>(sp);
-		auto lhs = pop<std::uint64_t>(sp);
-		push<std::uint64_t>(sp, lhs < rhs);
-		pc += XEXPR_I64_LT_U_SIZE;
-		@(dispatch)
-	}
-
-	@(begin_handler('i64_gt_s')) {
-		const auto rhs = pop<std::int64_t>(sp);
-		const auto lhs = pop<std::int64_t>(sp);
-		push<std::uint64_t>(sp, lhs > rhs);
-		pc += XEXPR_I64_GT_S_SIZE;
-		@(dispatch)
-	}
-
-	@(begin_handler('i64_gt_u')) {
-		auto rhs = pop<std::uint64_t>(sp);
-		auto lhs = pop<std::uint64_t>(sp);
-		push<std::uint64_t>(sp, lhs > rhs);
-		pc += XEXPR_I64_GT_U_SIZE;
-		@(dispatch)
-	}
-
-	@(begin_handler('i64_le_s')) {
-		const auto rhs = pop<std::int64_t>(sp);
-		const auto lhs = pop<std::int64_t>(sp);
-		push<std::uint64_t>(sp, lhs <= rhs);
-		pc += XEXPR_I64_LE_S_SIZE;
-		@(dispatch)
-	}
-
-	@(begin_handler('i64_le_u')) {
-		auto rhs = pop<std::uint64_t>(sp);
-		auto lhs = pop<std::uint64_t>(sp);
-		push<std::uint64_t>(sp, lhs <= rhs);
-		pc += XEXPR_I64_LE_U_SIZE;
-		@(dispatch)
-	}
-
-	@(begin_handler('i64_ge_s')) {
-		const auto rhs = pop<std::int64_t>(sp);
-		const auto lhs = pop<std::int64_t>(sp);
-		push<std::uint64_t>(sp, lhs >= rhs);
-		pc += XEXPR_I64_GE_S_SIZE;
-		@(dispatch)
-	}
-
-	@(begin_handler('i64_ge_u')) {
-		auto rhs = pop<std::uint64_t>(sp);
-		auto lhs = pop<std::uint64_t>(sp);
-		push<std::uint64_t>(sp, lhs >= rhs);
-		pc += XEXPR_I64_GE_U_SIZE;
-		@(dispatch)
-	}
-
-#endif /////////////////////////////////////////////////////////////////////////
-
-	@[call handle('i32.add')]
-		auto dst_reg = @(imm('std::uint32_t', 'I32_ADD_IMM_DST'));
-		auto lhs_reg = @(imm('std::uint32_t', 'I32_ADD_IMM_LHS'));
-		auto rhs_reg = @(imm('std::uint32_t', 'I32_ADD_IMM_RHS'));
-
-		auto dst_ptr = I32_REG_PTR(dst_reg); // @(reg('std::uint32_t', 'dst_reg'));
-		auto lhs_ptr = I32_REG_PTR(lhs_reg); // @(reg('std::uint32_t', 'lhs_reg'));
-		auto rhs_ptr = I32_REG_PTR(rhs_reg); // @(reg('std::uint32_t', 'rhs_reg'));
-
-		auto lhs_val = *lhs_ptr;
-		auto rhs_val = *rhs_ptr;
-		auto dst_val = lhs_val + rhs_val;
-
-		AB_DBG_MSG("  rhs reg={} ptr={} val={}\n", rhs_reg, (void*)rhs_ptr, rhs_val);
-		AB_DBG_MSG("  lhs reg={} ptr={} val={}\n", lhs_reg, (void*)lhs_ptr, lhs_val);
-		AB_DBG_MSG("  dst reg={} ptr={} val={}\n", dst_reg, (void*)dst_ptr, dst_val);
-
-		*dst_ptr = dst_val;
-
-		pc += I32_ADD_SIZE;
-		@(dispatch)
-	@[endcall]
-
-#if 0 //////////////////////////////////////////////////////////////////////////
-
-	@(begin_handler('i32_sub')) {
-		auto rhs = pop<std::uint32_t>(sp);
-		auto lhs = pop<std::uint32_t>(sp);
-		push<std::uint32_t>(sp, lhs - rhs);
-		pc += XEXPR_I32_SUB_SIZE;
-		@(dispatch)
-	}
-
-	@(begin_handler('i32_mul')) {
-		auto rhs = pop<std::uint32_t>(sp);
-		auto lhs = pop<std::uint32_t>(sp);
-		push<std::uint32_t>(sp, lhs * rhs);
-		pc += XEXPR_I32_MUL_SIZE;
-		@(dispatch)
-	}
-
-	@(begin_handler('i32_div_s')) {
-		auto rhs = pop<std::int32_t>(sp);
-		auto lhs = pop<std::int32_t>(sp);
-		push<std::int32_t>(sp, lhs / rhs);
-		pc += XEXPR_I32_DIV_S_SIZE;
-		@(dispatch)
-	}
-
-	@(begin_handler('i32_div_u')) {
-		auto rhs = pop<std::uint32_t>(sp);
-		auto lhs = pop<std::uint32_t>(sp);
-		push<std::uint32_t>(sp, lhs / rhs);
-		pc += XEXPR_I32_DIV_U_SIZE;
-		@(dispatch)
-	}
-
-	@(begin_handler('i32_rem_s')) {
-		auto rhs = pop<std::int32_t>(sp);
-		auto lhs = pop<std::int32_t>(sp);
-		push<std::int32_t>(sp, lhs % rhs);
-		pc += XEXPR_I32_REM_S_SIZE;
-		@(dispatch)
-	}
-
-	@(begin_handler('i32_rem_u')) {
-		auto rhs = pop<std::uint32_t>(sp);
-		auto lhs = pop<std::uint32_t>(sp);
-		push<std::uint32_t>(sp, lhs % rhs);
-		pc += XEXPR_I32_REM_U_SIZE;
-		@(dispatch)
-	}
-
-	@(begin_handler('i32_and')) {
-		auto rhs = pop<std::uint32_t>(sp);
-		auto lhs = pop<std::uint32_t>(sp);
-		push<std::uint32_t>(sp, lhs & rhs);
-		pc += XEXPR_I32_AND_SIZE;
-		@(dispatch)
-	}
-
-	@(begin_handler('i32_or')) {
-		auto rhs = pop<std::uint32_t>(sp);
-		auto lhs = pop<std::uint32_t>(sp);
-		push<std::uint32_t>(sp, lhs | rhs);
-		pc += XEXPR_I32_OR_SIZE;
-		@(dispatch)
-	}
-
-	@(begin_handler('i32_xor')) {
-		auto rhs = pop<std::uint32_t>(sp);
-		auto lhs = pop<std::uint32_t>(sp);
-		push<std::uint32_t>(sp, lhs ^ rhs);
-		pc += XEXPR_I32_XOR_SIZE;
-		@(dispatch)
-	}
-
-	@(begin_handler('i32_shl')) {
-		auto shift = pop<std::uint32_t>(sp) % 32;
-		auto value = pop<std::uint32_t>(sp);
-		push<std::uint32_t>(sp, value << shift);
-		pc += XEXPR_I32_SHL_SIZE;
-		@(dispatch)
-	}
-
-	@(begin_handler('i32_shr_s')) {
-		auto shift = pop<std::uint32_t>(sp) % 32;
-		auto value = pop<std::int32_t>(sp);
-		push<std::uint32_t>(sp, value >> shift);
-		pc += XEXPR_I32_SHR_S_SIZE;
-		@(dispatch)
-	}
-
-	@(begin_handler('i32_shr_u')) {
-		auto shift = pop<std::uint32_t>(sp) % 32;
-		auto value = pop<std::uint32_t>(sp);
-		push<std::uint32_t>(sp, value >> shift);
-		pc += XEXPR_I32_SHR_U_SIZE;
-		@(dispatch)
-	}
-
-	@(begin_handler('i32_rotl')) {
-		auto shift = pop<std::uint32_t>(sp) % 32;
-		auto value = pop<std::uint32_t>(sp);
-		push<std::uint32_t>(sp, (value << shift) | (shift >> (32 - value))); 
-		pc += XEXPR_I32_ROTL_SIZE;
-		@(dispatch)
-	}
-
-	@(begin_handler('i32_rotr')) {
-		auto shift = pop<std::uint32_t>(sp) % 32;
-		auto value = pop<std::uint32_t>(sp);
-		push<std::uint32_t>(sp, (value >> shift) | (shift << (32 - value)));
-		pc += XEXPR_I32_ROTR_SIZE;
-		@(dispatch)
-	}
-#endif
 
 	AB_ASSERT_UNREACHABLE();
-};
+	AB_UNREACHABLE();
+}
 
-// std::int32_t Interpreter::interpret_i32(const Func* target) {
-// 	interpret(target);
-// 	return pop<std::int32_t>(state.st_a.sp);
-// }
-
-// void Interpreter::interpret_nil(const Func* target) {
-// 	interpret(target);
-// }
-
-// AnyValue Interpreter::interpret_any(const Func* target) {
-// 	interpret(target);
-
-// 	AnyValue result;
-// 	result.kind       = ValueKind::NIL;
-// 	result.data.asNil = 0;
-
-// 	return result;
-// }
-
-// void Interpreter::interpret(const Func* target) {
-// 	state_.st_b.func    = target;
-// 	state_.st_b.flags.trap  = false;
-// 	state_.st_b.flags.error = 0;
-// 	state_.st_a.pc          = target->body;
-// 	do_interpret();
-// }
-
-} // namespace Ab
+}  // namespace Ab

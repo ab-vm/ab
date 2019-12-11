@@ -6,8 +6,29 @@
 #include <Ab/Types.hpp>
 #include <cstddef>
 #include <span>
+#include <utility>
+#include <vector>
 
 namespace Ab {
+
+class Func;
+class FuncInst;
+
+struct FuncRef {};
+
+struct InterModuleFuncRef {};
+
+struct IntraModuleFuncRef {};
+
+struct RefTable {};
+
+/// Instantiated and fully resolved set of constants.
+///
+struct ConstPool {
+	std::vector<FuncInst*> func_table;
+	std::vector<float> f32_table;
+	std::vector<double> f64_table;
+};
 
 /// VM Function. Shared data across multiple instantiations.
 /// A module must be instantiated before it can be called. See FuncInst.
@@ -20,8 +41,7 @@ public:
 		, arg_nregs_(type->arg_nregs())
 		, ret_nregs_(type->ret_nregs())
 		, nregs_(var_nregs_ + arg_nregs_)
-		, body_(body)
-		, body_size_(0) {}
+		, body_(body, std::size_t(0)) {}
 
 	/// Pointer to the underlying type of the function.
 	///
@@ -49,7 +69,7 @@ public:
 
 	/// The function body, a sequence of bytecode instructions.
 	///
-	Byte* body() const noexcept { return body_; }
+	Byte* body() const noexcept { return body_.data(); }
 
 private:
 	const FuncType* type_;
@@ -57,8 +77,7 @@ private:
 	std::uint32_t arg_nregs_;
 	std::uint32_t ret_nregs_;
 	std::uint32_t nregs_;
-	Byte* body_;
-	std::uint32_t body_size_;
+	std::span<Byte> body_;
 };
 
 /// An instantiated function.
@@ -73,6 +92,24 @@ public:
 		, var_nregs_(base->var_nregs())
 		, nregs_(base->nregs())
 		, body_(base->body()) {}
+
+	FuncInst(Func* base, const ConstPool& const_pool) noexcept
+		: base_(base)
+		, arg_nregs_(base->arg_nregs())
+		, ret_nregs_(base->ret_nregs())
+		, var_nregs_(base->var_nregs())
+		, nregs_(base->nregs())
+		, body_(base->body())
+		, const_pool_(const_pool) {}
+
+	FuncInst(Func* base, ConstPool&& const_pool) noexcept
+		: base_(base)
+		, arg_nregs_(base->arg_nregs())
+		, ret_nregs_(base->ret_nregs())
+		, var_nregs_(base->var_nregs())
+		, nregs_(base->nregs())
+		, body_(base->body())
+		, const_pool_(std::move(const_pool)) {}
 
 	/// Pointer to the underlying function data, which is shared across instances.
 	///
@@ -106,6 +143,14 @@ public:
 	///
 	Byte* body() const noexcept { return body_; }
 
+	ConstPool& const_pool() noexcept { return const_pool_; }
+
+	const ConstPool& const_pool() const noexcept { return const_pool_; }
+
+	FuncInst* func_const(std::size_t index) const noexcept {
+		return const_pool_.func_table[index];
+	}
+
 private:
 	/// Pointer into the shared func object
 	///
@@ -130,6 +175,8 @@ private:
 	/// Pointer into the code section, after the declaration of the registers.
 	///
 	Byte* body_;
+
+	ConstPool const_pool_;
 };
 
 }  // namespace Ab

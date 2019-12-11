@@ -1,17 +1,14 @@
 # State that is cached in registers and written out to memory in demand
 primary:
-  - name: pc
+  - name: ip
     type: const Byte*
-    doc:  pointer to current position in program.
-  - name: fp
+    doc:  instruction pointer
+  - name: sp
     type: Byte*
-    doc:  Pointer to base of frame, start of register file.
-  - name: cp
-    doc:  Pointer to a table of constants for the current method.
+    doc:  stack pointer
+  - name: fn
     type: Byte*
-  - name: result
-    doc:  Special result register
-    type: AnyValue
+    doc:  current function and constants pointer
 
 # State that is always stored in the interpreter struct.
 secondary:
