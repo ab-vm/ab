@@ -83,6 +83,7 @@ target_include_directories(ab-core
 target_link_libraries(ab-core
 	ab-base
 	ab-util
+	absl::span
 )
 
 install(

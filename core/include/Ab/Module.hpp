@@ -2,16 +2,14 @@
 #define AB_MODULE_HPP_
 
 #include <Ab/Config.hpp>
-
 #include <Ab/Address.hpp>
 #include <Ab/Assert.hpp>
 #include <Ab/Bytes.hpp>
 #include <Ab/Func.hpp>
 #include <Ab/VectorUtilities.hpp>
-
+#include <absl/types/span.h>
 #include <cstddef>
 #include <memory>
-#include <span>
 #include <string>
 #include <vector>
 
@@ -37,9 +35,10 @@ class ModuleStorage {
 public:
 	using Deleter = void (*)(void*);
 
-	explicit ModuleStorage(std::span<Byte> bytes) noexcept : ModuleStorage(bytes, &std::free) {}
+	explicit ModuleStorage(absl::Span<Byte> bytes) noexcept
+		: ModuleStorage(bytes, &std::free) {}
 
-	ModuleStorage(std::span<Byte> bytes, Deleter deleter) noexcept
+	ModuleStorage(absl::Span<Byte> bytes, Deleter deleter) noexcept
 		: bytes_(bytes), deleter_(deleter) {}
 
 	ModuleStorage(const ModuleStorage&) = delete;
@@ -48,7 +47,7 @@ public:
 		bytes_   = other.bytes_;
 		deleter_ = other.deleter_;
 
-		other.bytes_   = std::span<Byte>();
+		other.bytes_   = absl::Span<Byte>();
 		other.deleter_ = nullptr;
 	}
 
@@ -66,10 +65,10 @@ public:
 
 	Deleter deleter() const noexcept { return deleter_; }
 
-	std::span<Byte> bytes() const noexcept { return bytes_; }
+	absl::Span<Byte> bytes() const noexcept { return bytes_; }
 
 private:
-	std::span<Byte> bytes_;
+	absl::Span<Byte> bytes_;
 	Deleter deleter_;
 };
 
@@ -87,7 +86,7 @@ public:
 
 	~Module() noexcept = default;
 
-	std::span<Byte> bytes() const noexcept { return storage_.bytes(); }
+	absl::Span<Byte> bytes() const noexcept { return storage_.bytes(); }
 
 	ModuleStorage& storage() noexcept { return storage_; }
 
@@ -135,7 +134,7 @@ public:
 
 	/// Obtain the underlying bytes that represent the module.
 	///
-	std::span<Byte> bytes() const noexcept { return module_->bytes(); }
+	absl::Span<Byte> bytes() const noexcept { return module_->bytes(); }
 
 	std::vector<FuncInst>& func_inst_table() noexcept { return func_inst_table_; }
 

@@ -1,15 +1,13 @@
 #ifndef AB_LOADING_HPP_
 #define AB_LOADING_HPP_
 
-#include <span>
-
 #include <Ab/Bytes.hpp>
 #include <Ab/Context.hpp>
 #include <Ab/Module.hpp>
 #include <Ab/Resolver.hpp>
 #include <Ab/VirtualMachine.hpp>
+#include <absl/types/span.h>
 #include <memory>
-
 
 namespace Ab {
 
@@ -24,7 +22,7 @@ std::shared_ptr<Module> compile(Context& cx, ModuleStorage&& storage);
 /// Ownership of the bytes is transferred to the module.
 /// When the Module is destroyed, the bytes will be released via std::free.
 ///
-inline std::shared_ptr<Module> compile(Context& cx, std::span<Byte> bytes) {
+inline std::shared_ptr<Module> compile(Context& cx, absl::Span<Byte> bytes) {
 	return compile(cx, ModuleStorage(bytes));
 }
 
@@ -49,7 +47,7 @@ inline ModuleInst* instantiate(Context& cx, std::shared_ptr<Module>&& module) {
 /// When the Module is destroyed, the bytes will be released via std::free.
 /// The Module will be destroyed when there are no more instances.
 ///
-inline ModuleInst* instantiate(Context& cx, std::span<Byte> bytes) {
+inline ModuleInst* instantiate(Context& cx, absl::Span<Byte> bytes) {
 	return instantiate(cx, compile(cx, bytes));
 }
 

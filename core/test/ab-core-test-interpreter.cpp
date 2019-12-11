@@ -51,7 +51,7 @@ TEST_F(TestInterpreter, LoadEmptyModule) {
 	VirtualMachine vm(runtime());
 	Context cx(&vm);
 	ModuleNode node;
-	std::span<Byte> bytes          = node.write();
+	absl::Span<Byte> bytes         = node.write();
 	std::shared_ptr<Module> module = compile(cx, bytes);
 }
 

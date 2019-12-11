@@ -1,8 +1,8 @@
 #include <Ab/Loading.hpp>
 #include <Ab/VectorUtilities.hpp>
+#include <absl/types/span.h>
 #include <cstddef>
 #include <cstdint>
-#include <span>
 #include <stdexcept>
 #include <type_traits>
 
@@ -15,9 +15,9 @@ public:
 
 class Decoder {
 public:
-	Decoder(std::span<Byte> bytes) : position_(bytes.data()), bytes_(bytes) {}
+	Decoder(absl::Span<Byte> bytes) : position_(bytes.data()), bytes_(bytes) {}
 
-	std::span<Byte> bytes() const noexcept { return bytes_; }
+	absl::Span<Byte> bytes() const noexcept { return bytes_; }
 
 	Byte* position() const noexcept { return position_; }
 
@@ -139,7 +139,7 @@ public:
 
 private:
 	Byte* position_;
-	std::span<Byte> bytes_;
+	absl::Span<Byte> bytes_;
 };
 
 void decode_type_section(Context& cx, Module& module, Decoder& decoder, std::uint32_t size) {

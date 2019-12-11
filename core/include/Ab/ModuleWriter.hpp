@@ -9,8 +9,8 @@
 #include <Ab/Types.hpp>
 #include <Ab/VarInt.hpp>
 #include <Ab/VectorUtilities.hpp>
+#include <absl/types/span.h>
 #include <limits>
-#include <span>
 #include <utility>
 #include <vector>
 
@@ -88,7 +88,7 @@ public:
 
 	/// Create the module.
 	///
-	std::span<Byte> finalize() {
+	absl::Span<Byte> finalize() {
 		ByteBuffer buffer;
 		append_module(buffer);
 		return buffer.release_span();
@@ -196,7 +196,7 @@ private:
 };
 
 template <typename M>
-inline std::span<Byte> write(M& model) {
+inline absl::Span<Byte> write(M& model) {
 	static_assert(std::is_base_of_v<ModuleModel, M>);
 	ModuleWriter writer;
 	model.accept(writer);

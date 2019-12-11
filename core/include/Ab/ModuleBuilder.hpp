@@ -295,7 +295,7 @@ public:
 	/// @}
 	///
 
-	std::span<Byte> write() {
+	absl::Span<Byte> write() {
 		ModuleWriter writer;
 		accept(writer);
 		return writer.finalize();

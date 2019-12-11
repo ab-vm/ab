@@ -4,12 +4,10 @@
 #include <Ab/Config.hpp>
 #include <Ab/Context.hpp>
 #include <Ab/Module.hpp>
-
 #include <Ab/Wasm/OpCode.hpp>
-
+#include <absl/types/span.h>
 #include <cstdint>
 #include <memory>
-#include <span>
 #include <unordered_map>
 #include <vector>
 

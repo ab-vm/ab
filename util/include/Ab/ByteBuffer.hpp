@@ -138,10 +138,10 @@ public:
 		return result;
 	}
 
-	std::span<Byte> release_span() noexcept {
+	absl::Span<Byte> release_span() noexcept {
 		shrink_to_fit();
 
-		std::span<Byte> result(data_, size_);
+		absl::Span<Byte> result(data_, size_);
 
 		data_ = nullptr;
 		size_ = 0;

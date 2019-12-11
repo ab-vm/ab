@@ -4,8 +4,8 @@
 #include <Ab/Config.hpp>
 #include <Ab/Address.hpp>
 #include <Ab/Types.hpp>
+#include <absl/types/span.h>
 #include <cstddef>
-#include <span>
 #include <utility>
 #include <vector>
 
@@ -77,7 +77,7 @@ private:
 	std::uint32_t arg_nregs_;
 	std::uint32_t ret_nregs_;
 	std::uint32_t nregs_;
-	std::span<Byte> body_;
+	absl::Span<Byte> body_;
 };
 
 /// An instantiated function.
