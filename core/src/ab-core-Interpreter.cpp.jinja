@@ -660,9 +660,9 @@ static std::pair<ExecAction, Byte*> do_interpret(ExecState* state) {
 		&&do_unimplemented    // 255
 	};
 
-	Byte* fn;
 	const Byte* ip;
 	Byte* sp;
+	FuncInst* fn;
 
 	RELOAD_STATE();
 	DISPATCH_INSN();

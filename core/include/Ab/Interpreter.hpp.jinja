@@ -79,7 +79,7 @@ private:
 struct FrameSaveArea {
 	Address ip;     ///< Saved instruction pointer.
 	MutAddress sp;  ///< Saved stack pointer.
-	MutAddress fn;  ///< Saved function pointer.
+	FuncInst* fn;   ///< Saved function pointer.
 };
 
 /// Call-in / toplevel frame.
@@ -125,18 +125,17 @@ enum class ExecAction { CRASH = 0, INTERPRET = 1, HALT = 2, EXIT = 3 };
 /// Flags are runtime conditions located in secondary state.
 ///
 struct Flags {
-	@[for flag in data.interpreter_state.flags]
-		@(flag.type) @(flag.name | varify);
-	@[ endfor ]
+	bool trap;
+	bool error;
 };
 
 /// Primary state is cached in the interpreter, and kept in registers if possible.
 /// The state is only reflected back into the struct explicitly, when needed.
 ///
 struct ExecStateA {
-	@[for state in data.interpreter_state.primary]
-		@(state.type) @(state.name | varify);
-	@[ endfor ]
+	const Byte* ip;
+	Byte* sp;
+	FuncInst* fn;
 };
 
 /// Secondary state is kept in memory and up-to-date. Frequently accessed data
@@ -144,9 +143,10 @@ struct ExecStateA {
 /// Infrequently accessed state can be stored here.
 ///
 struct ExecStateB {
-	@[for state in data.interpreter_state.secondary]
-		@(state.type) @(state.name | varify);
-	@[endfor]
+	FuncInst* func;
+	Byte* stack;
+	ExecCond condition;
+	Flags flags;
 };
 
 /// Interpreter state is divided into primary and secondary state.
