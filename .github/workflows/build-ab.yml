@@ -10,15 +10,20 @@ jobs:
           sudo apt-get update
           sudo apt-get install gcc-9 g++-9 build-essential cmake libfmt-dev python3-pip ninja-build ragel
           sudo pip install pyyaml jinja2
-      - name: checkout
-        uses: actions/checkout@master
+      - name: Checkout
+        uses: actions/checkout@v1
         with:
-          submodules: true
+          submodules: recursive
       - name: Configure
-        run: mkdir build && cd build && cmake -Wdev -GNinja -DAB_COLOR_DIAGNOSTICS=on -DCMAKE_C_COMPILER=gcc-9 -DCMAKE_CXX_COMPILER=g++-9 ..
+        run: |
+          mkdir build
+          cd build
+          cmake -Wdev -GNinja -C../ci/cache.cmake ..
       - name: Build
         run: cd build && ninja
       - name: Test
-        run: cd build && ctest --output-on-failure
+        run: |
+          cd build
+          ctest --output-on-failure
         env:
           GTEST_COLOR: yes
