@@ -100,7 +100,9 @@ using ref = std::uint64_t;
 /// Forward Declarations
 ///
 
-static Byte* act(ExecState* state, ExecAction action);
+extern "C" Byte* ab_act(ExecState* state, ExecAction action);
+
+extern "C" Byte* ab_interpret_func(ExecState* state, ExecAction action);
 
 static std::pair<ExecAction, Byte*> do_interpret(ExecState* state);
 
@@ -339,7 +341,7 @@ static Byte* interpret_func(ExecState* state, FuncInst* func) {
 	state->st_b.func = func;
 	state->st_a.ip   = func->body();
 	state->st_a.fn   = nullptr;  // TODO: func->constants();
-	return act(state, ExecAction::INTERPRET);
+	return ab_interpret_func(state, ExecAction::INTERPRET);
 }
 
 static Byte* interpret_func(Context& cx, FuncInst* func) {
@@ -362,7 +364,7 @@ void interpret(ExecState* state, ModuleInst* mod, std::size_t index) {
 
 /// The main interpreter action trampoline.
 ///
-static Byte* act(ExecState* state, ExecAction action) {
+Byte* ab_act(ExecState* state, ExecAction action) {
 	constexpr static void* const ACTION_TABLE[4] = {
 		&&do_crash,      // 0
 		&&do_interpret,  // 1

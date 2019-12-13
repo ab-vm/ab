@@ -1,4 +1,3 @@
-
 ab_add_jinja_cxx_template(
 	INPUT  include/Ab/Wasm/OpCode.hpp.jinja
 	OUTPUT include/Ab/Wasm/OpCode.hpp
@@ -62,6 +61,7 @@ add_library(ab-core
 	include/Ab/Opcode.hpp
 	include/Ab/FuncBuilder.hpp
 	include/Ab/Interpreter.hpp
+	src/ab-core-Entry.nasm
 	src/ab-core-Interpreter.cpp
 	src/ab-core-Loading.cpp
 	src/ab-core-Process.cpp

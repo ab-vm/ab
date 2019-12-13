@@ -43,6 +43,8 @@ configure_file(
 
 enable_testing()
 
+enable_language(ASM_NASM)
+
 link_directories(/usr/local/lib)
 
 set(AB_COLOR_DIAGNOSTICS on CACHE BOOL "Enable/Disable colorized compiler output")
@@ -69,12 +71,12 @@ target_compile_options(ab-base
 		-Wall -Wextra
 )
 
-if(AB_COLOR_DIAGNOSTICS)
-	target_compile_options(ab-base
-		INTERFACE
-			-fdiagnostics-color=always
-	)
-endif()
+# if(AB_COLOR_DIAGNOSTICS)
+# 	target_compile_options(ab-base
+# 		INTERFACE
+# 			-fdiagnostics-color=always
+# 	)
+# endif()
 
 target_include_directories(ab-base
 	INTERFACE
