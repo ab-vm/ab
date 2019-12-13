@@ -6,6 +6,7 @@
 #include <Ab/Assert.hpp>
 #include <Ab/Bytes.hpp>
 #include <Ab/Func.hpp>
+#include <Ab/State.hpp>
 
 namespace Ab {
 
@@ -98,65 +99,6 @@ struct NormalFrame {
 
 	FrameSaveArea save_area;
 	FrameTag tag;
-};
-
-/// Storage for saving machine registers at interpreter entry.
-/// NOTE: THIS CLASS IS WIP AND NOT USED
-///
-struct EntrySaveArea {
-	MutAddress sp;
-	MutAddress bp;
-};
-
-/// The current state of execution in the virtual machine.
-///
-/// This is a global property that can be asked of the VM. Under normal circumstances, the vm will
-/// be in the RUNNING state. When an uncaught exception or other error is triggered, the VM is
-/// brought down and enters the ERRORED state.
-///
-/// If the virtual machine hasn't been fully initialized, possibly due to a startup error, the vm
-/// will be in the UNDEFINED state.
-///
-/// After complete and successful execution of a program, the vm is placed into
-enum class ExecCond { UNDEFINED, RUNNING, HALTED, TRAPPED, ERRORED };
-
-enum class ExecAction { CRASH = 0, INTERPRET = 1, HALT = 2, EXIT = 3 };
-
-/// Flags are runtime conditions located in secondary state.
-///
-struct Flags {
-	bool trap;
-	bool error;
-};
-
-/// Primary state is cached in the interpreter, and kept in registers if possible.
-/// The state is only reflected back into the struct explicitly, when needed.
-///
-struct ExecStateA {
-	const Byte* ip;
-	Byte* sp;
-	FuncInst* fn;
-};
-
-/// Secondary state is kept in memory and up-to-date. Frequently accessed data
-/// should be placed in the primary state and cached in registers during execution.
-/// Infrequently accessed state can be stored here.
-///
-struct ExecStateB {
-	FuncInst* func;
-	Byte* stack;
-	ExecCond condition;
-	Flags flags;
-};
-
-/// Interpreter state is divided into primary and secondary state.
-/// primary state is frequently accessed, and typically cached in local registers.
-/// Secondary state is less frequently accessed, and normally kept up to date in memory.
-///
-struct ExecState {
-	ExecStateA st_a;  ///< primary execution state.
-	ExecStateB st_b;  ///< secondary execution state.
-	EntrySaveArea entry_save_area;
 };
 
 /// Blow away the execution state.

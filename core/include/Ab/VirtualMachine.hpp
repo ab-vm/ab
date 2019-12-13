@@ -196,6 +196,8 @@ std::tuple<Rs...> static_call(Context& cx, ModuleInst* mod_inst, std::size_t ind
 	return static_call(cx, mod_inst->func_inst(index), as...);
 }
 
+extern "C" Byte* ab_act(ExecState* state, ExecAction action);
+
 }  // namespace Ab
 
 #endif  // AB_VIRTUALMACHINE_HPP_
